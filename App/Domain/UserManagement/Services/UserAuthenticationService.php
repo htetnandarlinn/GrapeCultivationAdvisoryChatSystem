@@ -9,8 +9,24 @@ final class UserAuthenticationService
 {
     public function ensureCanAuthenticate(User $user): void
     {
-        if ($user->getStatus()->getValue() === 'blocked') {
-            throw new ValidationException(['login' => 'Your account is blocked.']);
+        $status = $user->getStatus();
+
+        if ($status->isPending()) {
+            throw new ValidationException([
+                'login' => 'Please verify your email before logging in.'
+            ]);
+        }
+
+        if ($status->isInactive()) {
+            throw new ValidationException([
+                'login' => 'Your account is inactive.'
+            ]);
+        }
+
+        if ($status->isBlocked()) {
+            throw new ValidationException([
+                'login' => 'Your account has been blocked.'
+            ]);
         }
     }
 }

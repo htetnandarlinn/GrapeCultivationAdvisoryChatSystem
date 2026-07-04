@@ -8,7 +8,6 @@ final class Validator
 
     private function addError(string $field, string $message): void
     {
-        echo "ok";
         if (!array_key_exists($field, $this->errors)) {
             $this->errors[$field] = $message;
         }
@@ -23,6 +22,29 @@ final class Validator
             $this->addError(
                 $field,
                 ucfirst(str_replace('_', ' ', $field)) . ' is required.'
+            );
+        }
+
+        return $this;
+    }
+
+    public function myanmarPhone(string $field, mixed $value): self
+    {
+        if ($this->hasError($field)) {
+            return $this;
+        }
+
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return $this;
+        }
+
+        // Must start with 09 and contain exactly 11 digits.
+        if (!preg_match('/^09\d{9}$/', $value)) {
+            $this->addError(
+                $field,
+                'Please enter a valid Myanmar phone number.'
             );
         }
 
@@ -67,7 +89,30 @@ final class Validator
             $this->addError(
                 $field,
                 ucfirst(str_replace('_', ' ', $field))
-                . " must be at least {$min} characters."
+                    . " must be at least {$min} characters."
+            );
+        }
+
+        return $this;
+    }
+
+    public function maxLength(string $field, mixed $value, int $max): self
+    {
+        if ($this->hasError($field)) {
+            return $this;
+        }
+
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return $this;
+        }
+
+        if (mb_strlen($value) > $max) {
+            $this->addError(
+                $field,
+                ucfirst(str_replace('_', ' ', $field))
+                    . " must not exceed {$max} characters."
             );
         }
 
@@ -90,7 +135,7 @@ final class Validator
             $this->addError(
                 $field,
                 ucfirst(str_replace('_', ' ', $field))
-                . ' must contain digits only.'
+                    . ' must contain digits only.'
             );
         }
 
@@ -119,7 +164,7 @@ final class Validator
             $this->addError(
                 $field,
                 ucfirst(str_replace('_', ' ', $field))
-                . " must be between {$min} and {$max} characters."
+                    . " must be between {$min} and {$max} characters."
             );
         }
 
@@ -139,7 +184,7 @@ final class Validator
             $this->addError(
                 $field,
                 ucfirst(str_replace('_', ' ', $field))
-                . ' does not match.'
+                    . ' does not match.'
             );
         }
 
@@ -148,7 +193,6 @@ final class Validator
 
     public function getErrors(): array
     {
-        echo "Validation errors: " . json_encode($this->errors) . "\n"; // Debugging line
         return $this->errors;
     }
 

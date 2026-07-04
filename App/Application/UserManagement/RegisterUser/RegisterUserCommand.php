@@ -15,5 +15,6 @@ final class RegisterUserCommand
         public readonly string $passwordHash,
         public readonly UserType $type
     ) {
+        
     }
 }
