@@ -9,6 +9,6 @@ final class AskQuestionCommand
         public int $categoryId,
         public string $title,
         public string $description,
-        public ?array $image
+        public ?string $image   // ✅ STRING ONLY
     ) {}
 }

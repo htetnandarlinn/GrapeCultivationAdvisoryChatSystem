@@ -42,14 +42,21 @@ $router->get(
 
 /* ================= CONSULTATION ================= */
 
+/* Ask Question */
 $router->get(
     '/farmer-dashboard/ask-question',
-    [ConsultationController::class, 'create']
+    [FarmerDashboardController::class, 'askQuestion']
 );
 
 $router->post(
     '/farmer-dashboard/ask-question',
     [ConsultationController::class, 'store']
+);
+
+/* Question Submitted Confirmation */
+$router->get(
+    '/farmer-dashboard/question-submitted',
+    [FarmerDashboardController::class, 'submitQuestion']
 );
 
 /* ================= PROFILE ================= */

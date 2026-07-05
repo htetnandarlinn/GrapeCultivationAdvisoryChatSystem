@@ -14,13 +14,17 @@ class FarmerDashboardController
         $this->questionRepository = new QuestionRepository();
     }
 
+    /**
+     * Farmer Dashboard
+     */
     public function index(): void
     {
         if (!isset($_SESSION['user'])) {
             redirect('/login');
+            return;
         }
 
-        $farmerId = (int) $_SESSION['user_id'];
+        $farmerId = (int) $_SESSION['user']['id'];
 
         $questions = $this->questionRepository->findByFarmer($farmerId);
 
@@ -29,54 +33,85 @@ class FarmerDashboardController
         $answeredQuestions = 0;
         $imageCount = 0;
 
-        foreach ($questions as $q) {
-            if (($q['status_name'] ?? '') === 'Pending') {
+        foreach ($questions as $question) {
+
+            if (($question['status_name'] ?? '') === 'Pending') {
                 $pendingQuestions++;
             }
 
-            if (($q['status_name'] ?? '') === 'Answered') {
+            if (($question['status_name'] ?? '') === 'Answered') {
                 $answeredQuestions++;
             }
 
-            if (!empty($q['image'])) {
+            if (!empty($question['image'])) {
                 $imageCount++;
             }
         }
 
         FarmerView::render('farmer/farmer-dashboard', [
-            'activePage' => 'dashboard',
-            'questions' => $questions,
-            'totalQuestions' => $totalQuestions,
-            'pendingQuestions' => $pendingQuestions,
+            'activePage'        => 'dashboard',
+            'questions'         => $questions,
+            'totalQuestions'    => $totalQuestions,
+            'pendingQuestions'  => $pendingQuestions,
             'answeredQuestions' => $answeredQuestions,
-            'imageCount' => $imageCount
+            'imageCount'        => $imageCount
         ]);
     }
 
+    /**
+     * Show Ask Question Page
+     */
     public function askQuestion(): void
     {
+        if (!isset($_SESSION['user'])) {
+            redirect('/login');
+            return;
+        }
+
+        $categories = $this->questionRepository->findCategories();
+
         FarmerView::render('farmer/ask-question', [
-            'activePage' => 'ask'
+            'activePage' => 'ask',
+            'categories' => $categories
         ]);
     }
 
+    /**
+     * Question Submitted Page
+     */
     public function submitQuestion(): void
     {
+        if (!isset($_SESSION['user'])) {
+            redirect('/login');
+            return;
+        }
+
         FarmerView::render('farmer/question-submitted', [
             'activePage' => 'submit'
         ]);
     }
 
+    /**
+     * Total Questions
+     */
     public function totalQuestions(): void
     {
         if (!isset($_SESSION['user'])) {
             redirect('/login');
+            return;
         }
 
         $farmerId = (int) $_SESSION['user']['user_id'];
 
         $questions = $this->questionRepository->findByFarmer($farmerId);
 
-        echo count($questions);
+        FarmerView::render('farmer/farmer-dashboard', [
+            'activePage'        => 'dashboard',
+            'questions'         => $questions,
+            'totalQuestions'    => count($questions),
+            'pendingQuestions'  => count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Pending')),
+            'answeredQuestions' => count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Answered')),
+            'imageCount'        => count(array_filter($questions, fn($q) => !empty($q['image'])))
+        ]);
     }
 }

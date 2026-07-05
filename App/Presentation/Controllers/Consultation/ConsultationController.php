@@ -2,58 +2,64 @@
 
 namespace App\Presentation\Controllers\Consultation;
 
+use App\Application\ConsultationManagement\AskQuestion\AskQuestionCommand;
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
-use App\Application\ConsultationManagement\AskQuestion\AskQuestionRequestValidator;
 use App\Shared\Exceptions\ValidationException;
 
 class ConsultationController
 {
     public function __construct(
         private AskQuestionHandler $handler
-    ) {
-    }
+    ) {}
 
-    /**
-     * Display Ask Question Form
-     */
     public function create(): void
     {
         require BASE_PATH . '/App/Presentation/Views/farmer/ask-question.php';
     }
 
-    /**
-     * Save Question
-     */
     public function store(): void
     {
         try {
+            $farmerId   = (int)($_SESSION['user']['id'] ?? 0);
+            $categoryId = (int)($_POST['category_id'] ?? 0);
+            $title      = trim($_POST['title'] ?? '');
+            $description= trim($_POST['description'] ?? '');
 
-            $payload = $_POST;
+            /* ---------- IMAGE UPLOAD (FIX) ---------- */
+            $imageName = null;
 
-            // Farmer ID from session
-            $payload['farmer_id'] = $_SESSION['user']['id'] ?? 0;
+            if (!empty($_FILES['image']['name'])) {
+                $uploadDir = BASE_PATH . '/public/uploads/questions/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
 
-            // Temporary image
-            $payload['image'] = null;
+                $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                $imageName = uniqid('q_', true) . '.' . $ext;
 
-            // Validate request
-            $validator = new AskQuestionRequestValidator();
+                move_uploaded_file(
+                    $_FILES['image']['tmp_name'],
+                    $uploadDir . $imageName
+                );
+            }
+            /* --------------------------------------- */
 
-            $command = $validator->validate($payload);
+            $command = new AskQuestionCommand(
+                farmerId: $farmerId,
+                categoryId: $categoryId,
+                title: $title,
+                description: $description,
+                image: $imageName   // ✅ STRING
+            );
 
-            // Save question
             $this->handler->handle($command);
 
             $_SESSION['success'] = 'Question submitted successfully.';
+            redirect('/farmer-dashboard/question-submitted');
 
-            redirect('/farmer-dashboard');
+        } catch (ValidationException $e) {
 
-        } catch (ValidationException $exception) {
-
-            $_SESSION['errors'] = $exception->getErrors();
-
-            $_SESSION['old'] = $_POST;
-
+            $_SESSION['errors'] = $e->getErrors();
             redirect('/farmer-dashboard/ask-question');
         }
     }

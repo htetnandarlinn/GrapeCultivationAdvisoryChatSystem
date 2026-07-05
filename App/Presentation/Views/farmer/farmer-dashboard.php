@@ -116,8 +116,8 @@ foreach ($questions as $q) {
                 <thead>
                     <tr class="text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-50">
                         <th class="pb-3 pl-2">Question</th>
-                        <th class="pb-3">Expert</th>
                         <th class="pb-3">Category</th>
+                        <th class="pb-3">Expert</th>
                         <th class="pb-3 text-center">Status</th>
                         <th class="pb-3 text-right pr-2">Date</th>
                     </tr>
@@ -143,21 +143,39 @@ if ($status == 'Answered') {
 <tr class="hover:bg-slate-50">
 
     <td class="py-4 pl-2">
-
-        <?= htmlspecialchars($q['title']) ?>
-
+        <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-200">
+                <?php if (!empty($q['image'])): ?>
+                    <img src="<?= BASE_URL ?>/uploads/questions/<?= htmlspecialchars($q['image']) ?>" alt="Question image" class="w-full h-full object-cover">
+                <?php else: ?>
+                    <span class="text-[10px] text-slate-500">No image</span>
+                <?php endif; ?>
+            </div>
+            <div class="min-w-0">
+                <div class="text-sm font-semibold text-slate-900 truncate"><?= htmlspecialchars($q['title']) ?></div>
+                <div class="mt-1 text-xs text-slate-500 truncate">Category: <?= htmlspecialchars($q['category_name'] ?? 'Uncategorized') ?></div>
+            </div>
+        </div>
     </td>
 
-    <td>
-
-        <?= htmlspecialchars($q['expert_name'] ?? '-') ?>
-
-    </td>
-
-    <td>
-
+    <td class="py-4 px-2 text-sm text-slate-700">
         <?= htmlspecialchars($q['category_name'] ?? '-') ?>
+    </td>
 
+    <td class="py-4">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-200">
+                <?php if (!empty($q['expert_avatar'])): ?>
+                    <img src="<?= BASE_URL ?>/uploads/profiles/<?= htmlspecialchars($q['expert_avatar']) ?>" alt="Expert avatar" class="w-full h-full object-cover">
+                <?php else: ?>
+                    <span class="text-[10px] text-slate-500">E</span>
+                <?php endif; ?>
+            </div>
+            <div class="min-w-0">
+                <div class="text-sm font-semibold text-slate-900 truncate"><?= htmlspecialchars($q['expert_name'] ?? 'Awaiting Expert') ?></div>
+                <div class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Expert</div>
+            </div>
+        </div>
     </td>
 
     <td class="text-center">

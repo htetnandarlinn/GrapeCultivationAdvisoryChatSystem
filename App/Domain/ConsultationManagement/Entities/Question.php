@@ -16,89 +16,89 @@ class Question
     private ?string $createdAt;
     private ?string $updatedAt;
 
-
     public function __construct(
-    ?int $questionId,
-    int $farmerId,
-    int $categoryId,
-    string $title,
-    string $description,
-    ?string $image,
-    int $statusId,
-    ?int $expertId = null,
-    ?string $answer = null,
-    ?string $createdAt = null,
-    ?string $updatedAt = null
-) {
-    $this->questionId = $questionId;
-    $this->farmerId = $farmerId;
-    $this->categoryId = $categoryId;
-    $this->title = $title;
-    $this->description = $description;
-    $this->image = $image;
-    $this->statusId = $statusId;
-    $this->expertId = $expertId;
-    $this->answer = $answer;
-    $this->createdAt = $createdAt;
-    $this->updatedAt = $updatedAt;
-}
-public function getQuestionId(): ?int
-{
-    return $this->questionId;
-}
+        ?int $questionId,
+        int $farmerId,
+        int $categoryId,
+        string $title,
+        string $description,
+        ?string $image,
+        int $statusId,
+        ?int $expertId = null,
+        ?string $answer = null,
+        ?string $createdAt = null,
+        ?string $updatedAt = null
+    ) {
+        $this->questionId = $questionId;
+        $this->farmerId   = $farmerId;
+        $this->categoryId = $categoryId;
+        $this->title      = $title;
+        $this->description = $description;
+        $this->image      = $image;
+        $this->statusId   = $statusId;
+        $this->expertId   = $expertId;
+        $this->answer     = $answer;
+        $this->createdAt  = $createdAt;
+        $this->updatedAt  = $updatedAt;
+    }
 
-public function getFarmerId(): int
-{
-    return $this->farmerId;
-}
+    public function getQuestionId(): ?int
+    {
+        return $this->questionId;
+    }
 
-public function getCategoryId(): int
-{
-    return $this->categoryId;
-}
+    public function setQuestionId(int $questionId): void
+    {
+        $this->questionId = $questionId;
+    }
 
-public function getTitle(): string
-{
-    return $this->title;
-}
+    public function getFarmerId(): int
+    {
+        return $this->farmerId;
+    }
 
-public function getDescription(): string
-{
-    return $this->description;
-}
+    public function getCategoryId(): int
+    {
+        return $this->categoryId;
+    }
 
-public function getImage(): ?string
-{
-    return $this->image;
-}
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
 
-public function getStatusId(): int
-{
-    return $this->statusId;
-}
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
 
-public function getExpertId(): ?int
-{
-    return $this->expertId;
-}
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
 
-public function getAnswer(): ?string
-{
-    return $this->answer;
-}
+    public function getStatusId(): int
+    {
+        return $this->statusId;
+    }
 
-public function getCreatedAt(): ?string
-{
-    return $this->createdAt;
-}
+    public function getExpertId(): ?int
+    {
+        return $this->expertId;
+    }
 
-public function getUpdatedAt(): ?string
-{
-    return $this->updatedAt;
-}
+    public function getAnswer(): ?string
+    {
+        return $this->answer;
+    }
 
-public function setQuestionId(int $questionId): void
-{
-    $this->questionId = $questionId;
-}
+    public function getCreatedAt(): ?string
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?string
+    {
+        return $this->updatedAt;
+    }
 }
