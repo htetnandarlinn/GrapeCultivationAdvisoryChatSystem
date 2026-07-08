@@ -4,10 +4,15 @@ namespace App\Presentation\Controllers\Admin;
 
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
 
 class AdminDashboardController
 {
+    use AuthorizesPermissions;
+
+    #[Permission('admin.dashboard.view', 'View Admin Dashboard')]
     public function index(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

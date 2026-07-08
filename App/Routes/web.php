@@ -5,6 +5,7 @@ use App\Infrastructure\Persistence\Repositories\QuestionRepository;
 use App\Presentation\Controllers\Admin\AdminDashboardController;
 use App\Presentation\Controllers\Admin\ExpertManagementController;
 use App\Presentation\Controllers\Admin\FarmerManagementController;
+use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Auth\AuthController;
@@ -65,6 +66,10 @@ $router->post('/admin/roles/store', [RoleController::class, 'store']);
 $router->get('/admin/roles/edit', [RoleController::class, 'edit']);
 $router->post('/admin/roles/update', [RoleController::class, 'update']);
 $router->post('/admin/roles/delete', [RoleController::class, 'delete']);
+
+$router->get('/admin/permissions/sync', [PermissionAssignmentController::class, 'sync']);
+$router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list']);
+$router->post('/admin/roles/permissions/update', [PermissionAssignmentController::class, 'update']);
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 

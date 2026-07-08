@@ -4,12 +4,15 @@ namespace App\Presentation\Controllers\Auth;
 
 use App\Application\UserManagement\LoginUser\LoginUserHandler;
 use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
+use App\Domain\PermissionManagement\Repositories\PermissionRepositoryInterface;
 use App\Domain\UserManagement\Entities\User;
 use App\Domain\UserManagement\Services\UserAuthenticationService;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
 use App\Infrastructure\Mail\PHPMailerService;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Infrastructure\Persistence\Repositories\AuthRepository;
+use App\Infrastructure\Persistence\Repositories\PermissionRepository;
+use App\Infrastructure\Persistence\Repositories\RoleRepository;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
@@ -93,6 +96,11 @@ final class AuthController
             // Keep existing session variables
             $_SESSION['user_id'] = $user->getId();
             $_SESSION['user_role'] = $user->getType()->getValue();
+
+            // Load permissions for non-admin roles
+            if ($user->getType()->getValue() !== 'admin') {
+                $_SESSION['user_permissions'] = $this->loadUserPermissions($user->getType()->getValue());
+            }
 
             // Session array for topbar/dashboard
             $_SESSION['user'] = [
@@ -194,6 +202,22 @@ final class AuthController
         $dateTime = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Yangon'));
 
         return $dateTime;
+    }
+
+    private function loadUserPermissions(string $roleCode): array
+    {
+        $roleRepo = new RoleRepository();
+        $permRepo = new PermissionRepository();
+
+        $roles = $roleRepo->findAll();
+        foreach ($roles as $role) {
+            if ($role->getCode() === $roleCode) {
+                $permissions = $permRepo->findPermissionsByUserTypeId($role->getId());
+                return array_map(fn($p) => $p->getKey(), $permissions);
+            }
+        }
+
+        return [];
     }
 
     private function redirectByRole(User $user): void

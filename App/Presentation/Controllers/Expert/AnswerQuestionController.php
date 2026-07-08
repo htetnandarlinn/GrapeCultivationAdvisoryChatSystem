@@ -3,9 +3,12 @@
 namespace App\Presentation\Controllers\Expert;
 
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 
 class AnswerQuestionController
 {
+    use AuthorizesPermissions;
     private QuestionRepository $questionRepository;
 
     public function __construct()
@@ -13,17 +16,10 @@ class AnswerQuestionController
         $this->questionRepository = new QuestionRepository();
     }
 
+    #[Permission('expert.questions.answer', 'Answer Question')]
     public function store(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'expert') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('expert.questions.answer');
         $questionId = (int) ($_POST['question_id'] ?? 0);
         $answer = trim($_POST['answer'] ?? '');
 
