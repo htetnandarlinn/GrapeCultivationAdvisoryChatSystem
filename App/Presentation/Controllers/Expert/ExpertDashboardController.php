@@ -3,10 +3,13 @@
 namespace App\Presentation\Controllers\Expert;
 
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\ExpertView;
 
 class ExpertDashboardController
 {
+    use AuthorizesPermissions;
     private QuestionRepository $questionRepository;
 
     public function __construct()
@@ -14,17 +17,10 @@ class ExpertDashboardController
         $this->questionRepository = new QuestionRepository();
     }
 
+    #[Permission('expert.dashboard.view', 'View Expert Dashboard')]
     public function index(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'expert') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('expert.dashboard.view');
         $pendingQuestions = $this->questionRepository->findPending();
 
         $totalAssigned = count($pendingQuestions);

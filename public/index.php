@@ -8,6 +8,29 @@ session_start();
 
 /*
 |--------------------------------------------------------------------------
+| RELOAD PERMISSIONS (so assigned permissions take effect immediately)
+|--------------------------------------------------------------------------
+*/
+
+if (isset($_SESSION['user_role']) && $_SESSION['user_role'] !== 'admin' && isset($_SESSION['user'])) {
+    try {
+        $permDb = new \App\Shared\Infrastructure\Database\Database();
+        $permConn = $permDb->getConnection();
+        $stmt = $permConn->prepare('
+            SELECT utp.permission_key
+            FROM user_type_permissions utp
+            JOIN master_data md ON md.id = utp.user_type_id
+            WHERE md.code = :role AND md.category = \'USER_TYPE\'
+        ');
+        $stmt->execute([':role' => $_SESSION['user_role']]);
+        $_SESSION['user_permissions'] = array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'permission_key');
+    } catch (\Throwable) {
+        $_SESSION['user_permissions'] = [];
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | BASE URL
 |--------------------------------------------------------------------------
 */
@@ -71,4 +94,13 @@ function redirect(string $path): never
 {
     header('Location: ' . BASE_URL . $path);
     exit;
+}
+
+function can(string $permission): bool
+{
+    if (($_SESSION['user_role'] ?? '') === 'admin') {
+        return true;
+    }
+
+    return in_array($permission, $_SESSION['user_permissions'] ?? [], true);
 }

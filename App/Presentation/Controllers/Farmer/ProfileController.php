@@ -6,10 +6,13 @@ use App\Application\UserManagement\UpdateProfile\UpdateProfileCommand;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileHandler;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileRequestValidator;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\farmerView;
 
 class ProfileController
 {
+    use AuthorizesPermissions;
     private UserRepository $repository;
 
     public function __construct()
@@ -17,8 +20,11 @@ class ProfileController
         $this->repository = new UserRepository();
     }
 
+    #[Permission('farmer.profile.view', 'View Profile')]
     public function profile(): void
     {
+        $this->authorize('farmer.profile.view');
+
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
             exit;
@@ -37,8 +43,11 @@ class ProfileController
         ]);
     }
 
+    #[Permission('farmer.profile.edit', 'Edit Profile')]
     public function edit(): void
     {
+        $this->authorize('farmer.profile.edit');
+
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
             exit;
@@ -51,8 +60,11 @@ class ProfileController
         ]);
     }
 
+    #[Permission('farmer.profile.edit', 'Edit Profile')]
     public function update(): void
     {
+        $this->authorize('farmer.profile.edit');
+
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
             exit;

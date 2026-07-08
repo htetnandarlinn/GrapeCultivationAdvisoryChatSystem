@@ -3,9 +3,13 @@
 namespace App\Routes;
 
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
+use App\Application\PermissionManagement\PermissionRegistrar;
+use App\Application\PermissionManagement\PermissionService;
 use App\Application\RoleManagement\RoleService;
+use App\Infrastructure\Persistence\Repositories\PermissionRepository;
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
+use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
@@ -95,6 +99,18 @@ class Router
                     new RoleService(
                         new RoleRepository()
                     )
+                ),
+
+            PermissionAssignmentController::class =>
+                new PermissionAssignmentController(
+                    new PermissionService(
+                        new PermissionRepository(),
+                        new RoleRepository()
+                    ),
+                    new PermissionRegistrar(
+                        new PermissionRepository()
+                    ),
+                    new RoleRepository()
                 ),
 
             default => new $controller()

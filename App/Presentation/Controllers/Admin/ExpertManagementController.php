@@ -9,11 +9,14 @@ use App\Domain\UserManagement\ValueObjects\Email;
 use App\Domain\UserManagement\ValueObjects\UserType;
 use App\Infrastructure\Mail\PHPMailerService;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
 use App\Shared\Exceptions\ValidationException;
 
 class ExpertManagementController
 {
+    use AuthorizesPermissions;
     private UserRepository $userRepository;
     private RegisterUserHandler $registerHandler;
 
@@ -27,9 +30,10 @@ class ExpertManagementController
         );
     }
 
+    #[Permission('admin.experts.view', 'View Experts')]
     public function index(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.view');
 
         if (!isset($_SESSION['admin_name'])) {
             $_SESSION['admin_name'] = $_SESSION['user']['username'] ?? 'Admin';
@@ -45,9 +49,10 @@ class ExpertManagementController
         ]);
     }
 
+    #[Permission('admin.experts.create', 'Create Expert')]
     public function create(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.create');
 
         AdminView::render('admin/createExpert', [
             'activePage' => 'experts',
@@ -57,9 +62,10 @@ class ExpertManagementController
         ]);
     }
 
+    #[Permission('admin.experts.edit', 'Edit Expert')]
     public function edit(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.edit');
 
         $id = (int) ($_GET['id'] ?? 0);
 
@@ -85,9 +91,10 @@ class ExpertManagementController
         ]);
     }
 
+    #[Permission('admin.experts.create', 'Create Expert')]
     public function store(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.create');
 
         try {
             $command = new RegisterUserCommand(
@@ -127,9 +134,10 @@ class ExpertManagementController
         }
     }
 
+    #[Permission('admin.experts.edit', 'Edit Expert')]
     public function update(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.edit');
 
         $id = (int) ($_POST['id'] ?? 0);
 
@@ -206,9 +214,10 @@ class ExpertManagementController
         redirect('/admin/experts');
     }
 
+    #[Permission('admin.experts.delete', 'Delete Expert')]
     public function delete(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.delete');
 
         $id = (int) ($_POST['id'] ?? 0);
 
@@ -243,9 +252,10 @@ class ExpertManagementController
         redirect('/admin/experts');
     }
 
+    #[Permission('admin.experts.view', 'View Experts')]
     public function view(): void
     {
-        $this->authorizeAdmin();
+        $this->authorize('admin.experts.view');
 
         $id = (int) ($_GET['id'] ?? 0);
 
@@ -301,15 +311,4 @@ class ExpertManagementController
         $this->userRepository->update($user);
     }
 
-    private function authorizeAdmin(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            exit;
-        }
-    }
 }

@@ -3,11 +3,14 @@
 namespace App\Presentation\Controllers\Admin;
 
 use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 
 class FarmerManagementController
 {
+    use AuthorizesPermissions;
     private UserRepository $userRepository;
 
     public function __construct()
@@ -15,16 +18,10 @@ class FarmerManagementController
         $this->userRepository = new UserRepository();
     }
 
+    #[Permission('admin.farmers.view', 'View Farmers')]
     public function index(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
+        $this->authorize('admin.farmers.view');
 
         if (!isset($_SESSION['admin_name'])) {
             $_SESSION['admin_name'] = $_SESSION['user']['username'] ?? 'Admin';
@@ -40,16 +37,10 @@ class FarmerManagementController
         ]);
     }
 
-   public function delete(): void
+   #[Permission('admin.farmers.delete', 'Delete Farmer')]
+    public function delete(): void
 {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-        redirect('/access-denied');
-        return;
-    }
+    $this->authorize('admin.farmers.delete');
 
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
@@ -80,16 +71,10 @@ class FarmerManagementController
     redirect('/admin/farmers');
 }
 
+    #[Permission('admin.farmers.view', 'View Farmers')]
     public function view(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
+        $this->authorize('admin.farmers.view');
 
         $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         if ($id <= 0) {

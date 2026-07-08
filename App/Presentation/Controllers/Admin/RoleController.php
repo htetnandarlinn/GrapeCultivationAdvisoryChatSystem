@@ -4,15 +4,20 @@ namespace App\Presentation\Controllers\Admin;
 
 use App\Application\RoleManagement\RoleService;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
 
 class RoleController
 {
+    use AuthorizesPermissions;
+
     public function __construct(
         private RoleRepositoryInterface $repository,
         private RoleService $service,
     ) {}
 
+    #[Permission('admin.roles.view', 'View Roles')]
     public function index(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -34,17 +39,10 @@ class RoleController
         ]);
     }
 
+    #[Permission('admin.roles.create', 'Create Role')]
     public function create(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.roles.create');
         AdminView::render('admin/role-form', [
             'activePage' => 'roles',
             'mode' => 'create',
@@ -53,17 +51,10 @@ class RoleController
         ]);
     }
 
+    #[Permission('admin.roles.create', 'Create Role')]
     public function store(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.roles.create');
         $name = trim($_POST['name'] ?? '');
 
         if ($name === '') {
@@ -84,17 +75,10 @@ class RoleController
         }
     }
 
+    #[Permission('admin.roles.edit', 'Edit Role')]
     public function edit(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.roles.edit');
         $id = (int) ($_GET['id'] ?? 0);
 
         if ($id <= 0) {
@@ -119,17 +103,10 @@ class RoleController
         ]);
     }
 
+    #[Permission('admin.roles.edit', 'Edit Role')]
     public function update(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.roles.edit');
         $id = (int) ($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
 
@@ -156,17 +133,10 @@ class RoleController
         }
     }
 
+    #[Permission('admin.roles.delete', 'Delete Role')]
     public function delete(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.roles.delete');
         $id = (int) ($_POST['id'] ?? 0);
 
         if ($id <= 0) {

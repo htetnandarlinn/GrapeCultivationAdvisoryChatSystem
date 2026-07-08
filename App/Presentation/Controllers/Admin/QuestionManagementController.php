@@ -3,10 +3,13 @@
 namespace App\Presentation\Controllers\Admin;
 
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
 
 class QuestionManagementController
 {
+    use AuthorizesPermissions;
     private QuestionRepository $questionRepository;
 
     public function __construct()
@@ -14,17 +17,10 @@ class QuestionManagementController
         $this->questionRepository = new QuestionRepository();
     }
 
+    #[Permission('admin.questions.view', 'View All Questions')]
     public function index(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.questions.view');
         $questions = $this->questionRepository->findAll();
 
         AdminView::render(
@@ -36,17 +32,10 @@ class QuestionManagementController
         );
     }
 
+    #[Permission('admin.questions.view', 'View All Questions')]
     public function view(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('admin.questions.view');
         $questionId = (int) ($_GET['id'] ?? 0);
 
         if ($questionId <= 0) {

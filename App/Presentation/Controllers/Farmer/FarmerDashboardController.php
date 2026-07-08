@@ -3,10 +3,13 @@
 namespace App\Presentation\Controllers\Farmer;
 
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Presentation\Attributes\Permission;
+use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\FarmerView;
 
 class FarmerDashboardController
 {
+    use AuthorizesPermissions;
     private QuestionRepository $questionRepository;
 
     public function __construct()
@@ -17,17 +20,10 @@ class FarmerDashboardController
     /**
      * Farmer Dashboard
      */
+    #[Permission('farmer.dashboard.view', 'View Farmer Dashboard')]
     public function index(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('farmer.dashboard.view');
         $farmerId = (int) $_SESSION['user']['id'];
 
         $questions = $this->questionRepository->findByFarmer($farmerId);
@@ -65,17 +61,10 @@ class FarmerDashboardController
     /**
      * Show Ask Question Page
      */
+    #[Permission('farmer.questions.ask', 'Ask Question')]
     public function askQuestion(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('farmer.questions.ask');
         $categories = $this->questionRepository->findCategories();
 
         FarmerView::render('farmer/ask-question', [
@@ -87,17 +76,10 @@ class FarmerDashboardController
     /**
      * Question Submitted Page
      */
+    #[Permission('farmer.questions.ask', 'Ask Question')]
     public function submitQuestion(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('farmer.questions.ask');
         FarmerView::render('farmer/question-submitted', [
             'activePage' => 'submit'
         ]);
@@ -106,17 +88,10 @@ class FarmerDashboardController
     /**
      * Total Questions
      */
+    #[Permission('farmer.questions.view', 'View My Questions')]
     public function totalQuestions(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
-            redirect('/access-denied');
-            return;
-        }
-
+        $this->authorize('farmer.questions.view');
         $farmerId = (int) $_SESSION['user']['id'];
 
         $questions = $this->questionRepository->findByFarmer($farmerId);

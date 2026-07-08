@@ -8,7 +8,12 @@ $roles = $roles ?? [];
             <h1 class="text-xl font-black text-slate-900">Role Management</h1>
             <p class="text-sm text-slate-500">Manage user roles under the USER_TYPE category.</p>
         </div>
-        <a href="<?= BASE_URL ?>/admin/roles/create" class="bg-[#15803D] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-green-900 transition">+ Add New Role</a>
+        <div class="flex gap-2">
+            <a href="<?= BASE_URL ?>/admin/permissions/sync" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition">Sync Permissions</a>
+            <?php if (can('admin.roles.create')): ?>
+                <a href="<?= BASE_URL ?>/admin/roles/create" class="bg-[#15803D] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-green-900 transition">+ Add New Role</a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <?php if (!empty($message)): ?>
@@ -24,13 +29,14 @@ $roles = $roles ?? [];
                     <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
                         <th class="pb-4 pl-2">ID</th>
                         <th class="pb-4">Name</th>
+                        <th class="pb-4 text-right pr-2">Permissions</th>
                         <th class="pb-4 text-right pr-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-xs text-slate-700">
                     <?php if (empty($roles)): ?>
                         <tr class="border-b border-slate-50 last:border-0">
-                            <td colspan="3" class="py-8 text-center text-slate-400">No roles found.</td>
+                            <td colspan="4" class="py-8 text-center text-slate-400">No roles found.</td>
                         </tr>
                     <?php else: ?>
                         <?php $i = 1; ?>
@@ -38,6 +44,13 @@ $roles = $roles ?? [];
                             <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition">
                                 <td class="py-5 pl-2 font-bold text-slate-900"><?= $i++ ?></td>
                                 <td class="py-5 font-semibold text-slate-900"><?= htmlspecialchars($role->getLabel()) ?></td>
+                                <td class="py-5 text-right pr-2">
+                                    <div class="flex justify-end">
+                                        <?php if (can('admin.permissions.assign')): ?>
+                                            <a href="<?= BASE_URL ?>/admin/roles/permissions?role_id=<?= $role->getId() ?>" class="text-xs font-bold text-amber-600 hover:text-amber-700 transition">Manage</a>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
                                 <td class="py-5 text-right pr-2">
                                     <div class="flex justify-end gap-3">
                                         <a href="<?= BASE_URL ?>/admin/roles/edit?id=<?= urlencode((string) $role->getId()) ?>" class="text-slate-400 hover:text-amber-600 transition" title="Edit role">
