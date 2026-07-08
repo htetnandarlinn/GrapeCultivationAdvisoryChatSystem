@@ -7,7 +7,7 @@ use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\UserType;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
-use App\Presentation\Views\AdminView;
+use App\Presentation\Views\View;
 
 final class UserManagementController
 {
@@ -18,10 +18,10 @@ final class UserManagementController
         private RoleRepositoryInterface $roleRepo,
     ) {}
 
-    #[Permission('admin.users.view', 'View Users')]
+    #[Permission('users.view', 'View Users')]
     public function index(): void
     {
-        $this->authorize('admin.users.view');
+        $this->authorize('users.view');
 
         if (!isset($_SESSION['admin_name'])) {
             $_SESSION['admin_name'] = $_SESSION['user']['username'] ?? 'Admin';
@@ -35,7 +35,7 @@ final class UserManagementController
 
         $roles = $this->roleRepo->findAll();
 
-        AdminView::render('admin/userManagement', [
+        View::render('admin/userManagement', [
             'activePage' => 'users',
             'allUsers' => $allUsers,
             'farmers' => $farmers,
@@ -46,10 +46,10 @@ final class UserManagementController
         ]);
     }
 
-    #[Permission('admin.users.role', 'Assign User Role')]
+    #[Permission('users.role', 'Assign User Role')]
     public function assignRole(): void
     {
-        $this->authorize('admin.users.role');
+        $this->authorize('users.role');
 
         $userId = (int) ($_POST['user_id'] ?? 0);
         $roleCode = strtolower(trim($_POST['role_code'] ?? ''));

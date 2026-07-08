@@ -6,7 +6,7 @@ use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
 use App\Domain\KnowledgeBase\ValueObjects\ArticleStatus;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
-use App\Presentation\Views\ExpertView;
+use App\Presentation\Views\View;
 
 final class ArticleController
 {
@@ -16,26 +16,26 @@ final class ArticleController
         private ArticleRepositoryInterface $articleRepository,
     ) {}
 
-    #[Permission('expert.articles.view', 'View Articles')]
+    #[Permission('articles.view', 'View Articles')]
     public function index(): void
     {
-        $this->authorize('expert.articles.view');
+        $this->authorize('articles.view');
 
         $authorId = (string) ($_SESSION['user']['id'] ?? 0);
         $articles = $this->articleRepository->findAll((int) $authorId);
 
-        ExpertView::render('expert/manage-articles', [
+        View::render('expert/manage-articles', [
             'activePage' => 'articles',
             'articles' => $articles,
         ]);
     }
 
-    #[Permission('expert.articles.create', 'Create Article')]
+    #[Permission('articles.create', 'Create Article')]
     public function create(): void
     {
-        $this->authorize('expert.articles.create');
+        $this->authorize('articles.create');
 
-        ExpertView::render('expert/article-form', [
+        View::render('expert/article-form', [
             'activePage' => 'articles',
             'mode' => 'create',
             'formAction' => '/expert/articles/store',
@@ -44,10 +44,10 @@ final class ArticleController
         ]);
     }
 
-    #[Permission('expert.articles.create', 'Create Article')]
+    #[Permission('articles.create', 'Create Article')]
     public function store(): void
     {
-        $this->authorize('expert.articles.create');
+        $this->authorize('articles.create');
 
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
@@ -84,10 +84,10 @@ final class ArticleController
         redirect('/expert/articles');
     }
 
-    #[Permission('expert.articles.edit', 'Edit Article')]
+    #[Permission('articles.edit', 'Edit Article')]
     public function edit(): void
     {
-        $this->authorize('expert.articles.edit');
+        $this->authorize('articles.edit');
 
         $id = (int) ($_GET['id'] ?? 0);
         $article = $this->articleRepository->findById($id);
@@ -98,7 +98,7 @@ final class ArticleController
             return;
         }
 
-        ExpertView::render('expert/article-form', [
+        View::render('expert/article-form', [
             'activePage' => 'articles',
             'mode' => 'edit',
             'formAction' => '/expert/articles/update',
@@ -107,10 +107,10 @@ final class ArticleController
         ]);
     }
 
-    #[Permission('expert.articles.edit', 'Edit Article')]
+    #[Permission('articles.edit', 'Edit Article')]
     public function update(): void
     {
-        $this->authorize('expert.articles.edit');
+        $this->authorize('articles.edit');
 
         $id = (int) ($_POST['id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
@@ -150,10 +150,10 @@ final class ArticleController
         redirect('/expert/articles');
     }
 
-    #[Permission('expert.articles.delete', 'Delete Article')]
+    #[Permission('articles.delete', 'Delete Article')]
     public function delete(): void
     {
-        $this->authorize('expert.articles.delete');
+        $this->authorize('articles.delete');
 
         $id = (int) ($_POST['id'] ?? 0);
 

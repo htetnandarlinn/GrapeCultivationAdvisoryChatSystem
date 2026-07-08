@@ -7,7 +7,7 @@ use App\Application\PermissionManagement\PermissionService;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
-use App\Presentation\Views\AdminView;
+use App\Presentation\Views\View;
 
 final class PermissionAssignmentController
 {
@@ -19,10 +19,10 @@ final class PermissionAssignmentController
         private RoleRepositoryInterface $roleRepo,
     ) {}
 
-    #[Permission('admin.permissions.sync', 'Sync Permissions')]
+    #[Permission('permissions.sync', 'Sync Permissions')]
     public function sync(): void
     {
-        $this->authorize('admin.permissions.sync');
+        $this->authorize('permissions.sync');
         $count = $this->registrar->register();
         $_SESSION['role_message'] = $count > 0
             ? "$count new permission(s) registered from code."
@@ -30,10 +30,10 @@ final class PermissionAssignmentController
         redirect('/admin/roles');
     }
 
-    #[Permission('admin.permissions.assign', 'Assign Permissions')]
+    #[Permission('permissions.assign', 'Assign Permissions')]
     public function list(): void
     {
-        $this->authorize('admin.permissions.assign');
+        $this->authorize('permissions.assign');
 
         $roleId = (int) ($_GET['role_id'] ?? 0);
         $role = $this->roleRepo->findById($roleId);
@@ -44,7 +44,7 @@ final class PermissionAssignmentController
             return;
         }
 
-        AdminView::render('admin/permission-assignment', [
+        View::render('admin/permission-assignment', [
             'activePage' => 'roles',
             'role' => $role,
             'permissionGroups' => $this->permissionService->getGroupedPermissions(),
@@ -53,10 +53,10 @@ final class PermissionAssignmentController
         ]);
     }
 
-    #[Permission('admin.permissions.assign', 'Assign Permissions')]
+    #[Permission('permissions.assign', 'Assign Permissions')]
     public function update(): void
     {
-        $this->authorize('admin.permissions.assign');
+        $this->authorize('permissions.assign');
 
         $roleId = (int) ($_POST['role_id'] ?? 0);
         $permissionIds = array_map('intval', $_POST['permissions'] ?? []);

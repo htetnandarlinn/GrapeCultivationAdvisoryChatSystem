@@ -22,9 +22,6 @@ use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
 use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
-use App\Presentation\Controllers\Admin\AdminDashboardController;
-use App\Presentation\Controllers\Admin\ExpertManagementController;
-use App\Presentation\Controllers\Admin\FarmerManagementController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
@@ -36,8 +33,7 @@ use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
-use App\Presentation\Controllers\Farmer\FarmerDashboardController;
-use App\Presentation\Controllers\Expert\ExpertDashboardController;
+
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
@@ -136,13 +132,10 @@ class Router
                     new QuestionRepository($this->db())
                 ),
 
-            FarmerDashboardController::class =>
-                new FarmerDashboardController(
-                    new QuestionRepository($this->db())
-                ),
-
-            ExpertDashboardController::class =>
-                new ExpertDashboardController(
+            DashboardController::class =>
+                new DashboardController(
+                    new UserRepository($this->db()),
+                    new ActivityRepository($this->db()),
                     new QuestionRepository($this->db())
                 ),
 
@@ -185,24 +178,6 @@ class Router
                 new VerifyEmailController(
                     new EmailVerificationRepository($this->db()),
                     new UserRepository($this->db())
-                ),
-
-            AdminDashboardController::class =>
-                new AdminDashboardController(
-                    new UserRepository($this->db()),
-                    new ActivityRepository($this->db())
-                ),
-
-            FarmerManagementController::class =>
-                new FarmerManagementController(
-                    new UserRepository($this->db()),
-                    new ActivityRepository($this->db())
-                ),
-
-            ExpertManagementController::class =>
-                new ExpertManagementController(
-                    new UserRepository($this->db()),
-                    $this->createRegisterUserHandler()
                 ),
 
             ProfileController::class =>
@@ -254,12 +229,4 @@ class Router
         );
     }
 
-    private function createRegisterUserHandler(): RegisterUserHandler
-    {
-        return new RegisterUserHandler(
-            new UserRepository($this->db()),
-            new PHPMailerService(),
-            new ActivityRepository($this->db())
-        );
-    }
 }

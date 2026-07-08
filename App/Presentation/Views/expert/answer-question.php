@@ -76,7 +76,7 @@
                 <div class="flex gap-4">
 
                     <a
-                        href="<?= BASE_URL ?>/expert-dashboard"
+                        href="<?= BASE_URL ?>/dashboard"
                         class="px-6 py-3 rounded-xl bg-gray-300 hover:bg-gray-400">
 
                         Cancel

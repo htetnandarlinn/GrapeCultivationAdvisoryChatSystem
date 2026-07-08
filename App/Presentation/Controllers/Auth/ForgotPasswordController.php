@@ -19,7 +19,7 @@ class ForgotPasswordController
 
     public function showForm(): void
     {
-        View::render('auth/forgot-password', []);
+        View::render('auth/forgot-password', [], '_standalone_');
     }
 
     public function send(): void
@@ -47,11 +47,11 @@ class ForgotPasswordController
         $reset = $this->passwordResetRepo->findByToken($token);
 
         if ($reset === null || $reset->isExpired()) {
-            View::render('auth/invalid-token', []);
+            View::render('auth/invalid-token', [], '_standalone_');
             return;
         }
 
-        View::render('auth/reset-password', ['token' => htmlspecialchars($token)]);
+        View::render('auth/reset-password', ['token' => htmlspecialchars($token)], '_standalone_');
     }
 
     public function reset(): void
@@ -84,7 +84,7 @@ class ForgotPasswordController
         $ok = $this->resetHandler->handle($command);
 
         if (!$ok) {
-            View::render('auth/invalid-token', []);
+            View::render('auth/invalid-token', [], '_standalone_');
             return;
         }
 

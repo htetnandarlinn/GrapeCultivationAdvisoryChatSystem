@@ -17,7 +17,6 @@ final class RegisterRequestValidator
         $address = trim($payload['address'] ?? '');
         $password = (string) ($payload['password'] ?? '');
         $confirmPassword = (string) ($payload['confirm_password'] ?? '');
-        $role = strtolower(trim($payload['role'] ?? ''));
 
         $validator = new Validator();
 
@@ -36,8 +35,7 @@ final class RegisterRequestValidator
             ->required('password', $password)
             ->minLength('password', $password, 8)
             ->required('confirm_password', $confirmPassword)
-            ->match('confirm_password', $confirmPassword, $password)
-            ->required('role', $role);
+            ->match('confirm_password', $confirmPassword, $password);
 
         if ($validator->fails()) {
             throw new ValidationException($validator->getErrors());
@@ -50,19 +48,7 @@ final class RegisterRequestValidator
             phoneNumber: $phone,
             address: $address,
             passwordHash: password_hash($password, PASSWORD_DEFAULT),
-            type: $this->mapRoleToUserType($role)
+            type: UserType::farmer()
         );
-    }
-
-    private function mapRoleToUserType(string $role): UserType
-    {
-        return match ($role) {
-            'farmer' => UserType::farmer(),
-            'expert' => UserType::expert(),
-            'admin' => UserType::admin(),
-            default => throw new ValidationException([
-                'role' => 'Please select a valid role.'
-            ]),
-        };
     }
 }

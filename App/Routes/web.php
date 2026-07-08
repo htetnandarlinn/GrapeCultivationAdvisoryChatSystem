@@ -2,9 +2,6 @@
 
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
-use App\Presentation\Controllers\Admin\AdminDashboardController;
-use App\Presentation\Controllers\Admin\ExpertManagementController;
-use App\Presentation\Controllers\Admin\FarmerManagementController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
@@ -16,8 +13,6 @@ use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
-use App\Presentation\Controllers\Farmer\FarmerDashboardController;
-use App\Presentation\Controllers\Expert\ExpertDashboardController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
@@ -49,24 +44,10 @@ $router->post('/reset-password', [ForgotPasswordController::class, 'reset']);
 
 $router->get('/', [DashboardController::class, 'home']);
 
-/* ================= ADMIN DASHBOARD ================= */
-$router->get('/admin-dashboard', [AdminDashboardController::class, 'index']);
+/* ================= DASHBOARD ================= */
+$router->get('/dashboard', [DashboardController::class, 'index']);
 
 $router->get('/admin/users', [UserManagementController::class, 'index']);
-
-$router->get('/admin/farmers', [FarmerManagementController::class, 'index']);
-$router->get('/admin/farmers/view', [FarmerManagementController::class, 'view']);
-$router->post('/admin/farmers/delete', [FarmerManagementController::class, 'delete']);
-
-$router->get('/admin/experts', [ExpertManagementController::class, 'index']);
-
-$router->get('/admin/experts/create', [ExpertManagementController::class, 'create']);
-$router->post('/admin/experts/store', [ExpertManagementController::class, 'store']);
-$router->get('/admin/experts/edit', [ExpertManagementController::class, 'edit']);
-$router->post('/admin/experts/update', [ExpertManagementController::class, 'update']);
-
-$router->get('/admin/experts/view', [ExpertManagementController::class, 'view']);
-$router->post('/admin/experts/delete', [ExpertManagementController::class, 'delete']);
 
 $router->get('/admin/roles', [RoleController::class, 'index']);
 $router->get('/admin/roles/create', [RoleController::class, 'create']);
@@ -83,18 +64,12 @@ $router->post('/admin/roles/permissions/update', [PermissionAssignmentController
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
-/* ================= FARMER DASHBOARD ================= */
-
-$router->get('/farmer-dashboard', [FarmerDashboardController::class, 'index']);
-
-$router->get('/farmer-dashboard/total-questions', [FarmerDashboardController::class, 'totalQuestions']);
+$router->get('/farmer-dashboard/total-questions', [DashboardController::class, 'totalQuestions']);
 
 $router->get('/admin/questions', [QuestionManagementController::class, 'index']);
 
 $router->get(  '/admin/questions/view', [QuestionManagementController::class, 'view']);
 
-
-$router->get( '/expert-dashboard',[ExpertDashboardController::class,'index']);
 
 $router->post('/expert/questions/answer', [AnswerQuestionController::class, 'store']);
 
@@ -115,7 +90,7 @@ $router->post('/expert/articles/delete', [ArticleController::class, 'delete']);
 /* Ask Question */
 $router->get(
     '/farmer-dashboard/ask-question',
-    [FarmerDashboardController::class, 'askQuestion']
+    [DashboardController::class, 'askQuestion']
 );
 
 $router->post(
@@ -126,7 +101,7 @@ $router->post(
 /* Question Submitted Confirmation */
 $router->get(
     '/farmer-dashboard/question-submitted',
-    [FarmerDashboardController::class, 'submitQuestion']
+    [DashboardController::class, 'submitQuestion']
 );
 
 /* ================= PROFILE ================= */

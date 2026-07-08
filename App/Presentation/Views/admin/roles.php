@@ -6,11 +6,11 @@ $roles = $roles ?? [];
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 class="text-xl font-black text-slate-900">Role Management</h1>
-            <p class="text-sm text-slate-500">Manage user roles under the USER_TYPE category.</p>
+            <p class="text-sm text-slate-500">Manage user roles and their permissions.</p>
         </div>
         <div class="flex gap-2">
             <a href="<?= BASE_URL ?>/admin/permissions/sync" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition">Sync Permissions</a>
-            <?php if (can('admin.roles.create')): ?>
+            <?php if (can('roles.create')): ?>
                 <a href="<?= BASE_URL ?>/admin/roles/create" class="bg-[#15803D] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-green-900 transition">+ Add New Role</a>
             <?php endif; ?>
         </div>
@@ -46,19 +46,19 @@ $roles = $roles ?? [];
                                     <td class="py-5 font-semibold text-slate-900"><?= htmlspecialchars($role->getLabel()) ?></td>
                                     <td class="py-5 text-right pr-2">
                                         <div class="flex justify-end">
-                                            <?php if (can('admin.permissions.assign')): ?>
+                                            <?php if (can('permissions.assign')): ?>
                                                 <a href="<?= BASE_URL ?>/admin/roles/permissions?role_id=<?= $role->getId() ?>" class="text-xs font-bold text-amber-600 hover:text-amber-700 transition">Manage</a>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     <td class="py-5 text-right pr-2">
                                         <div class="flex justify-end gap-3">
-                                            <?php if (can('admin.roles.edit')): ?>
+                                            <?php if (can('roles.edit')): ?>
                                                 <a href="<?= BASE_URL ?>/admin/roles/edit?id=<?= urlencode((string) $role->getId()) ?>" class="text-slate-400 hover:text-amber-600 transition" title="Edit role">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                 </a>
                                             <?php endif; ?>
-                                            <?php if (can('admin.roles.delete')): ?>
+                                            <?php if (can('roles.delete')): ?>
                                                 <form action="<?= BASE_URL ?>/admin/roles/delete" method="POST" class="inline-block" onsubmit="return confirm('Delete this role?');">
                                                     <input type="hidden" name="id" value="<?= htmlspecialchars($role->getId()) ?>">
                                                     <button type="submit" class="text-slate-400 hover:text-red-600 transition" title="Delete role">

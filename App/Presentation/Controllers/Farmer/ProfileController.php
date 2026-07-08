@@ -8,7 +8,7 @@ use App\Application\UserManagement\UpdateProfile\UpdateProfileRequestValidator;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
-use App\Presentation\Views\farmerView;
+use App\Presentation\Views\View;
 
 class ProfileController
 {
@@ -19,10 +19,10 @@ class ProfileController
         private UpdateProfileHandler $updateHandler,
     ) {}
 
-    #[Permission('farmer.profile.view', 'View Profile')]
+    #[Permission('profile.view', 'View Profile')]
     public function profile(): void
     {
-        $this->authorize('farmer.profile.view');
+        $this->authorize('profile.view');
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
@@ -37,15 +37,15 @@ class ProfileController
             exit;
         }
 
-        farmerView::render('farmer/profile', [
+        View::render('farmer/profile', [
             'user' => $user
         ]);
     }
 
-    #[Permission('farmer.profile.edit', 'Edit Profile')]
+    #[Permission('profile.edit', 'Edit Profile')]
     public function edit(): void
     {
-        $this->authorize('farmer.profile.edit');
+        $this->authorize('profile.edit');
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
@@ -54,15 +54,15 @@ class ProfileController
 
         $user = $this->repository->findById($_SESSION['user_id']);
 
-        farmerView::render('farmer/update-profile', [
+        View::render('farmer/update-profile', [
             'user' => $user
         ]);
     }
 
-    #[Permission('farmer.profile.edit', 'Edit Profile')]
+    #[Permission('profile.edit', 'Edit Profile')]
     public function update(): void
     {
-        $this->authorize('farmer.profile.edit');
+        $this->authorize('profile.edit');
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
