@@ -28,5 +28,14 @@ final class ArticleStatus
     {
         return $this->value;
     }
+
+    public static function fromValue(string $value): self
+    {
+        return match ($value) {
+            self::DRAFT => self::draft(),
+            self::PUBLISHED => self::published(),
+            default => throw new \InvalidArgumentException("Unknown article status: {$value}"),
+        };
+    }
 }
 

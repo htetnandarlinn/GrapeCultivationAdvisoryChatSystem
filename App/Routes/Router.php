@@ -39,8 +39,9 @@ use App\Presentation\Controllers\Dashboard\DashboardController;
 use App\Presentation\Controllers\Farmer\FarmerDashboardController;
 use App\Presentation\Controllers\Expert\ExpertDashboardController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
-use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
+use App\Presentation\Controllers\Expert\ArticleController;
+use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Shared\Infrastructure\Database\Database;
 
 class Router
@@ -143,6 +144,11 @@ class Router
             ExpertDashboardController::class =>
                 new ExpertDashboardController(
                     new QuestionRepository($this->db())
+                ),
+
+            ArticleController::class =>
+                new ArticleController(
+                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
                 ),
 
             RoleController::class =>

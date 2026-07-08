@@ -100,7 +100,7 @@ $tab = $_GET['tab'] ?? 'all';
                                     </div>
                                 </td>
                                 <td class="py-5 text-right pr-2">
-                                    <button onclick="openRoleModal(<?= $uid ?>, '<?= htmlspecialchars($roleVal) ?>')" class="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100 transition">
+                                    <button onclick="openRoleModal(<?= $uid ?>, '<?= htmlspecialchars($roleVal) ?>', '<?= htmlspecialchars($user->getUsername()) ?>')" class="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100 transition">
                                         Manage
                                     </button>
                                 </td>
@@ -115,12 +115,13 @@ $tab = $_GET['tab'] ?? 'all';
 
 <div id="roleModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/50 mx-4">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-2">
             <h2 class="text-lg font-black text-slate-900">Change User Role</h2>
             <button onclick="closeRoleModal()" class="text-slate-400 hover:text-slate-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
+        <p class="text-sm text-slate-500 mb-6" id="modalUserInfo"></p>
         <form action="<?= BASE_URL ?>/admin/users/role" method="POST">
             <input type="hidden" name="user_id" id="modalUserId" value="">
             <div class="space-y-3">
@@ -143,10 +144,11 @@ $tab = $_GET['tab'] ?? 'all';
 </div>
 
 <script>
-function openRoleModal(userId, currentRole) {
+function openRoleModal(userId, currentRole, userName) {
     document.getElementById('modalUserId').value = userId;
+    document.getElementById('modalUserInfo').textContent = userName + ' (Current: ' + currentRole + ')';
     document.querySelectorAll('#roleModal input[name="role_code"]').forEach(r => {
-        r.checked = r.value === currentRole;
+        r.checked = r.value.toLowerCase() === currentRole.toLowerCase();
     });
     document.getElementById('roleModal').classList.remove('hidden');
     document.getElementById('roleModal').classList.add('flex');
