@@ -8,8 +8,12 @@ use App\Presentation\Controllers\Admin\FarmerManagementController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
+use App\Presentation\Controllers\Admin\UserManagementController;
 use App\Presentation\Controllers\Auth\AuthController;
 use App\Presentation\Controllers\Auth\ForgotPasswordController;
+use App\Presentation\Controllers\Auth\LoginRequestValidator;
+use App\Presentation\Controllers\Auth\RegisterRequestValidator;
+use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
 use App\Presentation\Controllers\Farmer\FarmerDashboardController;
@@ -46,6 +50,9 @@ $router->get('/', [DashboardController::class, 'home']);
 
 /* ================= ADMIN DASHBOARD ================= */
 $router->get('/admin-dashboard', [AdminDashboardController::class, 'index']);
+
+$router->get('/admin/users', [UserManagementController::class, 'index']);
+
 $router->get('/admin/farmers', [FarmerManagementController::class, 'index']);
 $router->get('/admin/farmers/view', [FarmerManagementController::class, 'view']);
 $router->post('/admin/farmers/delete', [FarmerManagementController::class, 'delete']);
@@ -66,6 +73,8 @@ $router->post('/admin/roles/store', [RoleController::class, 'store']);
 $router->get('/admin/roles/edit', [RoleController::class, 'edit']);
 $router->post('/admin/roles/update', [RoleController::class, 'update']);
 $router->post('/admin/roles/delete', [RoleController::class, 'delete']);
+
+$router->post('/admin/users/role', [UserManagementController::class, 'assignRole']);
 
 $router->get('/admin/permissions/sync', [PermissionAssignmentController::class, 'sync']);
 $router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list']);

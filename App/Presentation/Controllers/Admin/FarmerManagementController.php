@@ -2,21 +2,20 @@
 
 namespace App\Presentation\Controllers\Admin;
 
-use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
-use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 
 class FarmerManagementController
 {
     use AuthorizesPermissions;
-    private UserRepository $userRepository;
 
-    public function __construct()
-    {
-        $this->userRepository = new UserRepository();
-    }
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private ActivityRepositoryInterface $activityRepository,
+    ) {}
 
     #[Permission('admin.farmers.view', 'View Farmers')]
     public function index(): void
@@ -39,37 +38,35 @@ class FarmerManagementController
 
    #[Permission('admin.farmers.delete', 'Delete Farmer')]
     public function delete(): void
-{
-    $this->authorize('admin.farmers.delete');
+    {
+        $this->authorize('admin.farmers.delete');
 
-    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+        $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
-    if ($id <= 0) {
+        if ($id <= 0) {
+            redirect('/admin/farmers');
+            return;
+        }
+
+        $farmer = $this->userRepository->findById($id);
+
+        if ($farmer === null) {
+            redirect('/admin/farmers');
+            return;
+        }
+
+        $this->userRepository->deleteById($id);
+
+        $this->activityRepository->logActivity(
+            'Administrator deleted farmer "' . $farmer->getUsername() . '".',
+            $_SESSION['user']['id'] ?? null,
+            'ADMIN'
+        );
+
+        $_SESSION['admin_message'] = 'Farmer record deleted successfully.';
+
         redirect('/admin/farmers');
-        return;
     }
-
-    $farmer = $this->userRepository->findById($id);
-
-    if ($farmer === null) {
-        redirect('/admin/farmers');
-        return;
-    }
-
-    $this->userRepository->deleteById($id);
-
-    $activityRepository = new ActivityRepository();
-
-    $activityRepository->logActivity(
-        'Administrator deleted farmer "' . $farmer->getUsername() . '".',
-        $_SESSION['user']['id'] ?? null,
-        'ADMIN'
-    );
-
-    $_SESSION['admin_message'] = 'Farmer record deleted successfully.';
-
-    redirect('/admin/farmers');
-}
 
     #[Permission('admin.farmers.view', 'View Farmers')]
     public function view(): void

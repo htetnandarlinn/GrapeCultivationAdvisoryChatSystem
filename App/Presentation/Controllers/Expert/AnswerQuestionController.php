@@ -2,19 +2,17 @@
 
 namespace App\Presentation\Controllers\Expert;
 
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 
 class AnswerQuestionController
 {
     use AuthorizesPermissions;
-    private QuestionRepository $questionRepository;
 
-    public function __construct()
-    {
-        $this->questionRepository = new QuestionRepository();
-    }
+    public function __construct(
+        private QuestionRepositoryInterface $questionRepository,
+    ) {}
 
     #[Permission('expert.questions.answer', 'Answer Question')]
     public function store(): void
@@ -23,7 +21,6 @@ class AnswerQuestionController
         $questionId = (int) ($_POST['question_id'] ?? 0);
         $answer = trim($_POST['answer'] ?? '');
 
-        // Correct session key
         $expertId = (int) ($_SESSION['user']['id'] ?? 0);
 
         if ($expertId <= 0) {

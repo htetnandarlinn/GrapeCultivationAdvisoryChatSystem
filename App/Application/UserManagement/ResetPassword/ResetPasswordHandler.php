@@ -2,20 +2,16 @@
 
 namespace App\Application\UserManagement\ResetPassword;
 
-use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
+use App\Domain\UserManagement\Repositories\PasswordResetRepositoryInterface;
 
 final class ResetPasswordHandler
 {
-    public function __construct()
-    {
-        $this->passwordResetRepository = new PasswordResetRepository();
-        $this->userRepository = new UserRepository();
-    }
+    public function __construct(
+        private PasswordResetRepositoryInterface $passwordResetRepository,
+        private UserRepositoryInterface $userRepository,
+    ) {}
 
-    /**
-     * Returns true on success, false on failure (invalid token)
-     */
     public function handle(ResetPasswordCommand $command): bool
     {
         $token = trim($command->token);
@@ -38,7 +34,6 @@ final class ResetPasswordHandler
 
         $this->userRepository->update($user);
 
-        // Remove used token
         $this->passwordResetRepository->deleteByUserId($user->getId());
 
         return true;

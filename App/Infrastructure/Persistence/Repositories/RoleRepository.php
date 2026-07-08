@@ -4,16 +4,12 @@ namespace App\Infrastructure\Persistence\Repositories;
 
 use App\Domain\RoleManagement\Entities\Role;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
-use App\Shared\Infrastructure\Database\Database;
 use PDO;
 
 final class RoleRepository implements RoleRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 

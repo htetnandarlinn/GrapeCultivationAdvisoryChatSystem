@@ -2,8 +2,8 @@
 
 namespace App\Presentation\Controllers\Admin;
 
-use App\Infrastructure\Persistence\Repositories\ActivityRepository;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
@@ -11,6 +11,11 @@ use App\Presentation\Views\AdminView;
 class AdminDashboardController
 {
     use AuthorizesPermissions;
+
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private ActivityRepositoryInterface $activityRepository,
+    ) {}
 
     #[Permission('admin.dashboard.view', 'View Admin Dashboard')]
     public function index(): void
@@ -28,16 +33,11 @@ class AdminDashboardController
             $_SESSION['admin_name'] = $_SESSION['user']['username'] ?? 'Admin';
         }
 
-        // Get dashboard statistics
-        $userRepository = new UserRepository();
-        $farmerCount = $userRepository->countFarmers();
-        $expertCount = $userRepository->countExperts();
+        $farmerCount = $this->userRepository->countFarmers();
+        $expertCount = $this->userRepository->countExperts();
 
-        // Get recent system activities
-        $activityRepository = new ActivityRepository();
-        $activities = $activityRepository->getRecentActivities(8);
+        $activities = $this->activityRepository->getRecentActivities(8);
 
-        // Render dashboard
         AdminView::render('admin/admin-dashboard', [
             'activePage'   => 'dashboard',
             'farmerCount'  => $farmerCount,

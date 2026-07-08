@@ -2,21 +2,20 @@
 
 namespace App\Application\UserManagement\RegisterUser;
 
-use App\Domain\UserManagement\Entities\EmailVerification;
+use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Domain\UserManagement\Entities\User;
-use App\Domain\UserManagement\Repositories\EmailVerificationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\Email;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
 use App\Infrastructure\Mail\MailServiceInterface;
-use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Shared\Exceptions\ValidationException;
 
 final class RegisterUserHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private MailServiceInterface $mailService
+        private MailServiceInterface $mailService,
+        private ActivityRepositoryInterface $activityRepository,
     ) {}
 
     public function handle(RegisterUserCommand $command): void
@@ -35,11 +34,6 @@ final class RegisterUserHandler
             throw new ValidationException($errors);
         }
 
-        /*
-         * |--------------------------------------------------------------------------
-         * | Save User (Pending)
-         * |--------------------------------------------------------------------------
-         */
         $token = bin2hex(random_bytes(32));
 
         $user = new User(
@@ -60,57 +54,24 @@ final class RegisterUserHandler
 
         $this->userRepository->save($user);
 
-
-        /*
-         * |--------------------------------------------------------------------------
-         * | Log System Activity
-         * |--------------------------------------------------------------------------
-         */
-
         $role = ucfirst($user->getType()->getValue());
 
-        $activityRepository = new ActivityRepository();
-
-        $activityRepository->logActivity(
+        $this->activityRepository->logActivity(
             $role . ' "' . $user->getUsername() . '" registered successfully.',
             $user->getId(),
             strtoupper($user->getType()->getValue())
         );
 
-        $activityRepository->logActivity(
+        $this->activityRepository->logActivity(
             'A new ' . strtolower($role) . ' account has been registered successfully.',
             $user->getId(),
             strtoupper($user->getType()->getValue())
         );
 
-        /*
-         * |--------------------------------------------------------------------------
-         * | Generate Token
-         * |--------------------------------------------------------------------------
-         */
-
-        /*
-         * |--------------------------------------------------------------------------
-         * | Save Verification Record
-         * |--------------------------------------------------------------------------
-         */
-
-        /*
-         * |--------------------------------------------------------------------------
-         * | Build Verification URL
-         * |--------------------------------------------------------------------------
-         */
-
         $verificationLink =
             APP_URL
             . '/verify-email?token='
             . urlencode($token);
-
-        /*
-         * |--------------------------------------------------------------------------
-         * | Send Email
-         * |--------------------------------------------------------------------------
-         */
 
         $this->mailService->sendVerificationEmail(
             $user->getEmail()->getValue(),

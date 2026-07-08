@@ -4,16 +4,11 @@ namespace App\Presentation\Controllers\Auth;
 
 use App\Application\UserManagement\LoginUser\LoginUserHandler;
 use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
-use App\Domain\PermissionManagement\Repositories\PermissionRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\Entities\User;
-use App\Domain\UserManagement\Services\UserAuthenticationService;
-use App\Domain\UserManagement\ValueObjects\UserStatus;
-use App\Infrastructure\Mail\PHPMailerService;
-use App\Infrastructure\Persistence\Repositories\ActivityRepository;
-use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PermissionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Views\View;
@@ -21,30 +16,16 @@ use App\Shared\Exceptions\ValidationException;
 
 final class AuthController
 {
-    private RegisterUserHandler $registerHandler;
-    private LoginUserHandler $loginHandler;
-    private RegisterRequestValidator $registerValidator;
-    private LoginRequestValidator $loginValidator;
-    private UserRepository $userRepository;
-
-    public function __construct()
-    {
-        $this->userRepository = new UserRepository();
-
-        $mailService = new PHPMailerService();
-
-        $this->registerHandler = new RegisterUserHandler(
-            $this->userRepository,
-            $mailService
-        );
-        $this->loginHandler = new LoginUserHandler(
-            new AuthRepository($this->userRepository),
-            new UserAuthenticationService()
-        );
-
-        $this->registerValidator = new RegisterRequestValidator();
-        $this->loginValidator = new LoginRequestValidator();
-    }
+    public function __construct(
+        private RegisterUserHandler $registerHandler,
+        private LoginUserHandler $loginHandler,
+        private RegisterRequestValidator $registerValidator,
+        private LoginRequestValidator $loginValidator,
+        private UserRepositoryInterface $userRepository,
+        private ActivityRepositoryInterface $activityRepository,
+        private RoleRepository $roleRepo,
+        private PermissionRepository $permRepo,
+    ) {}
 
     public function showRegister()
     {
@@ -93,26 +74,21 @@ final class AuthController
             $user->setUpdatedAt($this->nowInMyanmarTime());
             $this->userRepository->update($user);
 
-            // Keep existing session variables
             $_SESSION['user_id'] = $user->getId();
             $_SESSION['user_role'] = $user->getType()->getValue();
 
-            // Load permissions for non-admin roles
             if ($user->getType()->getValue() !== 'admin') {
                 $_SESSION['user_permissions'] = $this->loadUserPermissions($user->getType()->getValue());
             }
 
-            // Session array for topbar/dashboard
             $_SESSION['user'] = [
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
                 'role' => ucfirst($user->getType()->getValue()),
                 'avatar' => $user->getProfileImage()
             ];
-            
-            $activityRepository = new ActivityRepository();
 
-            $activityRepository->logActivity(
+            $this->activityRepository->logActivity(
                 ucfirst($user->getType()->getValue())
                     . ' "'
                     . $user->getUsername()
@@ -186,7 +162,7 @@ final class AuthController
             return;
         }
 
-        $user->setStatus(UserStatus::active());
+        $user->setStatus(\App\Domain\UserManagement\ValueObjects\UserStatus::active());
         $user->setVerified(true);
         $user->setVerificationToken(null);
         $user->setVerificationTokenExpireAt(null);
@@ -199,20 +175,15 @@ final class AuthController
 
     private function nowInMyanmarTime(): \DateTimeImmutable
     {
-        $dateTime = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Yangon'));
-
-        return $dateTime;
+        return new \DateTimeImmutable('now', new \DateTimeZone('Asia/Yangon'));
     }
 
     private function loadUserPermissions(string $roleCode): array
     {
-        $roleRepo = new RoleRepository();
-        $permRepo = new PermissionRepository();
-
-        $roles = $roleRepo->findAll();
+        $roles = $this->roleRepo->findAll();
         foreach ($roles as $role) {
             if ($role->getCode() === $roleCode) {
-                $permissions = $permRepo->findPermissionsByUserTypeId($role->getId());
+                $permissions = $this->permRepo->findPermissionsByUserTypeId($role->getId());
                 return array_map(fn($p) => $p->getKey(), $permissions);
             }
         }

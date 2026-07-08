@@ -38,10 +38,10 @@ $currentPage = $activePage ?? 'dashboard';
             </a>
             <?php endif; ?>
 
-            <?php if (can('admin.farmers.view')): ?>
-            <a href="<?= BASE_URL ?>/admin/farmers"
+            <?php if (can('admin.users.view')): ?>
+            <a href="<?= BASE_URL ?>/admin/users"
                class="group flex items-center gap-3 rounded-3xl border px-4 py-3 text-sm font-semibold transition-all duration-200
-               <?= $currentPage === 'farmers'
+               <?= $currentPage === 'users'
      ? 'bg-[#15803D] text-white border-transparent shadow-lg shadow-[#0f5f2d]/15'
      : 'border-slate-200 text-slate-700 hover:border-[#15803D] hover:bg-[#ECFDF5] hover:text-[#15803D]' ?>">
                 <span class="flex h-11 w-11 items-center justify-center rounded-3xl bg-slate-100 text-[#15803D] transition duration-300 group-hover:bg-[#d1fae5]">
@@ -49,22 +49,7 @@ $currentPage = $activePage ?? 'dashboard';
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 </span>
-                Farmer Management
-            </a>
-            <?php endif; ?>
-
-            <?php if (can('admin.experts.view')): ?>
-            <a href="<?= BASE_URL ?>/admin/experts"
-               class="group flex items-center gap-3 rounded-3xl border px-4 py-3 text-sm font-semibold transition-all duration-200
-               <?= $currentPage === 'experts'
-     ? 'bg-[#15803D] text-white border-transparent shadow-lg shadow-[#0f5f2d]/15'
-     : 'border-slate-200 text-slate-700 hover:border-[#15803D] hover:bg-[#ECFDF5] hover:text-[#15803D]' ?>">
-                <span class="flex h-11 w-11 items-center justify-center rounded-3xl bg-slate-100 text-[#15803D] transition duration-300 group-hover:bg-[#d1fae5]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                </span>
-                Expert Management
+                User Management
             </a>
             <?php endif; ?>
 
