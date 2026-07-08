@@ -21,11 +21,32 @@ try {
     echo "Register validator: DID NOT THROW (unexpected)\n";
     exit(1);
 } catch (ValidationException $e) {
-    $errors = json_decode($e->getMessage(), true);
+    $errors = $e->getErrors();
     if (!is_array($errors) || !isset($errors['username'], $errors['email'], $errors['password'], $errors['confirm_password'])) {
         echo "Register validator: missing expected field errors\n";
         exit(1);
     }
+}
+
+$validEmailPayload = [
+    'username' => 'validuser',
+    'email' => ' htetnandarlinn14@gmail.com ',
+    'phone' => '09123456789',
+    'address' => 'Yangon',
+    'password' => 'Pass1234',
+    'confirm_password' => 'Pass1234',
+    'role' => 'farmer',
+];
+
+try {
+    $command = $registerValidator->validate($validEmailPayload);
+    if ($command->email !== 'htetnandarlinn14@gmail.com') {
+        echo "Register validator: email was not normalized correctly\n";
+        exit(1);
+    }
+} catch (ValidationException $e) {
+    echo "Register validator: whitespace-padded email should be accepted\n";
+    exit(1);
 }
 
 $invalidLoginPayload = [
@@ -39,7 +60,8 @@ try {
     echo "Login validator: DID NOT THROW (unexpected)\n";
     exit(1);
 } catch (ValidationException $e) {
-    if (stripos($e->getMessage(), 'Username or Email is required.') === false) {
+    $errors = $e->getErrors();
+    if (($errors['username_or_email'] ?? '') !== 'Username or email is required.') {
         echo "Login validator: expected username/email required message\n";
         exit(1);
     }

@@ -9,14 +9,14 @@ use App\Shared\Exceptions\ValidationException;
 
 final class RegisterRequestValidator
 {
-    public function validate(array $payload): RegisterUserCommand 
+    public function validate(array $payload): RegisterUserCommand
     {
         $username = trim($payload['username'] ?? '');
         $email = trim($payload['email'] ?? '');
         $phone = trim($payload['phone'] ?? '');
         $address = trim($payload['address'] ?? '');
-        $password = (string)($payload['password'] ?? '');
-        $confirmPassword = (string)($payload['confirm_password'] ?? '');
+        $password = (string) ($payload['password'] ?? '');
+        $confirmPassword = (string) ($payload['confirm_password'] ?? '');
         $role = strtolower(trim($payload['role'] ?? ''));
 
         $validator = new Validator();
@@ -24,22 +24,19 @@ final class RegisterRequestValidator
         $validator
             ->required('username', $username)
             ->minLength('username', $username, 3)
-
             ->required('email', $email)
             ->email('email', $email)
-
+            
             ->required('phone', $phone)
             ->digits('phone', $phone)
             ->lengthBetween('phone', $phone, 11, 11)
+            ->myanmarPhone('phone', $phone)
 
             ->required('address', $address)
-
             ->required('password', $password)
             ->minLength('password', $password, 8)
-
             ->required('confirm_password', $confirmPassword)
             ->match('confirm_password', $confirmPassword, $password)
-
             ->required('role', $role);
 
         if ($validator->fails()) {

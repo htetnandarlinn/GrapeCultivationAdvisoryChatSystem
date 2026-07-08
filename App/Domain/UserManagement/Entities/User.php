@@ -12,8 +12,6 @@ final class User
 
     private string $username;
 
-    private string $name;
-
     private Email $email;
 
     private string $phoneNumber;
@@ -27,6 +25,16 @@ final class User
     private UserType $type;
 
     private UserStatus $status;
+
+    private bool $isVerified;
+
+    private bool $isLogin;
+
+    private ?string $verificationToken;
+
+    private ?\DateTimeImmutable $verificationTokenExpireAt;
+
+    private ?\DateTimeImmutable $emailVerifiedAt;
 
     private \DateTimeImmutable $createdAt;
 
@@ -43,7 +51,12 @@ final class User
         string $passwordHash,
         UserType $type,
         UserStatus $status,
+        bool $isVerified = false,
+        bool $isLogin = false,
         ?string $profileImage = null,
+        ?string $verificationToken = null,
+        ?\DateTimeImmutable $verificationTokenExpireAt = null,
+        ?\DateTimeImmutable $emailVerifiedAt = null,
         ?\DateTimeImmutable $createdAt = null,
         ?\DateTimeImmutable $updatedAt = null,
         ?\DateTimeImmutable $deletedAt = null
@@ -56,10 +69,24 @@ final class User
         $this->passwordHash = $passwordHash;
         $this->type = $type;
         $this->status = $status;
+        $this->isVerified = $isVerified;
+        $this->isLogin = $isLogin;
         $this->profileImage = $profileImage;
+        $this->verificationToken = $verificationToken;
+        $this->verificationTokenExpireAt = $verificationTokenExpireAt;
+        $this->emailVerifiedAt = $emailVerifiedAt;
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
         $this->updatedAt = $updatedAt;
         $this->deletedAt = $deletedAt;
+    }
+
+    /* ===========================
+       ID
+    =========================== */
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function setId(int $id): void
@@ -67,14 +94,10 @@ final class User
         $this->id = $id;
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    /* ===========================
+       Username
+    =========================== */
 
-    /**
-     * Username
-     */
     public function getUsername(): string
     {
         return $this->username;
@@ -85,28 +108,25 @@ final class User
         $this->username = trim($username);
     }
 
-    public function setName(string $name): void
-    {
-        $this->name = trim($name);
-    }
+    /* ===========================
+       Email
+    =========================== */
 
-    /**
-     * Email
-     */
     public function getEmail(): Email
     {
         return $this->email;
     }
 
-    /**
-     * Phone
-     */
-    public function getPhoneNumber(): string
+    public function setEmail(Email $email): void
     {
-        return $this->phoneNumber;
+        $this->email = $email;
     }
 
-    public function getPhone(): string
+    /* ===========================
+       Phone
+    =========================== */
+
+    public function getPhoneNumber(): string
     {
         return $this->phoneNumber;
     }
@@ -116,9 +136,10 @@ final class User
         $this->phoneNumber = trim($phoneNumber);
     }
 
-    /**
-     * Address
-     */
+    /* ===========================
+       Address
+    =========================== */
+
     public function getAddress(): string
     {
         return $this->address;
@@ -129,30 +150,18 @@ final class User
         $this->address = trim($address);
     }
 
-    /**
-     * Profile Image
-     */
-    public function getProfileImage(): ?string
-    {
-        return $this->profileImage;
-    }
+    /* ===========================
+       Password
+    =========================== */
 
-    public function setProfileImage(?string $profileImage): void
-    {
-        $this->profileImage = $profileImage;
-    }
-
-    /**
-     * Password
-     */
     public function getPasswordHash(): string
     {
         return $this->passwordHash;
     }
 
-    public function setPasswordHash(string $passwordHash): void
+    public function setPasswordHash(string $hash): void
     {
-        $this->passwordHash = $passwordHash;
+        $this->passwordHash = $hash;
     }
 
     public function verifyPassword(string $password): bool
@@ -160,9 +169,24 @@ final class User
         return password_verify($password, $this->passwordHash);
     }
 
-    /**
-     * User Type
-     */
+    /* ===========================
+       Profile Image
+    =========================== */
+
+    public function getProfileImage(): ?string
+    {
+        return $this->profileImage;
+    }
+
+    public function setProfileImage(?string $image): void
+    {
+        $this->profileImage = $image;
+    }
+
+    /* ===========================
+       User Type
+    =========================== */
+
     public function getType(): UserType
     {
         return $this->type;
@@ -173,9 +197,10 @@ final class User
         $this->type = $type;
     }
 
-    /**
-     * Status
-     */
+    /* ===========================
+       Status
+    =========================== */
+
     public function getStatus(): UserStatus
     {
         return $this->status;
@@ -188,12 +213,71 @@ final class User
 
     public function isActive(): bool
     {
-        return strtolower($this->status->getValue()) === 'active';
+        return $this->status->isActive();
     }
 
-    /**
-     * Dates
-     */
+    /* ===========================
+       Verification
+    =========================== */
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $verified): void
+    {
+        $this->isVerified = $verified;
+    }
+
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+
+    public function setVerificationToken(?string $token): void
+    {
+        $this->verificationToken = $token;
+    }
+
+    public function getVerificationTokenExpireAt(): ?\DateTimeImmutable
+    {
+        return $this->verificationTokenExpireAt;
+    }
+
+    public function setVerificationTokenExpireAt(?\DateTimeImmutable $expire): void
+    {
+        $this->verificationTokenExpireAt = $expire;
+    }
+
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerifiedAt;
+    }
+
+    public function setEmailVerifiedAt(?\DateTimeImmutable $date): void
+    {
+        $this->emailVerifiedAt = $date;
+    }
+
+    /* ===========================
+       Login
+    =========================== */
+
+    public function isLogin(): bool
+    {
+        return $this->isLogin;
+    }
+
+    public function setLogin(bool $login): void
+    {
+        $this->isLogin = $login;
+    }
+
+    /* ===========================
+       Dates
+    =========================== */
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
@@ -204,7 +288,7 @@ final class User
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
     }
