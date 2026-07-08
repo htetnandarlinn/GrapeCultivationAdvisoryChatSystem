@@ -6,6 +6,7 @@ use App\Presentation\Controllers\Admin\AdminDashboardController;
 use App\Presentation\Controllers\Admin\ExpertManagementController;
 use App\Presentation\Controllers\Admin\FarmerManagementController;
 use App\Presentation\Controllers\Admin\QuestionManagementController;
+use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Auth\AuthController;
 use App\Presentation\Controllers\Auth\ForgotPasswordController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
@@ -57,6 +58,13 @@ $router->post('/admin/experts/update', [ExpertManagementController::class, 'upda
 
 $router->get('/admin/experts/view', [ExpertManagementController::class, 'view']);
 $router->post('/admin/experts/delete', [ExpertManagementController::class, 'delete']);
+
+$router->get('/admin/roles', [RoleController::class, 'index']);
+$router->get('/admin/roles/create', [RoleController::class, 'create']);
+$router->post('/admin/roles/store', [RoleController::class, 'store']);
+$router->get('/admin/roles/edit', [RoleController::class, 'edit']);
+$router->post('/admin/roles/update', [RoleController::class, 'update']);
+$router->post('/admin/roles/delete', [RoleController::class, 'delete']);
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
