@@ -2,21 +2,16 @@
 
 namespace App\Infrastructure\Persistence\Repositories;
 
+use App\Domain\UserManagement\Repositories\PasswordResetRepositoryInterface;
 use PDO;
 use App\Domain\UserManagement\Entities\PasswordReset;
-use App\Shared\Infrastructure\Database\Database;
 
-final class PasswordResetRepository
+final class PasswordResetRepository implements PasswordResetRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
-        // Ensure the password_resets table exists to avoid runtime errors
-        $this->ensureTableExists();
     }
 
     public function save(PasswordReset $reset): void
@@ -83,27 +78,5 @@ final class PasswordResetRepository
         $sql = "DELETE FROM password_resets WHERE user_id = :user_id";
         $stmt = $this->connection->prepare($sql);
         $stmt->execute([':user_id' => $userId]);
-    }
-
-    private function ensureTableExists(): void
-    {
-        $sql = "
-            CREATE TABLE IF NOT EXISTS password_resets (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              user_id INT NOT NULL,
-              token VARCHAR(128) NOT NULL,
-              expires_at DATETIME NOT NULL,
-              created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              INDEX (token(64)),
-              INDEX (user_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        ";
-
-        try {
-            $this->connection->exec($sql);
-        } catch (\Throwable $e) {
-            // Log and continue; other DB operations will surface errors if unsupported
-            error_log('Could not ensure password_resets table exists: ' . $e->getMessage());
-        }
     }
 }

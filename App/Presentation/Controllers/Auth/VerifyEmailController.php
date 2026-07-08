@@ -2,21 +2,17 @@
 
 namespace App\Presentation\Controllers\Auth;
 
+use App\Domain\UserManagement\Repositories\EmailVerificationRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
-use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Presentation\Views\View;
 
 final class VerifyEmailController
 {
-    private EmailVerificationRepository $verificationRepository;
-    private UserRepository $userRepository;
-
-    public function __construct()
-    {
-        $this->verificationRepository = new EmailVerificationRepository();
-        $this->userRepository = new UserRepository();
-    }
+    public function __construct(
+        private EmailVerificationRepositoryInterface $verificationRepository,
+        private UserRepositoryInterface $userRepository,
+    ) {}
 
     public function verify(): void
     {
@@ -62,9 +58,5 @@ final class VerifyEmailController
         );
 
         View::render('auth/verification_success');
-
-        // OR redirect instead:
-        // $_SESSION['success'] = 'Email verified successfully. Please login.';
-        // redirect('/login');
     }
 }

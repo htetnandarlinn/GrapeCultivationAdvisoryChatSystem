@@ -5,30 +5,15 @@ namespace App\Infrastructure\Persistence\Repositories;
 use PDO;
 use App\Domain\UserManagement\Entities\EmailVerification;
 use App\Domain\UserManagement\Repositories\EmailVerificationRepositoryInterface;
-use App\Shared\Infrastructure\Database\Database;
 
 final class EmailVerificationRepository implements EmailVerificationRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
-
-        $this->connection->setAttribute(
-            PDO::ATTR_ERRMODE,
-            PDO::ERRMODE_EXCEPTION
-        );
-
-        $this->connection->setAttribute(
-            PDO::ATTR_EMULATE_PREPARES,
-            true
-        );
+        $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
     }
 
-    /**
-     * Save verification token
-     */
     public function save(EmailVerification $verification): void
     {
         $sql = "
@@ -67,13 +52,8 @@ final class EmailVerificationRepository implements EmailVerificationRepositoryIn
         ]);
     }
 
-    /**
-     * Update verification status
-     */
-    public function update(
-        EmailVerification $verification
-    ): void {
-
+    public function update(EmailVerification $verification): void
+    {
         $sql = "
             UPDATE email_verifications
             SET
@@ -92,39 +72,32 @@ final class EmailVerificationRepository implements EmailVerificationRepositoryIn
         ]);
     }
 
-    /**
-     * Find by token
-     */
-public function findByToken(string $token): ?EmailVerification
-{
-    $sql = "
-        SELECT *
-        FROM email_verifications
-        WHERE token = :token
-        LIMIT 1
-    ";
+    public function findByToken(string $token): ?EmailVerification
+    {
+        $sql = "
+            SELECT *
+            FROM email_verifications
+            WHERE token = :token
+            LIMIT 1
+        ";
 
-    $stmt = $this->connection->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
 
-    $stmt->execute([
-        ':token' => trim($token)
-    ]);
+        $stmt->execute([
+            ':token' => trim($token)
+        ]);
 
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$row) {
-        return null;
+        if (!$row) {
+            return null;
+        }
+
+        return $this->mapToEntity($row);
     }
 
-    return $this->mapToEntity($row);
-}
-    /**
-     * Find by user id
-     */
-    public function findByUserId(
-        int $userId
-    ): ?EmailVerification {
-
+    public function findByUserId(int $userId): ?EmailVerification
+    {
         $sql = "
             SELECT *
             FROM email_verifications
@@ -147,13 +120,8 @@ public function findByToken(string $token): ?EmailVerification
         return $this->mapToEntity($row);
     }
 
-    /**
-     * Delete by user id
-     */
-    public function deleteByUserId(
-        int $userId
-    ): void {
-
+    public function deleteByUserId(int $userId): void
+    {
         $sql = "
             DELETE FROM email_verifications
             WHERE user_id = :user_id
@@ -166,28 +134,17 @@ public function findByToken(string $token): ?EmailVerification
         ]);
     }
 
-    /**
-     * Convert database row to Entity
-     */
-    private function mapToEntity(
-        array $row
-    ): EmailVerification {
-
+    private function mapToEntity(array $row): EmailVerification
+    {
         return new EmailVerification(
             id: (int)$row['id'],
             userId: (int)$row['user_id'],
             token: $row['token'],
-            expiresAt: new \DateTimeImmutable(
-                $row['expires_at']
-            ),
+            expiresAt: new \DateTimeImmutable($row['expires_at']),
             verifiedAt: !empty($row['verified_at'])
-                ? new \DateTimeImmutable(
-                    $row['verified_at']
-                )
+                ? new \DateTimeImmutable($row['verified_at'])
                 : null,
-            createdAt: new \DateTimeImmutable(
-                $row['created_at']
-            )
+            createdAt: new \DateTimeImmutable($row['created_at'])
         );
     }
-}   
+}

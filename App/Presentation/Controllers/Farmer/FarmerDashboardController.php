@@ -2,7 +2,7 @@
 
 namespace App\Presentation\Controllers\Farmer;
 
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\FarmerView;
@@ -10,16 +10,11 @@ use App\Presentation\Views\FarmerView;
 class FarmerDashboardController
 {
     use AuthorizesPermissions;
-    private QuestionRepository $questionRepository;
 
-    public function __construct()
-    {
-        $this->questionRepository = new QuestionRepository();
-    }
+    public function __construct(
+        private QuestionRepositoryInterface $questionRepository,
+    ) {}
 
-    /**
-     * Farmer Dashboard
-     */
     #[Permission('farmer.dashboard.view', 'View Farmer Dashboard')]
     public function index(): void
     {
@@ -34,7 +29,6 @@ class FarmerDashboardController
         $imageCount = 0;
 
         foreach ($questions as $question) {
-
             if (($question['status_name'] ?? '') === 'Pending') {
                 $pendingQuestions++;
             }
@@ -58,9 +52,6 @@ class FarmerDashboardController
         ]);
     }
 
-    /**
-     * Show Ask Question Page
-     */
     #[Permission('farmer.questions.ask', 'Ask Question')]
     public function askQuestion(): void
     {
@@ -73,9 +64,6 @@ class FarmerDashboardController
         ]);
     }
 
-    /**
-     * Question Submitted Page
-     */
     #[Permission('farmer.questions.ask', 'Ask Question')]
     public function submitQuestion(): void
     {
@@ -85,9 +73,6 @@ class FarmerDashboardController
         ]);
     }
 
-    /**
-     * Total Questions
-     */
     #[Permission('farmer.questions.view', 'View My Questions')]
     public function totalQuestions(): void
     {

@@ -2,7 +2,7 @@
 
 namespace App\Presentation\Controllers\Expert;
 
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\ExpertView;
@@ -10,12 +10,10 @@ use App\Presentation\Views\ExpertView;
 class ExpertDashboardController
 {
     use AuthorizesPermissions;
-    private QuestionRepository $questionRepository;
 
-    public function __construct()
-    {
-        $this->questionRepository = new QuestionRepository();
-    }
+    public function __construct(
+        private QuestionRepositoryInterface $questionRepository,
+    ) {}
 
     #[Permission('expert.dashboard.view', 'View Expert Dashboard')]
     public function index(): void

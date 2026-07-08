@@ -4,16 +4,12 @@ namespace App\Infrastructure\Persistence\Repositories;
 
 use App\Domain\ConsultationManagement\Entities\Question;
 use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
-use App\Shared\Infrastructure\Database\Database;
 use PDO;
 
 class QuestionRepository implements QuestionRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
     }

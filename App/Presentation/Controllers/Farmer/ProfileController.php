@@ -5,7 +5,7 @@ namespace App\Presentation\Controllers\Farmer;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileCommand;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileHandler;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileRequestValidator;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\farmerView;
@@ -13,12 +13,11 @@ use App\Presentation\Views\farmerView;
 class ProfileController
 {
     use AuthorizesPermissions;
-    private UserRepository $repository;
 
-    public function __construct()
-    {
-        $this->repository = new UserRepository();
-    }
+    public function __construct(
+        private UserRepositoryInterface $repository,
+        private UpdateProfileHandler $updateHandler,
+    ) {}
 
     #[Permission('farmer.profile.view', 'View Profile')]
     public function profile(): void
@@ -91,11 +90,8 @@ class ProfileController
             profileImage: $_FILES['avatar'] ?? null
         );
 
-        // THIS WAS MISSING
-        $handler = new UpdateProfileHandler($this->repository);
-        $handler->handle($command);
+        $this->updateHandler->handle($command);
 
-        // Reload latest user from database
         $updatedUser = $this->repository->findById($_SESSION['user_id']);
 
         if ($updatedUser) {

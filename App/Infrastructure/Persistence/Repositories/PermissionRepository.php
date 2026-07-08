@@ -4,16 +4,12 @@ namespace App\Infrastructure\Persistence\Repositories;
 
 use App\Domain\PermissionManagement\Entities\Permission;
 use App\Domain\PermissionManagement\Repositories\PermissionRepositoryInterface;
-use App\Shared\Infrastructure\Database\Database;
 use PDO;
 
 final class PermissionRepository implements PermissionRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 

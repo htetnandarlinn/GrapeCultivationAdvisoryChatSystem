@@ -7,145 +7,15 @@ use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\Email;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
 use App\Domain\UserManagement\ValueObjects\UserType;
-use App\Shared\Infrastructure\Database\Database;
 use PDO;
 
 class UserRepository implements UserRepositoryInterface
 {
-    private PDO $connection;
-
-    public function __construct()
+    public function __construct(private PDO $connection)
     {
-        $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
-        $this->ensureUsersTableExists();
-        $this->ensureProfileImageColumn();
     }
-
-    private function ensureUsersTableExists(): void
-    {
-        try {
-            $stmt = $this->connection->query("SHOW TABLES LIKE 'users'");
-            $table = $stmt->fetch(PDO::FETCH_NUM);
-
-            if ($table !== false) {
-                return;
-            }
-
-            $this->createUsersTable('InnoDB');
-        } catch (\Throwable $e) {
-            if ($this->isRecoverableUsersTableError($e)) {
-                $this->cleanupOrphanedUsersTablespace();
-
-                try {
-                    $this->createUsersTable('InnoDB');
-                } catch (\Throwable $e2) {
-                    $this->createUsersTable('MyISAM');
-                }
-
-                return;
-            }
-
-            throw new \RuntimeException('Unable to ensure users table exists.', 0, $e);
-        }
-    }
-
-    private function createUsersTable(string $engine = 'InnoDB'): void
-    {
-        $sql = "
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(100) NOT NULL UNIQUE,
-                email VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                phone VARCHAR(50) DEFAULT NULL,
-                address VARCHAR(255) DEFAULT NULL,
-                profile_image VARCHAR(255) DEFAULT NULL,
-                user_type_id INT NOT NULL DEFAULT 1,
-                status_id INT NOT NULL DEFAULT 21,
-                is_active TINYINT(1) NOT NULL DEFAULT 1,
-                is_verified TINYINT(1) NOT NULL DEFAULT 0,
-                is_login TINYINT(1) NOT NULL DEFAULT 0,
-                verification_token VARCHAR(255) DEFAULT NULL,
-                verification_token_expire_at DATETIME DEFAULT NULL,
-                email_verified_at DATETIME DEFAULT NULL,
-                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT NULL,
-                deleted_at DATETIME DEFAULT NULL,
-                INDEX idx_user_type_id (user_type_id),
-                INDEX idx_status_id (status_id),
-                INDEX idx_email (email),
-                INDEX idx_username (username)
-            ) ENGINE={$engine} DEFAULT CHARSET=utf8mb4;
-        ";
-
-        $this->connection->exec($sql);
-    }
-
-    private function cleanupOrphanedUsersTablespace(): void
-    {
-        try {
-            $this->connection->exec('DROP TABLE IF EXISTS users');
-        } catch (\Throwable) {
-            // ignore failure if metadata is inconsistent
-        }
-
-        $database = (string) $this->connection->query('SELECT DATABASE()')->fetchColumn();
-        $stmt = $this->connection->query("SHOW VARIABLES LIKE 'datadir'");
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $dataDir = $row['Value'] ?? $row['value'] ?? null;
-
-        if ($database === '' || $dataDir === null) {
-            throw new \RuntimeException('Could not determine database or datadir to discard orphaned users tablespace.');
-        }
-
-        $dataDir = rtrim($dataDir, '/\\');
-        $path = $dataDir . DIRECTORY_SEPARATOR . $database . DIRECTORY_SEPARATOR . 'users.ibd';
-        $frmPath = $dataDir . DIRECTORY_SEPARATOR . $database . DIRECTORY_SEPARATOR . 'users.frm';
-
-        foreach ([$path, $frmPath] as $file) {
-            if (file_exists($file)) {
-                @unlink($file);
-            }
-        }
-    }
-
-    private function isRecoverableUsersTableError(\Throwable $e): bool
-    {
-        if ($this->isInnoDBTablespaceError($e)) {
-            return true;
-        }
-
-        if (str_contains($e->getMessage(), "Can't create table")
-            && str_contains($e->getMessage(), 'errno: 168')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private function isInnoDBTablespaceError(\Throwable $e): bool
-    {
-        return str_contains($e->getMessage(), 'Tablespace for table')
-            && str_contains($e->getMessage(), 'Please DISCARD the tablespace before IMPORT');
-    }
-
-    private function ensureProfileImageColumn(): void
-    {
-        try {
-            $stmt = $this->connection->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
-            $column = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($column === false) {
-                $this->connection->exec("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) DEFAULT NULL");
-            }
-        } catch (\Throwable $e) {
-            // Ignore schema issues during bootstrap and let the app continue if the table is unavailable.
-        }
-    }
-
-    /* ===================== SAVE ===================== */
 
     public function save(User $user): void
     {
@@ -209,8 +79,6 @@ VALUES (
         $user->setId((int) $this->connection->lastInsertId());
     }
 
-    /* ===================== UPDATE ===================== */
-
     public function update(User $user): void
     {
         $sql = '
@@ -257,10 +125,8 @@ WHERE user_id = :id
         ]);
     }
 
-    public function updateStatus(
-        int $userId,
-        string $status
-    ): void {
+    public function updateStatus(int $userId, string $status): void
+    {
         $sql = '
         UPDATE users
         SET
@@ -278,8 +144,6 @@ WHERE user_id = :id
         ]);
     }
 
-    /* ===================== FIND BY ID ===================== */
-
     public function findById(int $id): ?User
     {
         $sql = '
@@ -296,8 +160,6 @@ WHERE user_id = :id
 
         return $row ? $this->mapToEntity($row) : null;
     }
-
-    /* ===================== FIND BY VERIFICATION TOKEN ===================== */
 
     public function findByVerificationToken(string $token): ?User
     {
@@ -317,8 +179,6 @@ WHERE user_id = :id
         return $row ? $this->mapToEntity($row) : null;
     }
 
-    /* ===================== FIND BY EMAIL ===================== */
-
     public function findByEmail(string $email): ?User
     {
         $sql = '
@@ -337,8 +197,6 @@ WHERE user_id = :id
         return $row ? $this->mapToEntity($row) : null;
     }
 
-    /* ===================== FIND BY USERNAME ===================== */
-
     public function findByUsername(string $username): ?User
     {
         $sql = '
@@ -356,8 +214,6 @@ WHERE user_id = :id
 
         return $row ? $this->mapToEntity($row) : null;
     }
-
-    /* ===================== FIND BY USERNAME OR EMAIL ===================== */
 
     public function findByUsernameOrEmail(string $identifier): ?User
     {
@@ -448,21 +304,19 @@ WHERE user_id = :id
         return (int) $stmt->fetchColumn();
     }
 
-   public function deleteById(int $id): void
-{
-    $sql = "
-        DELETE FROM users
-        WHERE user_id = :id
-    ";
+    public function deleteById(int $id): void
+    {
+        $sql = "
+            DELETE FROM users
+            WHERE user_id = :id
+        ";
 
-    $stmt = $this->connection->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
 
-    $stmt->execute([
-        ':id' => $id
-    ]);
-}
-
-    /* ===================== EXISTS ===================== */
+        $stmt->execute([
+            ':id' => $id
+        ]);
+    }
 
     public function emailExists(string $email): bool
     {
@@ -478,8 +332,6 @@ WHERE user_id = :id
 
         return (int) $stmt->fetchColumn() > 0;
     }
-
-    /* ===================== ENTITY MAPPER ===================== */
 
     private function mapToEntity(array $row): User
     {
@@ -536,8 +388,6 @@ WHERE user_id = :id
         );
     }
 
-    /* ===================== MAPPERS ===================== */
-
     private function formatMyanmarDateTime(?\DateTimeImmutable $dateTime): ?string
     {
         if ($dateTime === null) {
@@ -564,7 +414,6 @@ WHERE user_id = :id
                 return (int) $row['id'];
             }
         } catch (\Throwable $e) {
-            // Fall back to the legacy hard-coded mapping if master_data is unavailable.
         }
 
         return match ($value) {
@@ -576,7 +425,6 @@ WHERE user_id = :id
             ),
         };
     }
-
 
     private function mapUserStatusToId($status): int
     {
@@ -603,7 +451,6 @@ WHERE user_id = :id
                 return (int) $row['id'];
             }
         } catch (\Throwable $e) {
-            // Fall back to the legacy hard-coded mapping if master_data is unavailable.
         }
 
         return match ($value) {

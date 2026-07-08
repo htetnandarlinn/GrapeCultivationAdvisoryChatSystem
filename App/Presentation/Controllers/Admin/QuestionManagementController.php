@@ -2,7 +2,7 @@
 
 namespace App\Presentation\Controllers\Admin;
 
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
@@ -10,12 +10,10 @@ use App\Presentation\Views\AdminView;
 class QuestionManagementController
 {
     use AuthorizesPermissions;
-    private QuestionRepository $questionRepository;
 
-    public function __construct()
-    {
-        $this->questionRepository = new QuestionRepository();
-    }
+    public function __construct(
+        private QuestionRepositoryInterface $questionRepository,
+    ) {}
 
     #[Permission('admin.questions.view', 'View All Questions')]
     public function index(): void

@@ -2,21 +2,13 @@
 
 namespace App\Infrastructure\Persistence\Repositories;
 
-use App\Shared\Infrastructure\Database\Database;
+use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use PDO;
 
-class ActivityRepository
+class ActivityRepository implements ActivityRepositoryInterface
 {
-    private PDO $connection;
+    public function __construct(private PDO $connection) {}
 
-    public function __construct()
-    {
-        $this->connection = (new Database())->getConnection();
-    }
-
-    /**
-     * Save a new system activity.
-     */
     public function logActivity(
         string $activity,
         ?int $userId = null,
@@ -45,9 +37,6 @@ class ActivityRepository
         ]);
     }
 
-    /**
-     * Get latest activities.
-     */
     public function getRecentActivities(int $limit = 8): array
     {
         $sql = "
@@ -63,38 +52,6 @@ class ActivityRepository
 
         $stmt->execute();
 
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $activities = [];
-
-        foreach ($rows as $row) {
-
-            $activities[] = [
-                'message' => $row['activity'],
-                'time' => date(
-                    'h:i A',
-                    strtotime($row['created_at'])
-                ),
-                'dot_class' => $this->getDotColor(
-                    $row['user_role']
-                )
-            ];
-        }
-
-        return $activities;
-    }
-
-    private function getDotColor(?string $role): string
-    {
-        return match (strtoupper($role ?? '')) {
-
-            'ADMIN' => 'bg-red-500',
-
-            'EXPERT' => 'bg-blue-500',
-
-            'FARMER' => 'bg-green-500',
-
-            default => 'bg-gray-400',
-        };
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

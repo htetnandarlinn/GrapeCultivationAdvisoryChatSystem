@@ -1,10 +1,12 @@
 <?php
-$farmerCount = 1284;
-$expertCount = 86;
-$activities = [
-    ['message' => 'New farmer registered: John Doe', 'time' => '2m ago', 'dot_class' => 'bg-emerald-500'],
-    ['message' => 'Expert Q&A session completed', 'time' => '1h ago', 'dot_class' => 'bg-indigo-500'],
-    ['message' => 'System security patch applied', 'time' => '3h ago', 'dot_class' => 'bg-amber-500'],
+$activities = $activities ?? [];
+$farmerCount = $farmerCount ?? 0;
+$expertCount = $expertCount ?? 0;
+
+$roleDotColors = [
+    'ADMIN' => 'bg-red-500',
+    'EXPERT' => 'bg-blue-500',
+    'FARMER' => 'bg-green-500',
 ];
 ?>
 
@@ -64,13 +66,20 @@ $activities = [
         <div class="xl:col-span-2 bg-white rounded-[32px] p-8 border border-slate-200">
             <h2 class="text-xl font-bold mb-6">Recent Activity</h2>
             <div class="space-y-4">
-                <?php foreach ($activities as $act): ?>
-                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-[#15803D]/20 transition">
-                        <span class="w-3 h-3 rounded-full <?= $act['dot_class'] ?>"></span>
-                        <p class="text-sm font-medium text-slate-700 flex-grow"><?= $act['message'] ?></p>
-                        <span class="text-xs text-slate-400 font-mono"><?= $act['time'] ?></span>
-                    </div>
-                <?php endforeach; ?>
+                <?php if (empty($activities)): ?>
+                    <p class="text-sm text-slate-400 text-center py-8">No recent activity.</p>
+                <?php else: ?>
+                    <?php foreach ($activities as $act): 
+                        $role = $act['user_role'] ?? '';
+                        $dotClass = $roleDotColors[strtoupper($role)] ?? 'bg-gray-400';
+                    ?>
+                        <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-[#15803D]/20 transition">
+                            <span class="w-3 h-3 rounded-full <?= $dotClass ?>"></span>
+                            <p class="text-sm font-medium text-slate-700 flex-grow"><?= htmlspecialchars($act['activity'] ?? '') ?></p>
+                            <span class="text-xs text-slate-400 font-mono"><?= date('h:i A', strtotime($act['created_at'])) ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -78,4 +87,17 @@ $activities = [
             <h2 class="text-xl font-bold">Quick Access</h2>
             <p class="text-slate-400 text-sm mt-2 mb-6">Manage system wide configurations.</p>
             <button id="actionBtn" onclick="handleAction()" 
-                    class="w-full bg-[#15803D] hover:bg-[#166534] py-4 rounded-2xl font-bold transition-all active:scale-95
+                    class="w-full bg-[#15803D] hover:bg-[#166534] py-4 rounded-2xl font-bold transition-all active:scale-95">
+                Take Action
+            </button>
+        </aside>
+    </section>
+</main>
+
+<script>
+    function handleAction() {
+        alert('Action triggered!');
+    }
+</script>
+</body>
+</html>

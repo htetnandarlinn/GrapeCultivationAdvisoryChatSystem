@@ -5,10 +5,9 @@ namespace App\Presentation\Controllers\Admin;
 use App\Application\UserManagement\RegisterUser\RegisterUserCommand;
 use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
 use App\Domain\UserManagement\Entities\User;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\Email;
 use App\Domain\UserManagement\ValueObjects\UserType;
-use App\Infrastructure\Mail\PHPMailerService;
-use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\AdminView;
@@ -17,18 +16,11 @@ use App\Shared\Exceptions\ValidationException;
 class ExpertManagementController
 {
     use AuthorizesPermissions;
-    private UserRepository $userRepository;
-    private RegisterUserHandler $registerHandler;
 
-    public function __construct()
-    {
-        $this->userRepository = new UserRepository();
-
-        $this->registerHandler = new RegisterUserHandler(
-            $this->userRepository,
-            new PHPMailerService()
-        );
-    }
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private RegisterUserHandler $registerHandler,
+    ) {}
 
     #[Permission('admin.experts.view', 'View Experts')]
     public function index(): void
@@ -310,5 +302,4 @@ class ExpertManagementController
         $user->setProfileImage('/uploads/profile/' . $filename);
         $this->userRepository->update($user);
     }
-
 }

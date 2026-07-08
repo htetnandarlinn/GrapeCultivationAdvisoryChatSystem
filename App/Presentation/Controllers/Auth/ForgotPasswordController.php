@@ -6,10 +6,17 @@ use App\Application\UserManagement\ForgotPassword\ForgotPasswordCommand;
 use App\Application\UserManagement\ForgotPassword\ForgotPasswordHandler;
 use App\Application\UserManagement\ResetPassword\ResetPasswordCommand;
 use App\Application\UserManagement\ResetPassword\ResetPasswordHandler;
+use App\Domain\UserManagement\Repositories\PasswordResetRepositoryInterface;
 use App\Presentation\Views\View;
 
 class ForgotPasswordController
 {
+    public function __construct(
+        private ForgotPasswordHandler $forgotHandler,
+        private ResetPasswordHandler $resetHandler,
+        private PasswordResetRepositoryInterface $passwordResetRepo,
+    ) {}
+
     public function showForm(): void
     {
         View::render('auth/forgot-password', []);
@@ -20,9 +27,8 @@ class ForgotPasswordController
         $email = trim($_POST['email'] ?? '');
 
         $command = new ForgotPasswordCommand($email);
-        $handler = new ForgotPasswordHandler();
 
-        $result = $handler->handle($command);
+        $result = $this->forgotHandler->handle($command);
 
         if (!$result) {
             $_SESSION['errors'] = ['email' => 'Email not found.'];
@@ -38,8 +44,7 @@ class ForgotPasswordController
     {
         $token = $_GET['token'] ?? '';
 
-        $repo = new \App\Infrastructure\Persistence\Repositories\PasswordResetRepository();
-        $reset = $repo->findByToken($token);
+        $reset = $this->passwordResetRepo->findByToken($token);
 
         if ($reset === null || $reset->isExpired()) {
             View::render('auth/invalid-token', []);
@@ -61,7 +66,6 @@ class ForgotPasswordController
             return;
         }
 
-        // Stronger password validation: min 8 chars, include letters and numbers
         $errors = [];
         if (strlen($password) < 8) {
             $errors['password'] = 'Password must be at least 8 characters.';
@@ -76,9 +80,8 @@ class ForgotPasswordController
         }
 
         $command = new ResetPasswordCommand($token, $password);
-        $handler = new ResetPasswordHandler();
 
-        $ok = $handler->handle($command);
+        $ok = $this->resetHandler->handle($command);
 
         if (!$ok) {
             View::render('auth/invalid-token', []);

@@ -3,20 +3,59 @@
 namespace App\Routes;
 
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
+use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
+use App\Application\Messaging\SendMessage\SendMessageHandler;
 use App\Application\PermissionManagement\PermissionRegistrar;
 use App\Application\PermissionManagement\PermissionService;
 use App\Application\RoleManagement\RoleService;
+use App\Application\UserManagement\ForgotPassword\ForgotPasswordHandler;
+use App\Application\UserManagement\LoginUser\LoginUserHandler;
+use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
+use App\Application\UserManagement\ResetPassword\ResetPasswordHandler;
+use App\Infrastructure\Mail\PHPMailerService;
 use App\Infrastructure\Persistence\Repositories\PermissionRepository;
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
+use App\Infrastructure\Persistence\Repositories\UserRepository;
+use App\Domain\UserManagement\Services\UserAuthenticationService;
+use App\Infrastructure\Persistence\Repositories\AuthRepository;
+use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
+use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
+use App\Infrastructure\Persistence\Repositories\ActivityRepository;
+use App\Presentation\Controllers\Admin\AdminDashboardController;
+use App\Presentation\Controllers\Admin\ExpertManagementController;
+use App\Presentation\Controllers\Admin\FarmerManagementController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
+use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
+use App\Presentation\Controllers\Admin\UserManagementController;
+use App\Presentation\Controllers\Auth\AuthController;
+use App\Presentation\Controllers\Auth\ForgotPasswordController;
+use App\Presentation\Controllers\Auth\LoginRequestValidator;
+use App\Presentation\Controllers\Auth\RegisterRequestValidator;
+use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
+use App\Presentation\Controllers\Dashboard\DashboardController;
+use App\Presentation\Controllers\Farmer\FarmerDashboardController;
+use App\Presentation\Controllers\Expert\ExpertDashboardController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
+use App\Presentation\Controllers\Farmer\ProfileController;
+use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
+use App\Shared\Infrastructure\Database\Database;
 
 class Router
 {
     private array $routes = [];
+
+    private ?\PDO $pdo = null;
+
+    private function db(): \PDO
+    {
+        if ($this->pdo === null) {
+            $this->pdo = (new Database())->getConnection();
+        }
+        return $this->pdo;
+    }
 
     public function get(string $uri, callable|array $action): void
     {
@@ -51,9 +90,6 @@ class Router
 
         $action = $this->routes[$httpMethod][$path];
 
-        /* -----------------------------
-           Callable route
-        ------------------------------ */
         if (is_callable($action)) {
             call_user_func($action);
             return;
@@ -61,9 +97,6 @@ class Router
 
         [$controller, $method] = $action;
 
-        /* -----------------------------
-           Class-based controller
-        ------------------------------ */
         if (!class_exists($controller)) {
             throw new \Exception("Controller class {$controller} not found.");
         }
@@ -77,43 +110,150 @@ class Router
         $instance->$method();
     }
 
-    /**
-     * 🔥 SIMPLE MANUAL DEPENDENCY INJECTION
-     */
     private function resolveController(string $controller)
     {
         return match ($controller) {
             ConsultationController::class =>
                 new ConsultationController(
                     new AskQuestionHandler(
-                        new QuestionRepository()
+                        new QuestionRepository($this->db())
                     )
                 ),
 
             AnswerQuestionController::class =>
-                new AnswerQuestionController(),
+                new AnswerQuestionController(
+                    new QuestionRepository($this->db())
+                ),
+
+            AnswerQuestionPageController::class =>
+                new AnswerQuestionPageController(
+                    new QuestionRepository($this->db())
+                ),
+
+            QuestionManagementController::class =>
+                new QuestionManagementController(
+                    new QuestionRepository($this->db())
+                ),
+
+            FarmerDashboardController::class =>
+                new FarmerDashboardController(
+                    new QuestionRepository($this->db())
+                ),
+
+            ExpertDashboardController::class =>
+                new ExpertDashboardController(
+                    new QuestionRepository($this->db())
+                ),
 
             RoleController::class =>
                 new RoleController(
-                    new RoleRepository(),
+                    new RoleRepository($this->db()),
                     new RoleService(
-                        new RoleRepository()
+                        new RoleRepository($this->db())
                     )
+                ),
+
+            UserManagementController::class =>
+                new UserManagementController(
+                    new UserRepository($this->db()),
+                    new RoleRepository($this->db())
                 ),
 
             PermissionAssignmentController::class =>
                 new PermissionAssignmentController(
                     new PermissionService(
-                        new PermissionRepository(),
-                        new RoleRepository()
+                        new PermissionRepository($this->db()),
+                        new RoleRepository($this->db())
                     ),
                     new PermissionRegistrar(
-                        new PermissionRepository()
+                        new PermissionRepository($this->db())
                     ),
-                    new RoleRepository()
+                    new RoleRepository($this->db())
+                ),
+
+            AuthController::class => $this->createAuthController(),
+
+            ForgotPasswordController::class => $this->createForgotPasswordController(),
+
+            VerifyEmailController::class =>
+                new VerifyEmailController(
+                    new EmailVerificationRepository($this->db()),
+                    new UserRepository($this->db())
+                ),
+
+            AdminDashboardController::class =>
+                new AdminDashboardController(
+                    new UserRepository($this->db()),
+                    new ActivityRepository($this->db())
+                ),
+
+            FarmerManagementController::class =>
+                new FarmerManagementController(
+                    new UserRepository($this->db()),
+                    new ActivityRepository($this->db())
+                ),
+
+            ExpertManagementController::class =>
+                new ExpertManagementController(
+                    new UserRepository($this->db()),
+                    $this->createRegisterUserHandler()
+                ),
+
+            ProfileController::class =>
+                new ProfileController(
+                    new UserRepository($this->db()),
+                    new \App\Application\UserManagement\UpdateProfile\UpdateProfileHandler(
+                        new UserRepository($this->db())
+                    )
                 ),
 
             default => new $controller()
         };
+    }
+
+    private function createAuthController(): AuthController
+    {
+        $userRepo = new UserRepository($this->db());
+        $mailService = new PHPMailerService();
+
+        return new AuthController(
+            new RegisterUserHandler(
+                $userRepo,
+                $mailService,
+                new ActivityRepository($this->db())
+            ),
+            new LoginUserHandler(
+                new AuthRepository($userRepo),
+                new UserAuthenticationService()
+            ),
+            new RegisterRequestValidator(),
+            new LoginRequestValidator(),
+            $userRepo,
+            new ActivityRepository($this->db()),
+            new RoleRepository($this->db()),
+            new PermissionRepository($this->db())
+        );
+    }
+
+    private function createForgotPasswordController(): ForgotPasswordController
+    {
+        $userRepo = new UserRepository($this->db());
+        $mailService = new PHPMailerService();
+        $passwordResetRepo = new PasswordResetRepository($this->db());
+
+        return new ForgotPasswordController(
+            new ForgotPasswordHandler($userRepo, $passwordResetRepo, $mailService),
+            new ResetPasswordHandler($passwordResetRepo, $userRepo),
+            $passwordResetRepo
+        );
+    }
+
+    private function createRegisterUserHandler(): RegisterUserHandler
+    {
+        return new RegisterUserHandler(
+            new UserRepository($this->db()),
+            new PHPMailerService(),
+            new ActivityRepository($this->db())
+        );
     }
 }
