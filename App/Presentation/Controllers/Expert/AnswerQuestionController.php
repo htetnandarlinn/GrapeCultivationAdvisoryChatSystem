@@ -14,10 +14,10 @@ class AnswerQuestionController
         private QuestionRepositoryInterface $questionRepository,
     ) {}
 
-    #[Permission('expert.questions.answer', 'Answer Question')]
+    #[Permission('questions.answer', 'Answer Question')]
     public function store(): void
     {
-        $this->authorize('expert.questions.answer');
+        $this->authorize('questions.answer');
         $questionId = (int) ($_POST['question_id'] ?? 0);
         $answer = trim($_POST['answer'] ?? '');
 
@@ -29,7 +29,7 @@ class AnswerQuestionController
 
         if ($questionId <= 0) {
             $_SESSION['error'] = 'Invalid question.';
-            redirect('/expert-dashboard');
+            redirect('/dashboard');
             return;
         }
 
@@ -47,6 +47,6 @@ class AnswerQuestionController
         );
 
         $_SESSION['success'] = 'Question answered successfully.';
-        redirect('/expert-dashboard');
+        redirect('/dashboard');
     }
 }

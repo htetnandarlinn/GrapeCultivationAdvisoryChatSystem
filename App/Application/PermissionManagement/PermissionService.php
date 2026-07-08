@@ -24,11 +24,11 @@ final class PermissionService
 
         foreach ($permissions as $perm) {
             $parts = explode('.', $perm->getKey());
-            $prefix = count($parts) >= 2 ? $parts[0] . '.' . $parts[1] : $parts[0];
-            $label = ucwords(str_replace(['.', '_'], ' ', $prefix));
+            $module = $parts[0];
+            $label = ucfirst($module);
 
-            $groups[$prefix]['label'] = $label;
-            $groups[$prefix]['permissions'][] = $perm;
+            $groups[$module]['label'] = $label;
+            $groups[$module]['permissions'][] = $perm;
         }
 
         ksort($groups);

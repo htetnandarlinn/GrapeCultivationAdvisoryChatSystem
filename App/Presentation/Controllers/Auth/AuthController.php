@@ -29,12 +29,12 @@ final class AuthController
 
     public function showRegister()
     {
-        return View::render('auth/register');
+        return View::render('auth/register', [], '_standalone_');
     }
 
     public function showLogin()
     {
-        return View::render('auth/login');
+        return View::render('auth/login', [], '_standalone_');
     }
 
     public function register(): void
@@ -133,7 +133,7 @@ final class AuthController
         if ($token === '') {
             View::render('auth/verification_failed', [
                 'message' => 'Invalid verification link.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
@@ -142,14 +142,14 @@ final class AuthController
         if ($user === null) {
             View::render('auth/verification_failed', [
                 'message' => 'Verification link not found.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
         if ($user->isVerified()) {
             View::render('auth/verification_failed', [
                 'message' => 'Email already verified.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
@@ -158,7 +158,7 @@ final class AuthController
         if ($expireAt !== null && $expireAt < new \DateTimeImmutable()) {
             View::render('auth/verification_failed', [
                 'message' => 'Verification link has expired.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
@@ -170,7 +170,7 @@ final class AuthController
 
         $this->userRepository->update($user);
 
-        View::render('auth/verification_success');
+        View::render('auth/verification_success', [], '_standalone_');
     }
 
     private function nowInMyanmarTime(): \DateTimeImmutable
@@ -193,12 +193,6 @@ final class AuthController
 
     private function redirectByRole(User $user): void
     {
-        $route = match (strtolower($user->getType()->getValue())) {
-            'admin' => '/admin-dashboard',
-            'expert' => '/expert-dashboard',
-            default => '/farmer-dashboard',
-        };
-
-        redirect($route);
+        redirect('/dashboard');
     }
 }

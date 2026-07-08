@@ -18,10 +18,14 @@ if (!defined('BASE_URL')) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password | Grape Cultivation Advisory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-white min-h-screen flex flex-col antialiased selection:bg-green-700 selection:text-white">
+
+<?php include __DIR__ . '/../layouts/navbar.php'; ?>
 
     <div class="flex-grow w-full flex items-center justify-center p-4 sm:p-6">
         

@@ -4,12 +4,13 @@ $allPermissions = $allPermissions ?? [];
 $permissionGroups = $permissionGroups ?? [];
 $assignedIds = $assignedIds ?? [];
 $role = $role ?? null;
+$groupId = 0;
 ?>
 <main class="flex-grow px-4 sm:px-8 pb-8 pt-28 space-y-6">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-xl font-black text-slate-900">Permissions for "<?= htmlspecialchars($role?->getLabel() ?? '') ?>"</h1>
-            <p class="text-sm text-slate-500">Assign or revoke permissions for this user role.</p>
+            <h1 class="text-xl font-black text-slate-900">Permission Management</h1>
+            <p class="text-sm text-slate-500">Configure permissions for each role.</p>
         </div>
         <a href="<?= BASE_URL ?>/admin/roles" class="text-slate-400 hover:text-slate-600 transition text-sm font-semibold">&larr; Back to Roles</a>
     </div>
@@ -23,14 +24,21 @@ $role = $role ?? null;
                 <a href="<?= BASE_URL ?>/admin/permissions/sync" class="inline-block mt-3 bg-[#15803D] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-green-900 transition">Sync Permissions from Code</a>
             </div>
         <?php else: ?>
-            <?php foreach ($permissionGroups as $group): ?>
-                <div class="space-y-3">
-                    <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2"><?= htmlspecialchars($group['label']) ?></h2>
+            <?php foreach ($permissionGroups as $group): $gid = 'g-' . $groupId++; ?>
+                <div class="space-y-3" data-group="<?= $gid ?>">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400"><?= htmlspecialchars($group['label']) ?></h2>
+                        <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer hover:text-slate-700 transition">
+                            <input type="checkbox" class="group-select-all rounded border-slate-300 text-[#15803D] focus:ring-[#15803D]"
+                                data-group="<?= $gid ?>">
+                            Select All
+                        </label>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         <?php foreach ($group['permissions'] as $perm): ?>
                             <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition">
                                 <input type="checkbox" name="permissions[]" value="<?= $perm->getId() ?>"
-                                    class="mt-0.5 rounded border-slate-300 text-[#15803D] focus:ring-[#15803D]"
+                                    class="group-checkbox-<?= $gid ?> mt-0.5 rounded border-slate-300 text-[#15803D] focus:ring-[#15803D]"
                                     <?= in_array($perm->getId(), $assignedIds, true) ? 'checked' : '' ?>>
                                 <div>
                                     <p class="text-sm font-semibold text-slate-900"><?= htmlspecialchars($perm->getName()) ?></p>
@@ -52,3 +60,14 @@ $role = $role ?? null;
         <?php endif; ?>
     </form>
 </main>
+
+<script>
+document.querySelectorAll('.group-select-all').forEach(function(master) {
+    master.addEventListener('change', function() {
+        var gid = this.dataset.group;
+        document.querySelectorAll('.group-checkbox-' + gid).forEach(function(cb) {
+            cb.checked = master.checked;
+        });
+    });
+});
+</script>

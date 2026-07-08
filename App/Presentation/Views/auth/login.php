@@ -17,7 +17,10 @@ $componentOld = $old;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Grape Cultivation Advisory Chat System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body { font-family: 'Inter', sans-serif; }
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
@@ -28,6 +31,8 @@ $componentOld = $old;
 
 <!-- Updated body background to matching solid soft green tint from home page -->
 <body class="bg-green-50 flex flex-col min-h-screen antialiased selection:bg-green-200">
+
+<?php include __DIR__ . '/../layouts/navbar.php'; ?>
 
 <!-- MAIN LAYOUT CONTAINER -->
 <main class="flex-grow w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-x-16 px-6 py-12 lg:py-16 items-start">

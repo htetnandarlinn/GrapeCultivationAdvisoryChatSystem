@@ -73,10 +73,14 @@ final class RegisterUserHandler
             . '/verify-email?token='
             . urlencode($token);
 
-        $this->mailService->sendVerificationEmail(
-            $user->getEmail()->getValue(),
-            $user->getUsername(),
-            $verificationLink
-        );
+        try {
+            $this->mailService->sendVerificationEmail(
+                $user->getEmail()->getValue(),
+                $user->getUsername(),
+                $verificationLink
+            );
+        } catch (\Throwable $e) {
+            error_log('Verification email failed: ' . $e->getMessage());
+        }
     }
 }

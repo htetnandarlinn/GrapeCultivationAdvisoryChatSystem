@@ -16,7 +16,10 @@ $componentOld = $old;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Grape Cultivation Advisory Chat System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body { font-family: 'Inter', sans-serif; }
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
@@ -26,6 +29,8 @@ $componentOld = $old;
 </head>
 
 <body class="bg-gradient-to-br from-green-50/60 via-slate-50 to-emerald-50/40 flex flex-col min-h-screen antialiased selection:bg-green-200">
+
+<?php include __DIR__ . '/../layouts/navbar.php'; ?>
 
 <!-- MAIN LAYOUT CONTAINER: Alignment updated to items-start for seamless matching with login layout -->
 <main class="flex-grow w-fvar_dumpll max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 px-6 py-12 lg:py-16 items-start">
@@ -115,22 +120,6 @@ $componentOld = $old;
                         ?>
                     </div>
                     
-                </div>
-
-                <!-- Full-width Drop Selector -->
-                <div class="mt-3">
-                    <?php
-                    $label = 'Role';
-                    $name = 'role';
-                    $options = [
-                        '' => 'Choose role',
-                        'farmer' => 'Farmer',
-                        'expert' => 'Expert',
-                        'admin' => 'Admin'
-                    ];
-                    $errors = $componentErrors; $old = $componentOld;
-                    include __DIR__ . '/../components/select.php';
-                    ?>
                 </div>
 
                 <!-- Sign-up Button Container -->

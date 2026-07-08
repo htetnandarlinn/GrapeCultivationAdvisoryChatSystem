@@ -21,7 +21,7 @@ final class VerifyEmailController
         if ($token === '') {
             View::render('auth/verification_failed', [
                 'message' => 'Invalid verification link.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
@@ -30,21 +30,21 @@ final class VerifyEmailController
         if ($verification === null) {
             View::render('auth/verification_failed', [
                 'message' => 'Verification link not found.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
         if ($verification->isVerified()) {
             View::render('auth/verification_failed', [
                 'message' => 'Email already verified.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
         if ($verification->isExpired()) {
             View::render('auth/verification_failed', [
                 'message' => 'Verification link has expired.'
-            ]);
+            ], '_standalone_');
             return;
         }
 
@@ -57,6 +57,6 @@ final class VerifyEmailController
             UserStatus::active()->getValue()
         );
 
-        View::render('auth/verification_success');
+        View::render('auth/verification_success', [], '_standalone_');
     }
 }
