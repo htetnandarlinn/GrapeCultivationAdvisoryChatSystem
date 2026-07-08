@@ -3,7 +3,10 @@
 namespace App\Routes;
 
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
+use App\Application\RoleManagement\RoleService;
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Infrastructure\Persistence\Repositories\RoleRepository;
+use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
 
@@ -85,6 +88,14 @@ class Router
 
             AnswerQuestionController::class =>
                 new AnswerQuestionController(),
+
+            RoleController::class =>
+                new RoleController(
+                    new RoleRepository(),
+                    new RoleService(
+                        new RoleRepository()
+                    )
+                ),
 
             default => new $controller()
         };
