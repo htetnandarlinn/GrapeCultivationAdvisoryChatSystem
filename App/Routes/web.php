@@ -19,8 +19,9 @@ use App\Presentation\Controllers\Dashboard\DashboardController;
 use App\Presentation\Controllers\Farmer\FarmerDashboardController;
 use App\Presentation\Controllers\Expert\ExpertDashboardController;
 use App\Presentation\Controllers\Expert\AnswerQuestionController;
-use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
+use App\Presentation\Controllers\Expert\ArticleController;
+use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Routes\Router;
 
 $router = new Router();
@@ -101,6 +102,13 @@ $router->get(
     '/expert/questions/answer',
     [AnswerQuestionPageController::class, 'index']
 );
+
+$router->get('/expert/articles', [ArticleController::class, 'index']);
+$router->get('/expert/articles/create', [ArticleController::class, 'create']);
+$router->post('/expert/articles/store', [ArticleController::class, 'store']);
+$router->get('/expert/articles/edit', [ArticleController::class, 'edit']);
+$router->post('/expert/articles/update', [ArticleController::class, 'update']);
+$router->post('/expert/articles/delete', [ArticleController::class, 'delete']);
 
 /* ================= CONSULTATION ================= */
 

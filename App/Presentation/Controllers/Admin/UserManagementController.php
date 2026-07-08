@@ -52,7 +52,7 @@ final class UserManagementController
         $this->authorize('admin.users.role');
 
         $userId = (int) ($_POST['user_id'] ?? 0);
-        $roleCode = trim($_POST['role_code'] ?? '');
+        $roleCode = strtolower(trim($_POST['role_code'] ?? ''));
 
         if ($userId <= 0 || $roleCode === '') {
             $_SESSION['admin_message'] = 'Invalid user or role.';
