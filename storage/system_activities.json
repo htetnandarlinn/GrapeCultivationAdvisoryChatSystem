@@ -1,0 +1,7 @@
+[
+    {"message":"🟢 New farmer \"Aung Aung\" successfully registered an account.","time":"Just now","dot_class":"bg-emerald-500"},
+    {"message":"🟠 Consultation Q1001 was submitted for grape disease diagnosis.","time":"5 min ago","dot_class":"bg-amber-500"},
+    {"message":"🔵 Dr. Nay Win responded to consultation Q1001 with cultivation advice.","time":"10 min ago","dot_class":"bg-blue-500"},
+    {"message":"🟣 A new article, \"Best Fertilizer Schedule for Grapes,\" was published by an expert.","time":"30 min ago","dot_class":"bg-purple-500"},
+    {"message":"🔴 Administrator approved a new expert registration and granted expert access.","time":"1 hour ago","dot_class":"bg-red-500"}
+]

@@ -9,6 +9,7 @@ use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\Email;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
 use App\Infrastructure\Mail\MailServiceInterface;
+use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Shared\Exceptions\ValidationException;
 
 final class RegisterUserHandler
@@ -39,28 +40,48 @@ final class RegisterUserHandler
          * | Save User (Pending)
          * |--------------------------------------------------------------------------
          */
-                $token = bin2hex(random_bytes(32));
+        $token = bin2hex(random_bytes(32));
 
-
-
-$user = new User(
-    id: null,
-    username: $command->username,
-    email: new Email($command->email),
-    phoneNumber: $command->phoneNumber,
-    address: $command->address,
-    passwordHash: $command->passwordHash,
-    type: $command->type,
-    status: UserStatus::pending(),
-    isVerified: false,
-    isLogin: false,
-    profileImage: null,
-    verificationToken: $token,
-    verificationTokenExpireAt: new \DateTimeImmutable('+1 day')
-);
-
+        $user = new User(
+            id: null,
+            username: $command->username,
+            email: new Email($command->email),
+            phoneNumber: $command->phoneNumber,
+            address: $command->address,
+            passwordHash: $command->passwordHash,
+            type: $command->type,
+            status: UserStatus::pending(),
+            isVerified: false,
+            isLogin: false,
+            profileImage: null,
+            verificationToken: $token,
+            verificationTokenExpireAt: new \DateTimeImmutable('+1 day')
+        );
 
         $this->userRepository->save($user);
+
+
+        /*
+         * |--------------------------------------------------------------------------
+         * | Log System Activity
+         * |--------------------------------------------------------------------------
+         */
+
+        $role = ucfirst($user->getType()->getValue());
+
+        $activityRepository = new ActivityRepository();
+
+        $activityRepository->logActivity(
+            $role . ' "' . $user->getUsername() . '" registered successfully.',
+            $user->getId(),
+            strtoupper($user->getType()->getValue())
+        );
+
+        $activityRepository->logActivity(
+            'A new ' . strtolower($role) . ' account has been registered successfully.',
+            $user->getId(),
+            strtoupper($user->getType()->getValue())
+        );
 
         /*
          * |--------------------------------------------------------------------------
@@ -68,13 +89,11 @@ $user = new User(
          * |--------------------------------------------------------------------------
          */
 
-
         /*
          * |--------------------------------------------------------------------------
          * | Save Verification Record
          * |--------------------------------------------------------------------------
          */
-
 
         /*
          * |--------------------------------------------------------------------------

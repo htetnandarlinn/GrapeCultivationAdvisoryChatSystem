@@ -25,6 +25,13 @@ $currentUser = $_SESSION['user'] ?? [
             <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
         </a>
 
+        <a href="<?= BASE_URL ?>/logout" class="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100" aria-label="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h6a2.25 2.25 0 0 1-2.25-2.25V15m-10.5-6L1.5 12m0 0l3.75 3.75M1.5 12h11.25" />
+            </svg>
+            <span class="hidden sm:inline">Logout</span>
+        </a>
+
         <!-- PROFILE TRIGGER CONTAINER DROPDOWN -->
         <div class="relative pl-2.5 border-l border-gray-200" id="profileDropdownContainer">
             <button id="profileDropdownTrigger" class="flex items-center gap-2.5 cursor-pointer group select-none focus:outline-none text-left">

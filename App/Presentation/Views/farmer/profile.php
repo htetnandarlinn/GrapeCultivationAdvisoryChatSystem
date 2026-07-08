@@ -115,7 +115,7 @@
                     </div>
 
                     <div class="bg-slate-50/60 p-3.5 rounded-xl border border-slate-100/80 shadow-3xs">
-                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-0.5">Ecosystem Permissions Role</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-0.5">Account Type</p>
                         <p class="text-xs font-bold text-slate-800 capitalize"><?= htmlspecialchars($user->getType()->getValue()); ?></p>
                     </div>
 

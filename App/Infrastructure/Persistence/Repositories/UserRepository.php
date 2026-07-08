@@ -19,13 +19,137 @@ class UserRepository implements UserRepositoryInterface
         $this->connection = (new Database())->getConnection();
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        $this->ensureUsersTableExists();
+        $this->ensureProfileImageColumn();
+    }
+
+    private function ensureUsersTableExists(): void
+    {
+        try {
+            $stmt = $this->connection->query("SHOW TABLES LIKE 'users'");
+            $table = $stmt->fetch(PDO::FETCH_NUM);
+
+            if ($table !== false) {
+                return;
+            }
+
+            $this->createUsersTable('InnoDB');
+        } catch (\Throwable $e) {
+            if ($this->isRecoverableUsersTableError($e)) {
+                $this->cleanupOrphanedUsersTablespace();
+
+                try {
+                    $this->createUsersTable('InnoDB');
+                } catch (\Throwable $e2) {
+                    $this->createUsersTable('MyISAM');
+                }
+
+                return;
+            }
+
+            throw new \RuntimeException('Unable to ensure users table exists.', 0, $e);
+        }
+    }
+
+    private function createUsersTable(string $engine = 'InnoDB'): void
+    {
+        $sql = "
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(100) NOT NULL UNIQUE,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                phone VARCHAR(50) DEFAULT NULL,
+                address VARCHAR(255) DEFAULT NULL,
+                profile_image VARCHAR(255) DEFAULT NULL,
+                user_type_id INT NOT NULL DEFAULT 1,
+                status_id INT NOT NULL DEFAULT 21,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                is_verified TINYINT(1) NOT NULL DEFAULT 0,
+                is_login TINYINT(1) NOT NULL DEFAULT 0,
+                verification_token VARCHAR(255) DEFAULT NULL,
+                verification_token_expire_at DATETIME DEFAULT NULL,
+                email_verified_at DATETIME DEFAULT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT NULL,
+                deleted_at DATETIME DEFAULT NULL,
+                INDEX idx_user_type_id (user_type_id),
+                INDEX idx_status_id (status_id),
+                INDEX idx_email (email),
+                INDEX idx_username (username)
+            ) ENGINE={$engine} DEFAULT CHARSET=utf8mb4;
+        ";
+
+        $this->connection->exec($sql);
+    }
+
+    private function cleanupOrphanedUsersTablespace(): void
+    {
+        try {
+            $this->connection->exec('DROP TABLE IF EXISTS users');
+        } catch (\Throwable) {
+            // ignore failure if metadata is inconsistent
+        }
+
+        $database = (string) $this->connection->query('SELECT DATABASE()')->fetchColumn();
+        $stmt = $this->connection->query("SHOW VARIABLES LIKE 'datadir'");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $dataDir = $row['Value'] ?? $row['value'] ?? null;
+
+        if ($database === '' || $dataDir === null) {
+            throw new \RuntimeException('Could not determine database or datadir to discard orphaned users tablespace.');
+        }
+
+        $dataDir = rtrim($dataDir, '/\\');
+        $path = $dataDir . DIRECTORY_SEPARATOR . $database . DIRECTORY_SEPARATOR . 'users.ibd';
+        $frmPath = $dataDir . DIRECTORY_SEPARATOR . $database . DIRECTORY_SEPARATOR . 'users.frm';
+
+        foreach ([$path, $frmPath] as $file) {
+            if (file_exists($file)) {
+                @unlink($file);
+            }
+        }
+    }
+
+    private function isRecoverableUsersTableError(\Throwable $e): bool
+    {
+        if ($this->isInnoDBTablespaceError($e)) {
+            return true;
+        }
+
+        if (str_contains($e->getMessage(), "Can't create table")
+            && str_contains($e->getMessage(), 'errno: 168')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isInnoDBTablespaceError(\Throwable $e): bool
+    {
+        return str_contains($e->getMessage(), 'Tablespace for table')
+            && str_contains($e->getMessage(), 'Please DISCARD the tablespace before IMPORT');
+    }
+
+    private function ensureProfileImageColumn(): void
+    {
+        try {
+            $stmt = $this->connection->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
+            $column = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($column === false) {
+                $this->connection->exec("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) DEFAULT NULL");
+            }
+        } catch (\Throwable $e) {
+            // Ignore schema issues during bootstrap and let the app continue if the table is unavailable.
+        }
     }
 
     /* ===================== SAVE ===================== */
 
     public function save(User $user): void
     {
-       $sql = "
+        $sql = '
 INSERT INTO users (
     username,
     email,
@@ -61,28 +185,26 @@ VALUES (
     :email_verified_at,
     NOW(),
     NOW()
-)";
+)';
 
         $stmt = $this->connection->prepare($sql);
 
         $stmt->execute([
-    ':username' => $user->getUsername(),
-    ':email' => $user->getEmail()->getValue(),
-    ':password' => $user->getPasswordHash(),
-    ':phone' => $user->getPhoneNumber(),
-    ':address' => $user->getAddress(),
-    ':profile_image' => $user->getProfileImage(),
-    ':user_type_id' => $this->mapUserTypeToId($user->getType()),
-    ':status_id' => $this->mapUserStatusToId($user->getStatus()),
-
-    ':is_active' => $user->isActive() ? 1 : 0,
-    ':is_verified' => $user->isVerified() ? 1 : 0,
-    ':is_login' => $user->isLogin() ? 1 : 0,
-
-    ':verification_token' => $user->getVerificationToken(),
-    ':verification_token_expire_at' => $this->formatMyanmarDateTime($user->getVerificationTokenExpireAt()),
-    ':email_verified_at' => $this->formatMyanmarDateTime($user->getEmailVerifiedAt()),
-]);
+            ':username' => $user->getUsername(),
+            ':email' => $user->getEmail()->getValue(),
+            ':password' => $user->getPasswordHash(),
+            ':phone' => $user->getPhoneNumber(),
+            ':address' => $user->getAddress(),
+            ':profile_image' => $user->getProfileImage(),
+            ':user_type_id' => $this->mapUserTypeToId($user->getType()),
+            ':status_id' => $this->mapUserStatusToId($user->getStatus()),
+            ':is_active' => $user->isActive() ? 1 : 0,
+            ':is_verified' => $user->isVerified() ? 1 : 0,
+            ':is_login' => $user->isLogin() ? 1 : 0,
+            ':verification_token' => $user->getVerificationToken(),
+            ':verification_token_expire_at' => $this->formatMyanmarDateTime($user->getVerificationTokenExpireAt()),
+            ':email_verified_at' => $this->formatMyanmarDateTime($user->getEmailVerifiedAt()),
+        ]);
 
         $user->setId((int) $this->connection->lastInsertId());
     }
@@ -91,7 +213,7 @@ VALUES (
 
     public function update(User $user): void
     {
-       $sql = "
+        $sql = '
 UPDATE users
 SET
     username = :username,
@@ -110,7 +232,7 @@ SET
     email_verified_at = :email_verified_at,
     updated_at = NOW()
 WHERE user_id = :id
-";
+';
 
         $stmt = $this->connection->prepare($sql);
 
@@ -164,7 +286,6 @@ WHERE user_id = :id
             SELECT *
             FROM users
             WHERE user_id = :id
-              AND deleted_at IS NULL
             LIMIT 1
         ';
 
@@ -261,6 +382,86 @@ WHERE user_id = :id
         return $row ? $this->mapToEntity($row) : null;
     }
 
+    public function findFarmers(): array
+    {
+        $sql = '
+            SELECT *
+            FROM users
+            WHERE user_type_id = :type_id
+              AND deleted_at IS NULL
+            ORDER BY created_at DESC
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':type_id' => 2]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function countFarmers(): int
+    {
+        $sql = '
+            SELECT COUNT(*)
+            FROM users
+            WHERE user_type_id = :type_id
+              AND deleted_at IS NULL
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':type_id' => 2]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function findExperts(): array
+    {
+        $sql = '
+            SELECT *
+            FROM users
+            WHERE user_type_id = :type_id
+              AND deleted_at IS NULL
+            ORDER BY created_at DESC
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':type_id' => 3]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function countExperts(): int
+    {
+        $sql = '
+            SELECT COUNT(*)
+            FROM users
+            WHERE user_type_id = :type_id
+              AND deleted_at IS NULL
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':type_id' => 3]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+   public function deleteById(int $id): void
+{
+    $sql = "
+        DELETE FROM users
+        WHERE user_id = :id
+    ";
+
+    $stmt = $this->connection->prepare($sql);
+
+    $stmt->execute([
+        ':id' => $id
+    ]);
+}
+
     /* ===================== EXISTS ===================== */
 
     public function emailExists(string $email): bool
@@ -286,9 +487,12 @@ WHERE user_id = :id
         $statusId = (int) ($row['status_id'] ?? 1);
 
         $userType = match ($typeId) {
-            2 => UserType::expert(),
-            3 => UserType::admin(),
-            default => UserType::farmer(),
+            1 => UserType::admin(),
+            2 => UserType::farmer(),
+            3 => UserType::expert(),
+            default => throw new \RuntimeException(
+                "Unknown user_type_id: {$typeId}"
+            ),
         };
 
         $status = match ($statusId) {
@@ -345,14 +549,34 @@ WHERE user_id = :id
 
     private function mapUserTypeToId($userType): int
     {
-        $value = is_object($userType) ? $userType->getValue() : $userType;
+        $value = is_object($userType)
+            ? strtolower($userType->getValue())
+            : strtolower((string) $userType);
 
-        return match (strtolower($value)) {
-            'expert' => 2,
-            'admin' => 3,
-            default => 1,
+        try {
+            $stmt = $this->connection->prepare(
+                'SELECT id FROM master_data WHERE category = "USER_TYPE" AND (UPPER(code)=UPPER(:value) OR UPPER(label)=UPPER(:value)) LIMIT 1'
+            );
+            $stmt->execute([':value' => $value]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($row && isset($row['id'])) {
+                return (int) $row['id'];
+            }
+        } catch (\Throwable $e) {
+            // Fall back to the legacy hard-coded mapping if master_data is unavailable.
+        }
+
+        return match ($value) {
+            'admin' => 1,
+            'farmer' => 2,
+            'expert' => 3,
+            default => throw new \InvalidArgumentException(
+                "Unknown user type: {$value}"
+            ),
         };
     }
+
 
     private function mapUserStatusToId($status): int
     {
@@ -361,17 +585,22 @@ WHERE user_id = :id
             : strtolower((string) $status);
 
         try {
-            $sql = 'SELECT master_data_id FROM master_data WHERE category = :category AND name = :name LIMIT 1';
+            $sql = '
+            SELECT id
+            FROM master_data
+            WHERE UPPER(category)=UPPER(:category)
+            AND UPPER(code)=UPPER(:code)
+            LIMIT 1
+            ';
             $stmt = $this->connection->prepare($sql);
             $stmt->execute([
-                ':category' => 'status',
-                ':name' => $value,
+                ':category' => 'STATUS',
+                ':code' => $value
             ]);
 
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($row !== false && isset($row['master_data_id'])) {
-                return (int) $row['master_data_id'];
+            if ($row) {
+                return (int) $row['id'];
             }
         } catch (\Throwable $e) {
             // Fall back to the legacy hard-coded mapping if master_data is unavailable.

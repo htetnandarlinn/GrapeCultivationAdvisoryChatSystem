@@ -19,8 +19,12 @@ class FarmerDashboardController
      */
     public function index(): void
     {
-        if (!isset($_SESSION['user'])) {
-            redirect('/login');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
             return;
         }
 
@@ -63,8 +67,12 @@ class FarmerDashboardController
      */
     public function askQuestion(): void
     {
-        if (!isset($_SESSION['user'])) {
-            redirect('/login');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
             return;
         }
 
@@ -81,8 +89,12 @@ class FarmerDashboardController
      */
     public function submitQuestion(): void
     {
-        if (!isset($_SESSION['user'])) {
-            redirect('/login');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
             return;
         }
 
@@ -96,12 +108,16 @@ class FarmerDashboardController
      */
     public function totalQuestions(): void
     {
-        if (!isset($_SESSION['user'])) {
-            redirect('/login');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
             return;
         }
 
-        $farmerId = (int) $_SESSION['user']['user_id'];
+        $farmerId = (int) $_SESSION['user']['id'];
 
         $questions = $this->questionRepository->findByFarmer($farmerId);
 

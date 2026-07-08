@@ -12,7 +12,9 @@ class UpdateProfileRequestValidator
             $errors['username'] = "Username is required";
         }
 
-        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        $email = trim((string) ($data['email'] ?? ''));
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = "Valid email is required";
         }
 

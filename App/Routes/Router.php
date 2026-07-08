@@ -5,6 +5,7 @@ namespace App\Routes;
 use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
 use App\Infrastructure\Persistence\Repositories\QuestionRepository;
 use App\Presentation\Controllers\Consultation\ConsultationController;
+use App\Presentation\Controllers\Expert\AnswerQuestionController;
 
 class Router
 {
@@ -75,13 +76,15 @@ class Router
     private function resolveController(string $controller)
     {
         return match ($controller) {
-
             ConsultationController::class =>
                 new ConsultationController(
                     new AskQuestionHandler(
                         new QuestionRepository()
                     )
                 ),
+
+            AnswerQuestionController::class =>
+                new AnswerQuestionController(),
 
             default => new $controller()
         };

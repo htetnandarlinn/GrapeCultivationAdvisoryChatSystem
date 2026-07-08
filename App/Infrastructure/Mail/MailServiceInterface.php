@@ -9,4 +9,10 @@ interface MailServiceInterface
         string $username,
         string $verificationLink
     ): bool;
+    
+    public function sendPasswordResetEmail(
+        string $email,
+        string $username,
+        string $resetLink
+    ): bool;
 }

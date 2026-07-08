@@ -1,5 +1,4 @@
 <?php
-// Active page controller
 $currentPage = $activePage ?? 'dashboard';
 ?>
 
@@ -23,7 +22,6 @@ $currentPage = $activePage ?? 'dashboard';
         <!-- NAV -->
         <nav class="space-y-1">
 
-            <!-- Dashboard -->
             <a href="<?= BASE_URL ?>/farmer-dashboard"
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= $currentPage === 'dashboard'
@@ -32,7 +30,6 @@ $currentPage = $activePage ?? 'dashboard';
                 📊 Dashboard
             </a>
 
-            <!-- ASK QUESTION (FIXED) -->
             <a href="<?= BASE_URL ?>/farmer-dashboard/ask-question"
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= ($currentPage === 'ask' || $currentPage === 'ask-question')
@@ -41,7 +38,6 @@ $currentPage = $activePage ?? 'dashboard';
                 ❓ Ask Question
             </a>
 
-            <!-- CONSULTATION -->
             <a href="<?= BASE_URL ?>/farmer-dashboard/consultation"
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= $currentPage === 'consultation'
@@ -50,7 +46,6 @@ $currentPage = $activePage ?? 'dashboard';
                 💬 Consultation
             </a>
 
-            <!-- ARTICLES -->
             <a href="<?= BASE_URL ?>/farmer-dashboard/articles"
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= $currentPage === 'articles'
@@ -59,7 +54,6 @@ $currentPage = $activePage ?? 'dashboard';
                 📰 Articles
             </a>
 
-            <!-- NOTIFICATIONS -->
             <a href="<?= BASE_URL ?>/farmer-dashboard/notifications"
                class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= $currentPage === 'notifications'
@@ -69,7 +63,6 @@ $currentPage = $activePage ?? 'dashboard';
                 <span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">3</span>
             </a>
 
-            <!-- TOTAL QUESTIONS (ADD THIS) -->
             <a href="<?= BASE_URL ?>/farmer-dashboard/total-questions"
                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all
                <?= $currentPage === 'total-questions'

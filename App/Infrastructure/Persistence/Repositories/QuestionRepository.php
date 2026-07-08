@@ -20,7 +20,7 @@ class QuestionRepository implements QuestionRepositoryInterface
 
     public function save(Question $question): bool
     {
-        $sql = "
+        $sql = '
             INSERT INTO questions (
                 farmer_id,
                 category_id,
@@ -44,23 +44,23 @@ class QuestionRepository implements QuestionRepositoryInterface
                 NOW(),
                 NOW()
             )
-        ";
+        ';
 
         $stmt = $this->connection->prepare($sql);
 
         $success = $stmt->execute([
-            ':farmer_id'   => $question->getFarmerId(),
+            ':farmer_id' => $question->getFarmerId(),
             ':category_id' => $question->getCategoryId(),
-            ':title'       => $question->getTitle(),
+            ':title' => $question->getTitle(),
             ':description' => $question->getDescription(),
-            ':image'       => $question->getImage(),
-            ':status_id'   => $question->getStatusId(),
-            ':expert_id'   => $question->getExpertId(),
-            ':answer'      => $question->getAnswer(),
+            ':image' => $question->getImage(),
+            ':status_id' => $question->getStatusId(),
+            ':expert_id' => $question->getExpertId(),
+            ':answer' => $question->getAnswer(),
         ]);
 
         if ($success) {
-            $question->setQuestionId((int)$this->connection->lastInsertId());
+            $question->setQuestionId((int) $this->connection->lastInsertId());
         }
 
         return $success;
@@ -69,7 +69,7 @@ class QuestionRepository implements QuestionRepositoryInterface
     public function findById(int $questionId): ?Question
     {
         $stmt = $this->connection->prepare(
-            "SELECT * FROM questions WHERE question_id = :id LIMIT 1"
+            'SELECT * FROM questions WHERE question_id = :id LIMIT 1'
         );
         $stmt->execute([':id' => $questionId]);
 
@@ -80,14 +80,14 @@ class QuestionRepository implements QuestionRepositoryInterface
         }
 
         return new Question(
-            (int)$row['question_id'],
-            (int)$row['farmer_id'],
-            (int)$row['category_id'],
+            (int) $row['question_id'],
+            (int) $row['farmer_id'],
+            (int) $row['category_id'],
             $row['title'],
             $row['description'],
             $row['image'],
-            (int)$row['status_id'],
-            $row['expert_id'] ? (int)$row['expert_id'] : null,
+            (int) $row['status_id'],
+            $row['expert_id'] ? (int) $row['expert_id'] : null,
             $row['answer'],
             $row['created_at'],
             $row['updated_at']
@@ -132,12 +132,103 @@ class QuestionRepository implements QuestionRepositoryInterface
 
     public function findPending(): array
     {
-        $stmt = $this->connection->prepare(
-            "SELECT * FROM questions WHERE status_id = 7 ORDER BY created_at DESC"
-        );
-        $stmt->execute();
+        $sql = "
+        SELECT
+            q.*,
+            u.username AS farmer_name,
+            c.label AS category_name
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        FROM questions q
+
+        LEFT JOIN users u
+            ON u.user_id=q.farmer_id
+
+        LEFT JOIN master_data c
+            ON c.id=q.category_id
+            AND c.category='QUESTION_CATEGORY'
+
+        WHERE q.status_id=7
+
+        ORDER BY q.created_at DESC
+    ";
+
+        return $this
+            ->connection
+            ->query($sql)
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findAll(): array
+    {
+        $sql = "
+        SELECT
+            q.question_id,
+            q.title,
+            q.description,
+            q.image,
+            q.answer,
+            q.created_at,
+
+            u.username AS farmer_name,
+
+            c.label AS category_name,
+
+            s.label AS status_name,
+
+            e.username AS expert_name
+
+        FROM questions q
+
+        LEFT JOIN users u
+            ON u.user_id=q.farmer_id
+
+        LEFT JOIN master_data c
+            ON c.id=q.category_id
+            AND c.category='QUESTION_CATEGORY'
+
+        LEFT JOIN master_data s
+            ON s.id=q.status_id
+            AND s.category='QUESTION_STATUS'
+
+        LEFT JOIN users e
+            ON e.user_id=q.expert_id
+
+        ORDER BY q.created_at DESC
+    ";
+
+        return $this
+            ->connection
+            ->query($sql)
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findPendingById(int $questionId): ?array
+    {
+        $stmt = $this->connection->prepare("
+        SELECT
+            q.*,
+            u.username AS farmer_name,
+            c.label AS category_name
+        FROM questions q
+
+        LEFT JOIN users u
+            ON u.user_id = q.farmer_id
+
+        LEFT JOIN master_data c
+            ON c.id = q.category_id
+            AND c.category = 'QUESTION_CATEGORY'
+
+        WHERE q.question_id = :id
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            ':id' => $questionId
+        ]);
+
+        $question = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $question ?: null;
     }
 
     public function answerQuestion(
@@ -147,18 +238,18 @@ class QuestionRepository implements QuestionRepositoryInterface
         int $statusId
     ): bool {
         $stmt = $this->connection->prepare(
-            "UPDATE questions
+            'UPDATE questions
              SET expert_id = :expert_id,
                  answer = :answer,
                  status_id = :status_id,
                  updated_at = NOW()
-             WHERE question_id = :question_id"
+             WHERE question_id = :question_id'
         );
 
         return $stmt->execute([
-            ':expert_id'   => $expertId,
-            ':answer'      => $answer,
-            ':status_id'   => $statusId,
+            ':expert_id' => $expertId,
+            ':answer' => $answer,
+            ':status_id' => $statusId,
             ':question_id' => $questionId,
         ]);
     }

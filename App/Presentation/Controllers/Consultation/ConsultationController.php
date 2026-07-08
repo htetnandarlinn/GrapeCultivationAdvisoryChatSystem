@@ -14,11 +14,29 @@ class ConsultationController
 
     public function create(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
+            return;
+        }
+
         require BASE_PATH . '/App/Presentation/Views/farmer/ask-question.php';
     }
 
     public function store(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/access-denied');
+            return;
+        }
+
         try {
             $farmerId   = (int)($_SESSION['user']['id'] ?? 0);
             $categoryId = (int)($_POST['category_id'] ?? 0);

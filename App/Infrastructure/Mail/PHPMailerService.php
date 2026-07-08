@@ -106,4 +106,66 @@ final class PHPMailerService implements MailServiceInterface
             );
         }
     }
+
+    public function sendPasswordResetEmail(
+        string $email,
+        string $username,
+        string $resetLink
+    ): bool {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = MailConfig::HOST;
+            $mail->SMTPAuth = true;
+            $mail->Username = MailConfig::USERNAME;
+            $mail->Password = MailConfig::PASSWORD;
+            $mail->SMTPSecure = MailConfig::ENCRYPTION;
+            $mail->Port = MailConfig::PORT;
+
+            $mail->Debugoutput = 'html';
+
+            $mail->setFrom(
+                MailConfig::FROM_EMAIL,
+                MailConfig::FROM_NAME
+            );
+
+            $mail->addAddress(
+                $email,
+                $username
+            );
+
+            $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
+            $mail->Subject = 'Reset Your Password';
+
+            $template = __DIR__ . '/Templates/reset-password.php';
+
+            if (!file_exists($template)) {
+                throw new \RuntimeException('Email template not found: ' . $template);
+            }
+
+            $data = [
+                'username' => $username,
+                'resetLink' => $resetLink,
+            ];
+
+            extract($data);
+
+            ob_start();
+            require $template;
+            $mail->Body = ob_get_clean();
+
+            $mail->AltBody = "Hello {$username}\n\nPlease reset your password:\n{$resetLink}";
+
+            $result = $mail->send();
+
+            error_log('Password reset email sent: ' . ($result ? 'true' : 'false'));
+
+            return $result;
+
+        } catch (Exception $e) {
+            throw new \RuntimeException('Unable to send password reset email. ' . $mail->ErrorInfo);
+        }
+    }
 }

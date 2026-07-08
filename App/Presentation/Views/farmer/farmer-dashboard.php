@@ -3,6 +3,7 @@ $activePage = 'dashboard';
 
 $currentUser = $_SESSION['user'] ?? null;
 $username = $currentUser['username'] ?? 'Farmer';
+$userAvatar = $currentUser['avatar'] ?? null;
 $questions = $questions ?? [];
 $totalQuestions = $totalQuestions ?? count($questions);
 
@@ -27,24 +28,7 @@ foreach ($questions as $q) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Grape Cultivation Advisory Chat System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
+
 </head>
 <body class="bg-gradient-to-b from-[#eaf3e9] to-[#e3f0e2] text-slate-800 antialiased min-h-screen">
 
@@ -55,11 +39,17 @@ foreach ($questions as $q) {
 
             <main class="flex-grow p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 w-full max-w-full">
                 
-                <div class="animate-fade-in">
-                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        Welcome back, <?= htmlspecialchars($username) ?>! 👋
-                    </h1>
-                    <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Get expert advice and grow healthy grapes.</p>
+                <div class="animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            Welcome back, <?= htmlspecialchars($username) ?>! 👋
+                        </h1>
+                        <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">Get expert advice and grow healthy grapes.</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white/80 border border-slate-200 rounded-2xl px-3 py-2 shadow-sm">
+    
+            
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 animate-fade-in" style="animation-delay: 0.05s;">
@@ -105,7 +95,7 @@ foreach ($questions as $q) {
         </h2>
 
         <a href="<?= BASE_URL ?>/farmer-dashboard/ask-question"
-        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold">
+         class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold">
             + Ask Question
         </a>
 
@@ -249,4 +239,3 @@ No questions found.
         });
     </script>
 </body>
-</html>

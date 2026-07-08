@@ -14,6 +14,8 @@ interface QuestionRepositoryInterface
 
     public function findPending(): array;
 
+    public function findAll(): array;
+
     public function answerQuestion(
         int $questionId,
         int $expertId,

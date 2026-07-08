@@ -8,6 +8,7 @@ use App\Domain\UserManagement\Entities\User;
 use App\Domain\UserManagement\Services\UserAuthenticationService;
 use App\Domain\UserManagement\ValueObjects\UserStatus;
 use App\Infrastructure\Mail\PHPMailerService;
+use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
@@ -75,6 +76,10 @@ final class AuthController
 
     public function authenticate(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $payload = $_POST;
 
         try {
@@ -96,6 +101,17 @@ final class AuthController
                 'role' => ucfirst($user->getType()->getValue()),
                 'avatar' => $user->getProfileImage()
             ];
+            
+            $activityRepository = new ActivityRepository();
+
+            $activityRepository->logActivity(
+                ucfirst($user->getType()->getValue())
+                    . ' "'
+                    . $user->getUsername()
+                    . '" logged into the system.',
+                $user->getId(),
+                strtoupper($user->getType()->getValue())
+            );
 
             $this->redirectByRole($user);
             exit;
@@ -182,7 +198,7 @@ final class AuthController
 
     private function redirectByRole(User $user): void
     {
-        $route = match ($user->getType()->getValue()) {
+        $route = match (strtolower($user->getType()->getValue())) {
             'admin' => '/admin-dashboard',
             'expert' => '/expert-dashboard',
             default => '/farmer-dashboard',
