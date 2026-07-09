@@ -1,8 +1,14 @@
 <?php
 $activePage = 'users';
 $tab = $_GET['tab'] ?? 'all';
+// Ensure counts are defined to avoid undefined variable notices
+$farmerCount = $farmerCount ?? (isset($farmers) ? count($farmers) : 0);
+$expertCount = $expertCount ?? (isset($experts) ? count($experts) : 0);
+$allUsers = $allUsers ?? (isset($allUsers) ? $allUsers : (array_merge(isset($farmers) ? $farmers : [], isset($experts) ? $experts : [])));
+$roles = $roles ?? [];
+
 ?>
-<main class="flex-grow px-4 sm:px-8 pb-8 pt-28 space-y-6 animate__animated animate__fadeIn">
+<main class="max-w-7xl mx-auto px-4 sm:px-8 pb-8 pt-10 space-y-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 class="text-xl font-black text-slate-900">User Management</h1>
@@ -17,96 +23,72 @@ $tab = $_GET['tab'] ?? 'all';
     <?php unset($_SESSION['admin_message']); endif; ?>
 
     <div class="flex gap-1 border-b border-slate-200">
-        <a href="?tab=all"
-           class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition <?= $tab === 'all' ? 'bg-white text-[#15803D] border border-b-0 border-slate-200 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' ?>">
-            All Users (<?= $farmerCount + $expertCount ?>)
-        </a>
-        <a href="?tab=farmers"
-           class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition <?= $tab === 'farmers' ? 'bg-white text-[#15803D] border border-b-0 border-slate-200 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' ?>">
-            Farmers (<?= $farmerCount ?>)
-        </a>
-        <a href="?tab=experts"
-           class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition <?= $tab === 'experts' ? 'bg-white text-[#15803D] border border-b-0 border-slate-200 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' ?>">
-            Experts (<?= $expertCount ?>)
-        </a>
+        <?php foreach (['all' => 'All Users', 'farmers' => 'Farmers', 'experts' => 'Experts'] as $key => $label): 
+            $count = ($key === 'all') ? ($farmerCount + $expertCount) : ($key === 'farmers' ? $farmerCount : $expertCount);
+        ?>
+            <a href="?tab=<?= $key ?>"
+               class="px-4 py-2.5 text-xs font-bold rounded-t-xl transition <?= $tab === $key ? 'bg-white text-[#15803D] border border-b-0 border-slate-200 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' ?>">
+                <?= $label ?> (<?= $count ?>)
+            </a>
+        <?php endforeach; ?>
     </div>
 
-    <div class="bg-white rounded-3xl p-6 border border-white/50 shadow-sm">
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
-                        <th class="pb-4 pl-2">Profile</th>
-                        <th class="pb-4">Email</th>
-                        <th class="pb-4">Phone</th>
-                        <th class="pb-4">Role</th>
-                        <th class="pb-4">Created</th>
-                        <th class="pb-4">Status</th>
-                        <th class="pb-4 text-right pr-2">Actions</th>
+                    <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50 bg-slate-50/50">
+                        <th class="py-4 pl-6">Profile</th>
+                        <th class="py-4">Email</th>
+                        <th class="py-4">Phone</th>
+                        <th class="py-4">Role</th>
+                        <th class="py-4">Status</th>
+                        <th class="py-4 text-right pr-6">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-xs text-slate-700">
-                    <?php
+                    <?php 
                     $users = match ($tab) {
-                        'farmers' => $farmers,
-                        'experts' => $experts,
+                        'farmers' => $farmers ?? [],
+                        'experts' => $experts ?? [],
                         default => $allUsers,
                     };
                     ?>
                     <?php if (empty($users)): ?>
-                        <tr class="border-b border-slate-50 last:border-0">
-                            <td colspan="7" class="py-8 text-center text-slate-400">No users found.</td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($users as $user): ?>
-                            <?php
-                            $roleColors = [
-                                'farmer' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                'expert' => 'bg-blue-50 text-blue-700 border-blue-200',
-                                'admin' => 'bg-purple-50 text-purple-700 border-purple-200',
-                            ];
-                            $roleVal = $user->getType()->getValue();
-                            $colorClass = $roleColors[$roleVal] ?? 'bg-slate-50 text-slate-700 border-slate-200';
-                            $uid = $user->getId();
-                            ?>
-                            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition">
-                                <td class="py-5 pl-2 font-bold text-slate-900">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                                            <?php if (!empty($user->getProfileImage())): ?>
-                                                <img src="<?= BASE_URL . htmlspecialchars($user->getProfileImage()) ?>" alt="<?= htmlspecialchars($user->getUsername()) ?>" class="w-full h-full object-cover">
-                                            <?php else: ?>
-                                                <span class="text-xs font-semibold text-slate-500"><?= htmlspecialchars(strtoupper(substr($user->getUsername(), 0, 1))) ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-slate-900"><?= htmlspecialchars($user->getUsername()) ?></div>
-                                            <div class="text-[11px] text-slate-500"><?= htmlspecialchars($user->getAddress() ?: 'No address provided') ?></div>
-                                        </div>
+                        <tr><td colspan="6" class="py-12 text-center text-slate-400">No users found.</td></tr>
+                    <?php else: foreach ($users as $user): 
+                        $roleVal = $user->getType()->getValue();
+                        $uid = $user->getId();
+                    ?>
+                        <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition">
+                            <td class="py-4 pl-6 font-bold text-slate-900">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                        <span class="text-[10px] font-bold"><?= strtoupper(substr($user->getUsername(), 0, 1)) ?></span>
                                     </div>
-                                </td>
-                                <td class="py-5"><?= htmlspecialchars($user->getEmail()->getValue()) ?></td>
-                                <td class="py-5"><?= htmlspecialchars($user->getPhoneNumber()) ?></td>
-                                <td class="py-5">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border <?= $colorClass ?> capitalize">
-                                        <?= htmlspecialchars($roleVal) ?>
-                                    </span>
-                                </td>
-                                <td class="py-5 text-slate-600"><?= htmlspecialchars($user->getCreatedAt()->format('F d, Y')) ?></td>
-                                <td class="py-5">
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-1.5 h-1.5 rounded-full <?= $user->getStatus()->isActive() ? 'bg-emerald-500' : ($user->getStatus()->isBlocked() ? 'bg-red-500' : 'bg-yellow-500') ?>"></div>
-                                        <span class="font-bold <?= $user->getStatus()->isActive() ? 'text-emerald-600' : ($user->getStatus()->isBlocked() ? 'text-red-600' : 'text-amber-600') ?>"><?= htmlspecialchars(ucfirst($user->getStatus()->getValue())) ?></span>
+                                    <div>
+                                        <div class="font-bold"><?= htmlspecialchars($user->getUsername()) ?></div>
                                     </div>
-                                </td>
-                                <td class="py-5 text-right pr-2">
-                                    <button onclick="openRoleModal(<?= $uid ?>, '<?= htmlspecialchars($roleVal) ?>', '<?= htmlspecialchars($user->getUsername()) ?>')" class="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100 transition">
+                                </div>
+                            </td>
+                            <td class="py-4"><?= htmlspecialchars($user->getEmail()->getValue()) ?></td>
+                            <td class="py-4"><?= htmlspecialchars($user->getPhoneNumber()) ?></td>
+                            <td class="py-4">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 capitalize"><?= htmlspecialchars($roleVal) ?></span>
+                            </td>
+                            <td class="py-4">
+                                <span class="font-bold <?= $user->getStatus()->isActive() ? 'text-emerald-600' : 'text-slate-400' ?>"><?= ucfirst($user->getStatus()->getValue()) ?></span>
+                            </td>
+                            <td class="py-4 text-right pr-6">
+                                <?php if (can('users.role')): ?>
+                                    <button onclick="openRoleModal(<?= $uid ?>, '<?= htmlspecialchars($roleVal) ?>', '<?= htmlspecialchars($user->getUsername()) ?>')" 
+                                            class="bg-[#15803D] hover:bg-green-900 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
                                         Manage
                                     </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; endif; ?>
                 </tbody>
             </table>
         </div>

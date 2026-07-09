@@ -57,7 +57,6 @@ function is_active($path) {
             </div>
         </a>
 <?php endif; ?>
-
 <?php if (can('questions.ask')): ?>
         <a href="<?= BASE_URL ?>/farmer-dashboard/ask-question" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('ask-question') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
             <div class="flex items-center gap-3">
@@ -77,7 +76,7 @@ function is_active($path) {
 <?php endif; ?>
 
 <?php if (can('questions.answer')): ?>
-        <a href="<?= BASE_URL ?>/expert/questions" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/questions') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+        <a href="<?= BASE_URL ?>/expert/questions/answer" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/questions') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
             <div class="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 View Questions

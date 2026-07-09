@@ -6,9 +6,14 @@ use App\Domain\KnowledgeBase\Entities\Article;
 
 final class ArticleDomainService
 {
-    public function publish(Article $article): void
+    public function accept(Article $article): void
     {
-        $article->publish();
+        $article->setStatus(\App\Domain\KnowledgeBase\ValueObjects\ArticleStatus::accepted());
+    }
+
+    public function reject(Article $article): void
+    {
+        $article->setStatus(\App\Domain\KnowledgeBase\ValueObjects\ArticleStatus::rejected());
     }
 }
 

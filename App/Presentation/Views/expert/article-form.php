@@ -7,7 +7,6 @@ $article = $article ?? null;
 $defaultValues = [
     'title' => $article ? $article->getTitle() : '',
     'content' => $article ? $article->getContent() : '',
-    'status' => $article ? $article->getStatus()->getValue() : 'draft',
 ];
 
 $currentImage = $article ? $article->getImage() : null;
@@ -77,23 +76,10 @@ unset($_SESSION['article_message']);
                 <input type="file" id="imageInput" name="image" accept="image/*" class="hidden">
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</label>
-                <div class="flex gap-4">
-                    <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-50/50 cursor-pointer hover:border-slate-300 transition">
-                        <input type="radio" name="status" value="draft" class="accent-amber-500 w-4 h-4" <?= $defaultValues['status'] === 'draft' ? 'checked' : '' ?>>
-                        <div>
-                            <span class="text-sm font-bold text-slate-700">Draft</span>
-                            <span class="text-[10px] text-slate-400 block">Save as draft</span>
-                        </div>
-                    </label>
-                    <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-50/50 cursor-pointer hover:border-slate-300 transition">
-                        <input type="radio" name="status" value="published" class="accent-emerald-500 w-4 h-4" <?= $defaultValues['status'] === 'published' ? 'checked' : '' ?>>
-                        <div>
-                            <span class="text-sm font-bold text-slate-700">Published</span>
-                            <span class="text-[10px] text-slate-400 block">Publish immediately</span>
-                        </div>
-                    </label>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="text-xs font-bold text-amber-700">This article will be submitted as <span class="uppercase">Pending</span> review by an admin.</span>
                 </div>
             </div>
 

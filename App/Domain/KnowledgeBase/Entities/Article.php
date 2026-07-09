@@ -11,6 +11,7 @@ final class Article
     private string $content;
     private ?string $image;
     private ArticleStatus $status;
+    private ?string $rejectionNote;
     private string $authorId;
     private \DateTimeImmutable $createdAt;
     private ?\DateTimeImmutable $updatedAt;
@@ -22,6 +23,7 @@ final class Article
         string $authorId,
         ?string $image = null,
         ?ArticleStatus $status = null,
+        ?string $rejectionNote = null,
         ?\DateTimeImmutable $createdAt = null,
         ?\DateTimeImmutable $updatedAt = null,
     ) {
@@ -30,7 +32,8 @@ final class Article
         $this->content = $content;
         $this->authorId = $authorId;
         $this->image = $image;
-        $this->status = $status ?? ArticleStatus::draft();
+        $this->status = $status ?? ArticleStatus::pending();
+        $this->rejectionNote = $rejectionNote;
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
         $this->updatedAt = $updatedAt;
     }
@@ -75,6 +78,16 @@ final class Article
         return $this->updatedAt;
     }
 
+    public function getRejectionNote(): ?string
+    {
+        return $this->rejectionNote;
+    }
+
+    public function setRejectionNote(?string $rejectionNote): void
+    {
+        $this->rejectionNote = $rejectionNote;
+    }
+
     public function setTitle(string $title): void
     {
         $this->title = $title;
@@ -88,11 +101,6 @@ final class Article
     public function setImage(?string $image): void
     {
         $this->image = $image;
-    }
-
-    public function publish(): void
-    {
-        $this->status = ArticleStatus::published();
     }
 
     public function setStatus(ArticleStatus $status): void
