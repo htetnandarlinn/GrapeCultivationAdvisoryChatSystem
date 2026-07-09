@@ -6,13 +6,10 @@ use App\Application\PermissionManagement\PermissionRegistrar;
 use App\Application\PermissionManagement\PermissionService;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 final class PermissionAssignmentController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private PermissionService $permissionService,
         private PermissionRegistrar $registrar,
@@ -22,7 +19,7 @@ final class PermissionAssignmentController
     #[Permission('permissions.sync', 'Sync Permissions')]
     public function sync(): void
     {
-        $this->authorize('permissions.sync');
+
         $count = $this->registrar->register();
         $_SESSION['role_message'] = $count > 0
             ? "$count new permission(s) registered from code."
@@ -33,7 +30,7 @@ final class PermissionAssignmentController
     #[Permission('permissions.assign', 'Assign Permissions')]
     public function list(): void
     {
-        $this->authorize('permissions.assign');
+        
 
         $roleId = (int) ($_GET['role_id'] ?? 0);
         $role = $this->roleRepo->findById($roleId);
@@ -56,7 +53,7 @@ final class PermissionAssignmentController
     #[Permission('permissions.assign', 'Assign Permissions')]
     public function update(): void
     {
-        $this->authorize('permissions.assign');
+        
 
         $roleId = (int) ($_POST['role_id'] ?? 0);
         $permissionIds = array_map('intval', $_POST['permissions'] ?? []);

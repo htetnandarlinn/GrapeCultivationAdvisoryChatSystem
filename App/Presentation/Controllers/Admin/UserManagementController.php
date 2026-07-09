@@ -6,13 +6,10 @@ use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\ValueObjects\UserType;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 final class UserManagementController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepo,
@@ -21,7 +18,6 @@ final class UserManagementController
     #[Permission('users.view', 'View Users')]
     public function index(): void
     {
-        $this->authorize('users.view');
 
         if (!isset($_SESSION['admin_name'])) {
             $_SESSION['admin_name'] = $_SESSION['user']['username'] ?? 'Admin';
@@ -49,7 +45,7 @@ final class UserManagementController
     #[Permission('users.role', 'Assign User Role')]
     public function assignRole(): void
     {
-        $this->authorize('users.role');
+
 
         $userId = (int) ($_POST['user_id'] ?? 0);
         $roleCode = strtolower(trim($_POST['role_code'] ?? ''));

@@ -16,6 +16,8 @@ function getInitials($string) {
 }
 
 // Build JSON data for JS
+// Ensure $consultations is defined and iterable to avoid undefined variable errors
+$consultations = $consultations ?? [];
 $consultationsData = [];
 foreach ($consultations as $c) {
     $expertId = $c->getExpertId();

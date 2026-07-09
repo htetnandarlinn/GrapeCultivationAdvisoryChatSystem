@@ -5,14 +5,11 @@ namespace App\Presentation\Controllers\Expert;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 use PDO;
 
 class ConsultationController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
@@ -22,8 +19,6 @@ class ConsultationController
     #[Permission('consultations.answer', 'Answer Consultations')]
     public function index(): void
     {
-        $this->authorize('consultations.answer');
-
         $expertId = (int) ($_SESSION['user']['id'] ?? 0);
         $consultations = $this->consultationRepository->findByExpert($expertId);
 
@@ -36,8 +31,6 @@ class ConsultationController
     #[Permission('consultations.answer', 'Answer Consultations')]
     public function view(): void
     {
-        $this->authorize('consultations.answer');
-
         $id = (int) ($_GET['id'] ?? 0);
         $consultation = $this->consultationRepository->findById($id);
 
@@ -69,8 +62,6 @@ class ConsultationController
     #[Permission('consultations.answer', 'Answer Consultations')]
     public function accept(): void
     {
-        $this->authorize('consultations.answer');
-
         $id = (int) ($_POST['consultation_id'] ?? 0);
         $consultation = $this->consultationRepository->findById($id);
 
@@ -96,8 +87,6 @@ class ConsultationController
     #[Permission('consultations.answer', 'Answer Consultations')]
     public function reject(): void
     {
-        $this->authorize('consultations.answer');
-
         $id = (int) ($_POST['consultation_id'] ?? 0);
         $note = trim($_POST['rejection_note'] ?? '');
 
@@ -131,8 +120,6 @@ class ConsultationController
     #[Permission('consultations.answer', 'Answer Consultations')]
     public function chat(): void
     {
-        $this->authorize('consultations.answer');
-
         $id = (int) ($_GET['id'] ?? 0);
         $consultation = $this->consultationRepository->findById($id);
 

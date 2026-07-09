@@ -20,7 +20,7 @@ use App\Routes\Router;
 
 $router = new Router();
 
-/* ================= AUTH ================= */
+/* ================= AUTH (public) ================= */
 
 $router->get('/register', [AuthController::class, 'showRegister']);
 $router->post('/register', [AuthController::class, 'register']);
@@ -29,88 +29,98 @@ $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'authenticate']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
-/* ================= EMAIL ================= */
+/* ================= EMAIL (public) ================= */
 
 $router->get('/verify-email', [AuthController::class, 'verifyEmail']);
 
-/* ================= FORGOT / RESET PASSWORD ================= */
+/* ================= FORGOT / RESET PASSWORD (public) ================= */
+
 $router->get('/forgot-password', [ForgotPasswordController::class, 'showForm']);
 $router->post('/forgot-password', [ForgotPasswordController::class, 'send']);
 $router->get('/reset-password', [ForgotPasswordController::class, 'showReset']);
 $router->post('/reset-password', [ForgotPasswordController::class, 'reset']);
 
-/* ================= PUBLIC ARTICLES ================= */
+/* ================= PUBLIC ARTICLES (public) ================= */
 
 $router->get('/articles', [PublicArticleController::class, 'index']);
 $router->get('/articles/view', [PublicArticleController::class, 'view']);
 
-/* ================= HOME ================= */
+/* ================= HOME (public) ================= */
 
 $router->get('/', [DashboardController::class, 'home']);
 
-/* ================= DASHBOARD ================= */
-$router->get('/dashboard', [DashboardController::class, 'index']);
+/* ================= DASHBOARD (authenticated) ================= */
 
-$router->get('/admin/users', [UserManagementController::class, 'index']);
+$router->get('/dashboard', [DashboardController::class, 'index'])->auth();
 
-$router->get('/admin/roles', [RoleController::class, 'index']);
-$router->get('/admin/roles/create', [RoleController::class, 'create']);
-$router->post('/admin/roles/store', [RoleController::class, 'store']);
-$router->get('/admin/roles/edit', [RoleController::class, 'edit']);
-$router->post('/admin/roles/update', [RoleController::class, 'update']);
-$router->post('/admin/roles/delete', [RoleController::class, 'delete']);
+/* ================= ADMIN: USER MANAGEMENT ================= */
 
-$router->post('/admin/users/role', [UserManagementController::class, 'assignRole']);
+$router->get('/admin/users', [UserManagementController::class, 'index'])->role('admin')->can('users.view');
+$router->post('/admin/users/role', [UserManagementController::class, 'assignRole'])->role('admin')->can('users.manage');
 
-$router->get('/admin/permissions/sync', [PermissionAssignmentController::class, 'sync']);
-$router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list']);
-$router->post('/admin/roles/permissions/update', [PermissionAssignmentController::class, 'update']);
+/* ================= ADMIN: ROLE MANAGEMENT ================= */
+
+$router->get('/admin/roles', [RoleController::class, 'index'])->role('admin')->can('roles.view');
+$router->get('/admin/roles/create', [RoleController::class, 'create'])->role('admin')->can('roles.create');
+$router->post('/admin/roles/store', [RoleController::class, 'store'])->role('admin')->can('roles.create');
+$router->get('/admin/roles/edit', [RoleController::class, 'edit'])->role('admin')->can('roles.update');
+$router->post('/admin/roles/update', [RoleController::class, 'update'])->role('admin')->can('roles.update');
+$router->post('/admin/roles/delete', [RoleController::class, 'delete'])->role('admin')->can('roles.delete');
+
+/* ================= ADMIN: PERMISSIONS ================= */
+
+$router->get('/admin/permissions/sync', [PermissionAssignmentController::class, 'sync'])->role('admin')->can('permissions.sync');
+$router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list'])->role('admin')->can('permissions.update');
+$router->post('/admin/roles/permissions/update', [PermissionAssignmentController::class, 'update'])->role('admin')->can('permissions.update');
+
+/* ================= ADMIN: CONSULTATIONS ================= */
+
+$router->get('/admin/consultations', [AdminConsultationController::class, 'index'])->role('admin')->can('consultations.view');
+$router->get('/admin/consultations/view', [AdminConsultationController::class, 'view'])->role('admin')->can('consultations.view');
+$router->post('/admin/consultations/assign', [AdminConsultationController::class, 'assignExpert'])->role('admin')->can('consultations.assign');
+
+/* ================= EXPERT: ARTICLES ================= */
+
+$router->get('/expert/articles', [ArticleController::class, 'index'])->role('expert')->can('articles.view');
+$router->get('/expert/articles/create', [ArticleController::class, 'create'])->role('expert')->can('articles.create');
+$router->post('/expert/articles/store', [ArticleController::class, 'store'])->role('expert')->can('articles.create');
+$router->get('/expert/articles/edit', [ArticleController::class, 'edit'])->role('expert')->can('articles.update');
+$router->post('/expert/articles/update', [ArticleController::class, 'update'])->role('expert')->can('articles.update');
+$router->post('/expert/articles/delete', [ArticleController::class, 'delete'])->role('expert')->can('articles.delete');
+$router->get('/expert/articles/view', [ArticleController::class, 'view'])->role('expert')->can('articles.view');
+$router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role('expert')->can('articles.update');
+$router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role('expert')->can('articles.update');
+
+/* ================= EXPERT: CONSULTATIONS ================= */
+
+$router->get('/expert/consultations', [ExpertConsultationController::class, 'index'])->role('expert')->can('consultations.answer');
+$router->get('/expert/consultations/view', [ExpertConsultationController::class, 'view'])->role('expert')->can('consultations.answer');
+$router->post('/expert/consultations/accept', [ExpertConsultationController::class, 'accept'])->role('expert')->can('consultations.answer');
+$router->post('/expert/consultations/reject', [ExpertConsultationController::class, 'reject'])->role('expert')->can('consultations.answer');
+$router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat'])->role('expert')->can('consultations.answer');
+
+/* ================= FARMER: CONSULTATIONS ================= */
+
+$router->get('/consultation/create', [ConsultationController::class, 'create'])->role('farmer');
+$router->post('/consultation/store', [ConsultationController::class, 'store'])->role('farmer');
+$router->post('/consultation/store-ajax', [ConsultationController::class, 'storeAjax'])->role('farmer');
+$router->get('/consultation/my-consultations', [ConsultationController::class, 'myConsultations'])->role('farmer');
+$router->get('/consultations', [ConsultationController::class, 'frontendHistory'])->role('farmer');
+
+/* ================= CONSULTATION CHAT (farmer + expert) ================= */
+
+$router->get('/consultation/chat', [ConsultationController::class, 'chat'])->role('farmer');
+$router->get('/chat/history', [ChatController::class, 'history'])->auth();
+$router->post('/chat/send', [ChatController::class, 'send'])->auth();
+
+/* ================= ACCESS DENIED (public) ================= */
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
-$router->get('/expert/articles', [ArticleController::class, 'index']);
-$router->get('/expert/articles/create', [ArticleController::class, 'create']);
-$router->post('/expert/articles/store', [ArticleController::class, 'store']);
-$router->get('/expert/articles/edit', [ArticleController::class, 'edit']);
-$router->post('/expert/articles/update', [ArticleController::class, 'update']);
-$router->post('/expert/articles/delete', [ArticleController::class, 'delete']);
+/* ================= PROFILE (authenticated) ================= */
 
-$router->get('/expert/articles/view', [ArticleController::class, 'view']);
-$router->post('/expert/articles/accept', [ArticleController::class, 'accept']);
-$router->post('/expert/articles/reject', [ArticleController::class, 'reject']);
-
-/* ================= CONSULTATION (FARMER) ================= */
-
-$router->get('/consultation/create', [ConsultationController::class, 'create']);
-$router->post('/consultation/store', [ConsultationController::class, 'store']);
-$router->post('/consultation/store-ajax', [ConsultationController::class, 'storeAjax']);
-$router->get('/consultation/my-consultations', [ConsultationController::class, 'myConsultations']);
-$router->get('/consultations', [ConsultationController::class, 'frontendHistory']);
-
-/* ================= CONSULTATION (ADMIN) ================= */
-
-$router->get('/admin/consultations', [AdminConsultationController::class, 'index']);
-$router->get('/admin/consultations/view', [AdminConsultationController::class, 'view']);
-$router->post('/admin/consultations/assign', [AdminConsultationController::class, 'assignExpert']);
-
-/* ================= CONSULTATION (EXPERT) ================= */
-
-$router->get('/expert/consultations', [ExpertConsultationController::class, 'index']);
-$router->get('/expert/consultations/view', [ExpertConsultationController::class, 'view']);
-$router->post('/expert/consultations/accept', [ExpertConsultationController::class, 'accept']);
-$router->post('/expert/consultations/reject', [ExpertConsultationController::class, 'reject']);
-$router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat']);
-
-/* ================= CONSULTATION CHAT ================= */
-
-$router->get('/consultation/chat', [ConsultationController::class, 'chat']);
-$router->get('/chat/history', [ChatController::class, 'history']);
-$router->post('/chat/send', [ChatController::class, 'send']);
-
-/* ================= PROFILE ================= */
-
-$router->get('/profile', [ProfileController::class, 'profile']);
-$router->get('/profile/edit', [ProfileController::class, 'edit']);
-$router->post('/profile/update', [ProfileController::class, 'update']);
+$router->get('/profile', [ProfileController::class, 'profile'])->can('profile.view');
+$router->get('/profile/edit', [ProfileController::class, 'edit'])->can('profile.view');
+$router->post('/profile/update', [ProfileController::class, 'update'])->can('profile.view');
 
 return $router;

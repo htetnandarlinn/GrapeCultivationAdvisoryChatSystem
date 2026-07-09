@@ -16,14 +16,17 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] !== 'admin' && isset
     try {
         $permDb = new \App\Shared\Infrastructure\Database\Database();
         $permConn = $permDb->getConnection();
-        $stmt = $permConn->prepare('
-            SELECT utp.permission_key
-            FROM user_type_permissions utp
-            JOIN master_data md ON md.id = utp.user_type_id
-            WHERE md.code = :role AND md.category = \'USER_TYPE\'
-        ');
-        $stmt->execute([':role' => $_SESSION['user_role']]);
-        $_SESSION['user_permissions'] = array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'permission_key');
+        $roleRepo = new \App\Infrastructure\Persistence\Repositories\RoleRepository($permConn);
+        $permRepo = new \App\Infrastructure\Persistence\Repositories\PermissionRepository($permConn);
+
+        $roles = $roleRepo->findAll();
+        foreach ($roles as $role) {
+            if (strcasecmp($role->getCode(), $_SESSION['user_role']) === 0) {
+                $permissions = $permRepo->findPermissionsByUserTypeId($role->getId());
+                $_SESSION['user_permissions'] = array_map(fn($p) => $p->getKey(), $permissions);
+                break;
+            }
+        }
     } catch (\Throwable) {
         $_SESSION['user_permissions'] = [];
     }
