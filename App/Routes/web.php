@@ -85,6 +85,10 @@ $router->get('/expert/articles/edit', [ArticleController::class, 'edit']);
 $router->post('/expert/articles/update', [ArticleController::class, 'update']);
 $router->post('/expert/articles/delete', [ArticleController::class, 'delete']);
 
+$router->get('/expert/articles/view', [ArticleController::class, 'view']);
+$router->post('/expert/articles/accept', [ArticleController::class, 'accept']);
+$router->post('/expert/articles/reject', [ArticleController::class, 'reject']);
+
 /* ================= CONSULTATION ================= */
 
 /* Ask Question */

@@ -21,12 +21,19 @@ final class ArticleController
     {
         $this->authorize('articles.view');
 
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
         $authorId = (string) ($_SESSION['user']['id'] ?? 0);
-        $articles = $this->articleRepository->findAll((int) $authorId);
+
+        if ($isAdmin) {
+            $articles = $this->articleRepository->findAll();
+        } else {
+            $articles = $this->articleRepository->findAll((int) $authorId);
+        }
 
         View::render('expert/manage-articles', [
             'activePage' => 'articles',
             'articles' => $articles,
+            'isAdmin' => $isAdmin,
         ]);
     }
 
@@ -39,7 +46,7 @@ final class ArticleController
             'activePage' => 'articles',
             'mode' => 'create',
             'formAction' => '/expert/articles/store',
-            'submitLabel' => 'Publish Article',
+            'submitLabel' => 'Submit Article',
             'article' => null,
         ]);
     }
@@ -52,7 +59,6 @@ final class ArticleController
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
         $authorId = (string) ($_SESSION['user']['id'] ?? 0);
-        $status = trim($_POST['status'] ?? 'draft');
 
         if ($title === '' || $content === '') {
             $_SESSION['article_message'] = 'Title and content are required.';
@@ -75,7 +81,6 @@ final class ArticleController
             content: $content,
             authorId: $authorId,
             image: $imagePath,
-            status: ArticleStatus::fromValue($status),
         );
 
         $this->articleRepository->save($article);
@@ -90,10 +95,18 @@ final class ArticleController
         $this->authorize('articles.edit');
 
         $id = (int) ($_GET['id'] ?? 0);
+        $currentUserId = (string) ($_SESSION['user']['id'] ?? 0);
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
         $article = $this->articleRepository->findById($id);
 
         if ($article === null) {
             $_SESSION['article_message'] = 'Article not found.';
+            redirect('/expert/articles');
+            return;
+        }
+
+        if (!$isAdmin && $article->getAuthorId() !== $currentUserId) {
+            $_SESSION['article_message'] = 'You can only edit your own articles.';
             redirect('/expert/articles');
             return;
         }
@@ -115,12 +128,19 @@ final class ArticleController
         $id = (int) ($_POST['id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
-        $status = trim($_POST['status'] ?? 'draft');
+        $currentUserId = (string) ($_SESSION['user']['id'] ?? 0);
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
 
         $article = $this->articleRepository->findById($id);
 
         if ($article === null) {
             $_SESSION['article_message'] = 'Article not found.';
+            redirect('/expert/articles');
+            return;
+        }
+
+        if (!$isAdmin && $article->getAuthorId() !== $currentUserId) {
+            $_SESSION['article_message'] = 'You can only edit your own articles.';
             redirect('/expert/articles');
             return;
         }
@@ -133,7 +153,6 @@ final class ArticleController
 
         $article->setTitle($title);
         $article->setContent($content);
-        $article->setStatus(ArticleStatus::fromValue($status));
 
         if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $imagePath = $this->handleImageUpload($_FILES['image']);
@@ -156,6 +175,8 @@ final class ArticleController
         $this->authorize('articles.delete');
 
         $id = (int) ($_POST['id'] ?? 0);
+        $currentUserId = (string) ($_SESSION['user']['id'] ?? 0);
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
 
         if ($id <= 0) {
             $_SESSION['article_message'] = 'Invalid article.';
@@ -171,6 +192,12 @@ final class ArticleController
             return;
         }
 
+        if (!$isAdmin && $article->getAuthorId() !== $currentUserId) {
+            $_SESSION['article_message'] = 'You can only delete your own articles.';
+            redirect('/expert/articles');
+            return;
+        }
+
         $imagePath = $article->getImage();
         if ($imagePath) {
             $fullPath = dirname(__DIR__, 4) . '/public' . $imagePath;
@@ -182,6 +209,73 @@ final class ArticleController
         $this->articleRepository->delete($id);
 
         $_SESSION['article_message'] = 'Article deleted successfully.';
+        redirect('/expert/articles');
+    }
+
+    #[Permission('articles.view', 'View Article Detail')]
+    public function view(): void
+    {
+        $this->authorize('articles.view');
+
+        $id = (int) ($_GET['id'] ?? 0);
+        $article = $this->articleRepository->findById($id);
+
+        if ($article === null) {
+            $_SESSION['article_message'] = 'Article not found.';
+            redirect('/expert/articles');
+            return;
+        }
+
+        View::render('admin/article-detail', [
+            'activePage' => 'articles',
+            'article' => $article,
+        ]);
+    }
+
+    #[Permission('articles.edit', 'Accept Article')]
+    public function accept(): void
+    {
+        $this->authorize('articles.edit');
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $article = $this->articleRepository->findById($id);
+
+        if ($article === null) {
+            $_SESSION['article_message'] = 'Article not found.';
+            redirect('/expert/articles');
+            return;
+        }
+
+        $article->setStatus(ArticleStatus::accepted());
+        $this->articleRepository->save($article);
+
+        $_SESSION['article_message'] = 'Article accepted successfully.';
+        redirect('/expert/articles');
+    }
+
+    #[Permission('articles.edit', 'Reject Article')]
+    public function reject(): void
+    {
+        $this->authorize('articles.edit');
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $note = trim($_POST['rejection_note'] ?? '');
+        $article = $this->articleRepository->findById($id);
+
+        if ($article === null) {
+            $_SESSION['article_message'] = 'Article not found.';
+            redirect('/expert/articles');
+            return;
+        }
+
+        $article->setStatus(ArticleStatus::rejected());
+        $article->setRejectionNote($note !== '' ? $note : null);
+        $this->articleRepository->save($article);
+
+        $_SESSION['article_message'] = $note !== ''
+            ? 'Article rejected. Reason: ' . $note
+            : 'Article rejected.';
+
         redirect('/expert/articles');
     }
 

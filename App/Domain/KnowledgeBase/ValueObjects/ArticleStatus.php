@@ -4,8 +4,9 @@ namespace App\Domain\KnowledgeBase\ValueObjects;
 
 final class ArticleStatus
 {
-    private const DRAFT = 'draft';
-    private const PUBLISHED = 'published';
+    private const PENDING = 'pending';
+    private const ACCEPTED = 'accepted';
+    private const REJECTED = 'rejected';
 
     private string $value;
 
@@ -14,14 +15,19 @@ final class ArticleStatus
         $this->value = $value;
     }
 
-    public static function draft(): self
+    public static function pending(): self
     {
-        return new self(self::DRAFT);
+        return new self(self::PENDING);
     }
 
-    public static function published(): self
+    public static function accepted(): self
     {
-        return new self(self::PUBLISHED);
+        return new self(self::ACCEPTED);
+    }
+
+    public static function rejected(): self
+    {
+        return new self(self::REJECTED);
     }
 
     public function getValue(): string
@@ -32,8 +38,11 @@ final class ArticleStatus
     public static function fromValue(string $value): self
     {
         return match ($value) {
-            self::DRAFT => self::draft(),
-            self::PUBLISHED => self::published(),
+            self::PENDING => self::pending(),
+            self::ACCEPTED => self::accepted(),
+            self::REJECTED => self::rejected(),
+            'draft' => self::pending(),
+            'published' => self::accepted(),
             default => throw new \InvalidArgumentException("Unknown article status: {$value}"),
         };
     }

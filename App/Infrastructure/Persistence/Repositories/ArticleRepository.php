@@ -21,8 +21,8 @@ final class ArticleRepository implements ArticleRepositoryInterface
         }
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO articles (title, content, image, author_id, status, created_at)
-             VALUES (:title, :content, :image, :author_id, :status, :created_at)'
+            'INSERT INTO articles (title, content, image, author_id, status, rejection_note, created_at)
+             VALUES (:title, :content, :image, :author_id, :status, :rejection_note, :created_at)'
         );
 
         $stmt->execute([
@@ -31,6 +31,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
             ':image' => $article->getImage(),
             ':author_id' => $article->getAuthorId(),
             ':status' => $article->getStatus()->getValue(),
+            ':rejection_note' => $article->getRejectionNote(),
             ':created_at' => $article->getCreatedAt()->format('Y-m-d H:i:s'),
         ]);
 
@@ -41,7 +42,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
     {
         $stmt = $this->connection->prepare(
             'UPDATE articles SET title = :title, content = :content, image = :image,
-             status = :status, updated_at = :updated_at WHERE id = :id'
+             status = :status, rejection_note = :rejection_note, updated_at = :updated_at WHERE id = :id'
         );
 
         $stmt->execute([
@@ -49,6 +50,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
             ':content' => $article->getContent(),
             ':image' => $article->getImage(),
             ':status' => $article->getStatus()->getValue(),
+            ':rejection_note' => $article->getRejectionNote(),
             ':updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             ':id' => $article->getId(),
         ]);
@@ -59,7 +61,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
     public function findById(int $id): ?Article
     {
         $stmt = $this->connection->prepare(
-            'SELECT id, title, content, image, author_id, status, created_at, updated_at
+            'SELECT id, title, content, image, author_id, status, rejection_note, created_at, updated_at
              FROM articles WHERE id = :id LIMIT 1'
         );
         $stmt->execute([':id' => $id]);
@@ -70,7 +72,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
 
     public function findAll(?int $authorId = null): array
     {
-        $sql = 'SELECT id, title, content, image, author_id, status, created_at, updated_at FROM articles';
+        $sql = 'SELECT id, title, content, image, author_id, status, rejection_note, created_at, updated_at FROM articles';
         $params = [];
 
         if ($authorId !== null) {
@@ -89,10 +91,10 @@ final class ArticleRepository implements ArticleRepositoryInterface
     public function findPublished(): array
     {
         $stmt = $this->connection->prepare(
-            'SELECT id, title, content, image, author_id, status, created_at, updated_at
+            'SELECT id, title, content, image, author_id, status, rejection_note, created_at, updated_at
              FROM articles WHERE status = :status ORDER BY created_at DESC'
         );
-        $stmt->execute([':status' => 'published']);
+        $stmt->execute([':status' => 'accepted']);
 
         return array_map(fn(array $row): Article => $this->toEntity($row), $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
@@ -112,6 +114,7 @@ final class ArticleRepository implements ArticleRepositoryInterface
             authorId: $row['author_id'],
             image: $row['image'],
             status: ArticleStatus::fromValue($row['status']),
+            rejectionNote: $row['rejection_note'] ?? null,
             createdAt: new \DateTimeImmutable($row['created_at']),
             updatedAt: $row['updated_at'] ? new \DateTimeImmutable($row['updated_at']) : null,
         );
