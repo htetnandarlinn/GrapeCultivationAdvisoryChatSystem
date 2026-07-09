@@ -27,7 +27,7 @@
             <h5 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Quick Links</h5>
             <ul class="list-none p-0 space-y-2.5">
                 <li><a href="<?= BASE_URL ?>/" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Home</a></li>
-                <li><a href="#" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Articles</a></li>
+                <li><a href="<?= BASE_URL ?>/articles" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Articles</a></li>
                 <li><a href="#" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Experts</a></li>
                 <li><a href="#" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Features</a></li>
                 <li><a href="#" class="no-underline text-[#888] text-xs hover:text-white transition-colors">Contact</a></li>

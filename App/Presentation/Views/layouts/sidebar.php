@@ -9,10 +9,8 @@ function is_active($path) {
 
 <aside id="app-sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-white border-r border-slate-100 z-40 translate-x-[-100%] md:translate-x-0 transition-transform duration-300 ease-out flex flex-col">
     <div class="p-6 flex items-center gap-3 border-b border-slate-50">
-        <div class="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#15803D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m2.828 0l.707-.707M17.657 6.343l.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+        <div class="w-[45px] h-[45px] flex items-center justify-center shrink-0">
+            <img src="<?= BASE_URL ?>/assets/images/logo.png" alt="Logo" class="w-full h-full object-contain">
         </div>
         <div>
             <h1 class="text-sm font-black text-slate-900 leading-tight">Grape Cultivation</h1>
@@ -57,34 +55,6 @@ function is_active($path) {
             </div>
         </a>
 <?php endif; ?>
-<?php if (can('questions.ask')): ?>
-        <a href="<?= BASE_URL ?>/farmer-dashboard/ask-question" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('ask-question') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
-            <div class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                Ask Question
-            </div>
-        </a>
-<?php endif; ?>
-
-<?php if (can('questions.view')): ?>
-        <a href="<?= BASE_URL ?>/farmer-dashboard/total-questions" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('total-questions') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
-            <div class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                My Questions
-            </div>
-        </a>
-<?php endif; ?>
-
-<?php if (can('questions.answer')): ?>
-        <a href="<?= BASE_URL ?>/expert/questions/answer" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/questions') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
-            <div class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                View Questions
-            </div>
-            <span class="px-2 py-0.5 text-xs font-black rounded-full bg-amber-500 text-white animate-pulse">8</span>
-        </a>
-<?php endif; ?>
-
 <?php if (can('articles.view')): ?>
         <a href="<?= BASE_URL ?>/expert/articles" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/articles') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
             <div class="flex items-center gap-3">
