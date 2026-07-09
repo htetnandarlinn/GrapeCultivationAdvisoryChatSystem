@@ -3,20 +3,16 @@
 namespace App\Presentation\Controllers\Dashboard;
 
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
-use App\Domain\ConsultationManagement\Repositories\QuestionRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
-use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 class DashboardController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private ?UserRepositoryInterface $userRepository = null,
         private ?ActivityRepositoryInterface $activityRepository = null,
-        private ?QuestionRepositoryInterface $questionRepository = null,
+        private ?ConsultationRepositoryInterface $consultationRepository = null,
     ) {}
 
     public function home(): void
@@ -49,41 +45,15 @@ class DashboardController
             $data['activities'] = $this->activityRepository->getRecentActivities(8);
         }
 
-        if ($this->questionRepository) {
-            $questions = match ($role) {
-                'farmer' => $this->questionRepository->findByFarmer($userId),
-                'expert' => $this->questionRepository->findPending(),
-                default => $this->questionRepository->findAll(),
-            };
-
-            $data['questions'] = $questions;
-            $data['totalQuestions'] = count($questions);
-            $data['pendingQuestions'] = count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Pending'));
-            $data['answeredQuestions'] = count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Answered'));
-            $data['imageCount'] = count(array_filter($questions, fn($q) => !empty($q['image'])));
+        if ($this->consultationRepository && $role === 'farmer') {
+            $consultations = $this->consultationRepository->findByFarmer($userId);
+            $data['farmerConsultations'] = $consultations;
+            $data['totalConsultations'] = count($consultations);
+            $data['pendingConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'pending'));
+            $data['acceptedConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'accepted'));
+            $data['rejectedConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'rejected'));
         }
 
         View::render('admin/admin-dashboard', $data);
-    }
-
-    #[Permission('questions.ask', 'Ask Question')]
-    public function askQuestion(): void
-    {
-        $this->authorize('questions.ask');
-        redirect('/consultation/ask');
-    }
-
-    #[Permission('questions.ask', 'Ask Question')]
-    public function submitQuestion(): void
-    {
-        $this->authorize('questions.ask');
-        redirect('/consultation/submitted');
-    }
-
-    #[Permission('questions.view', 'View My Questions')]
-    public function totalQuestions(): void
-    {
-        $this->authorize('questions.view');
-        redirect('/consultation/my-questions');
     }
 }

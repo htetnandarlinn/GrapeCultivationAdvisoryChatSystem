@@ -1,9 +1,7 @@
 <?php
 
-use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
+use App\Presentation\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
-use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Admin\UserManagementController;
 use App\Presentation\Controllers\Auth\AuthController;
@@ -11,14 +9,13 @@ use App\Presentation\Controllers\Auth\ForgotPasswordController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
+use App\Presentation\Controllers\Chat\ChatController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
-use App\Presentation\Controllers\Expert\AnswerQuestionController;
-use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
+use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
-use App\Presentation\Controllers\Public\ConsultationController as PublicConsultationController;
 use App\Routes\Router;
 
 $router = new Router();
@@ -71,20 +68,6 @@ $router->post('/admin/roles/permissions/update', [PermissionAssignmentController
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
-$router->get('/farmer-dashboard/total-questions', [DashboardController::class, 'totalQuestions']);
-
-$router->get('/admin/questions', [QuestionManagementController::class, 'index']);
-
-$router->get(  '/admin/questions/view', [QuestionManagementController::class, 'view']);
-
-
-$router->post('/expert/questions/answer', [AnswerQuestionController::class, 'store']);
-
-$router->get(
-    '/expert/questions/answer',
-    [AnswerQuestionPageController::class, 'index']
-);
-
 $router->get('/expert/articles', [ArticleController::class, 'index']);
 $router->get('/expert/articles/create', [ArticleController::class, 'create']);
 $router->post('/expert/articles/store', [ArticleController::class, 'store']);
@@ -96,31 +79,33 @@ $router->get('/expert/articles/view', [ArticleController::class, 'view']);
 $router->post('/expert/articles/accept', [ArticleController::class, 'accept']);
 $router->post('/expert/articles/reject', [ArticleController::class, 'reject']);
 
-/* ================= CONSULTATION ================= */
+/* ================= CONSULTATION (FARMER) ================= */
 
-/* Ask Question */
-$router->get(
-    '/farmer-dashboard/ask-question',
-    [DashboardController::class, 'askQuestion']
-);
+$router->get('/consultation/create', [ConsultationController::class, 'create']);
+$router->post('/consultation/store', [ConsultationController::class, 'store']);
+$router->post('/consultation/store-ajax', [ConsultationController::class, 'storeAjax']);
+$router->get('/consultation/my-consultations', [ConsultationController::class, 'myConsultations']);
+$router->get('/consultations', [ConsultationController::class, 'frontendHistory']);
 
-$router->post(
-    '/farmer-dashboard/ask-question',
-    [ConsultationController::class, 'store']
-);
+/* ================= CONSULTATION (ADMIN) ================= */
 
-/* Question Submitted Confirmation */
-$router->get(
-    '/farmer-dashboard/question-submitted',
-    [DashboardController::class, 'submitQuestion']
-);
+$router->get('/admin/consultations', [AdminConsultationController::class, 'index']);
+$router->get('/admin/consultations/view', [AdminConsultationController::class, 'view']);
+$router->post('/admin/consultations/assign', [AdminConsultationController::class, 'assignExpert']);
 
-/* ================= FRONTEND CONSULTATION ================= */
+/* ================= CONSULTATION (EXPERT) ================= */
 
-$router->get('/consultation/ask', [PublicConsultationController::class, 'ask']);
-$router->post('/consultation/ask', [PublicConsultationController::class, 'store']);
-$router->get('/consultation/submitted', [PublicConsultationController::class, 'submitted']);
-$router->get('/consultation/my-questions', [PublicConsultationController::class, 'myQuestions']);
+$router->get('/expert/consultations', [ExpertConsultationController::class, 'index']);
+$router->get('/expert/consultations/view', [ExpertConsultationController::class, 'view']);
+$router->post('/expert/consultations/accept', [ExpertConsultationController::class, 'accept']);
+$router->post('/expert/consultations/reject', [ExpertConsultationController::class, 'reject']);
+$router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat']);
+
+/* ================= CONSULTATION CHAT ================= */
+
+$router->get('/consultation/chat', [ConsultationController::class, 'chat']);
+$router->get('/chat/history', [ChatController::class, 'history']);
+$router->post('/chat/send', [ChatController::class, 'send']);
 
 /* ================= PROFILE ================= */
 

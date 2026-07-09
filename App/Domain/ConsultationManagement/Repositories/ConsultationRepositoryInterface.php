@@ -8,8 +8,15 @@ interface ConsultationRepositoryInterface
 {
     public function save(Consultation $consultation): void;
 
-    public function findById(string $id): ?Consultation;
+    public function findById(int $id): ?Consultation;
 
-    public function findPendingByExpert(string $expertId): array;
+    public function findAll(): array;
+
+    public function findByFarmer(int $farmerId): array;
+
+    public function findByExpert(int $expertId): array;
+
+    public function findByStatus(string $status): array;
+
+    public function update(Consultation $consultation): void;
 }
-

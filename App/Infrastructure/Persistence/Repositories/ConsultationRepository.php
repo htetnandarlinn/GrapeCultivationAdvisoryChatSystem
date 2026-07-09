@@ -4,24 +4,114 @@ namespace App\Infrastructure\Persistence\Repositories;
 
 use App\Domain\ConsultationManagement\Entities\Consultation;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\ValueObjects\ConsultationStatus;
+use PDO;
 
 final class ConsultationRepository implements ConsultationRepositoryInterface
 {
-    private static array $storage = [];
+    public function __construct(private PDO $connection) {}
 
     public function save(Consultation $consultation): void
     {
-        self::$storage[$consultation->getId()] = $consultation;
+        $sql = '
+            INSERT INTO consultations (farmer_id, title, description, status, expert_id, rejection_note, created_at, updated_at)
+            VALUES (:farmer_id, :title, :description, :status, :expert_id, :rejection_note, NOW(), NOW())
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([
+            ':farmer_id' => $consultation->getFarmerId(),
+            ':title' => $consultation->getTitle(),
+            ':description' => $consultation->getDescription(),
+            ':status' => $consultation->getStatus()->getValue(),
+            ':expert_id' => $consultation->getExpertId(),
+            ':rejection_note' => $consultation->getRejectionNote(),
+        ]);
+
+        $consultation->setId((int) $this->connection->lastInsertId());
     }
 
-    public function findById(string $id): ?Consultation
+    public function findById(int $id): ?Consultation
     {
-        return self::$storage[$id] ?? null;
+        $sql = 'SELECT * FROM consultations WHERE id = :id LIMIT 1';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
     }
 
-    public function findPendingByExpert(string $expertId): array
+    public function findAll(): array
     {
-        // TODO: implement expert-specific pending consultation lookup.
-        return array_values(self::$storage);
+        $sql = 'SELECT * FROM consultations ORDER BY created_at DESC';
+        $stmt = $this->connection->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function findByFarmer(int $farmerId): array
+    {
+        $sql = 'SELECT * FROM consultations WHERE farmer_id = :farmer_id ORDER BY created_at DESC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':farmer_id' => $farmerId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function findByExpert(int $expertId): array
+    {
+        $sql = 'SELECT * FROM consultations WHERE expert_id = :expert_id ORDER BY created_at DESC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':expert_id' => $expertId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function findByStatus(string $status): array
+    {
+        $sql = 'SELECT * FROM consultations WHERE status = :status ORDER BY created_at DESC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':status' => $status]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function update(Consultation $consultation): void
+    {
+        $sql = '
+            UPDATE consultations
+            SET status = :status,
+                expert_id = :expert_id,
+                rejection_note = :rejection_note,
+                updated_at = NOW()
+            WHERE id = :id
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([
+            ':status' => $consultation->getStatus()->getValue(),
+            ':expert_id' => $consultation->getExpertId(),
+            ':rejection_note' => $consultation->getRejectionNote(),
+            ':id' => $consultation->getId(),
+        ]);
+    }
+
+    private function mapToEntity(array $row): Consultation
+    {
+        return new Consultation(
+            id: (int) $row['id'],
+            farmerId: (int) $row['farmer_id'],
+            title: $row['title'],
+            description: $row['description'] ?? '',
+            status: ConsultationStatus::fromString($row['status']),
+            expertId: $row['expert_id'] ? (int) $row['expert_id'] : null,
+            rejectionNote: $row['rejection_note'] ?? null,
+            createdAt: new \DateTimeImmutable($row['created_at']),
+            updatedAt: !empty($row['updated_at']) ? new \DateTimeImmutable($row['updated_at']) : null,
+        );
     }
 }

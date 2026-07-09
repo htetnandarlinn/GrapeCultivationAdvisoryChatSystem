@@ -18,12 +18,8 @@ $avatar = $user['avatar'] ?? '';
     <div class="hidden md:flex items-center gap-9">
         <a href="<?= BASE_URL ?>/" class="no-underline text-grapeGreen font-semibold text-sm">Home</a>
         <a href="<?= BASE_URL ?>/articles" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Articles</a>
-        <?php if ($isLoggedIn): ?>
-            <?php if ($userRole === 'farmer'): ?>
-                <a href="<?= BASE_URL ?>/consultation/ask" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Consultation</a>
-            <?php elseif ($userRole === 'expert'): ?>
-                <a href="<?= BASE_URL ?>/expert/questions/answer" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Consultation</a>
-            <?php endif; ?>
+        <?php if ($isLoggedIn && $userRole === 'farmer'): ?>
+        <a href="<?= BASE_URL ?>/consultations" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">My Consultations</a>
         <?php endif; ?>
         <a href="#" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">About</a>
         <a href="#" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Contact</a>
@@ -62,12 +58,7 @@ $avatar = $user['avatar'] ?? '';
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         Profile
                     </a>
-                    <?php if ($userRole === 'farmer'): ?>
-                        <a href="<?= BASE_URL ?>/consultation/my-questions" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                            My Questions
-                        </a>
-                    <?php endif; ?>
+
                     <?php if ($userRole !== 'admin'): ?>
                         <a href="<?= BASE_URL ?>/dashboard" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
@@ -108,10 +99,8 @@ $avatar = $user['avatar'] ?? '';
     <a href="<?= BASE_URL ?>/articles" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Articles</a>
     <?php if ($isLoggedIn): ?>
         <?php if ($userRole === 'farmer'): ?>
-            <a href="<?= BASE_URL ?>/consultation/ask" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Consultation</a>
-            <a href="<?= BASE_URL ?>/consultation/my-questions" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">My Questions</a>
-        <?php elseif ($userRole === 'expert'): ?>
-            <a href="<?= BASE_URL ?>/expert/questions/answer" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Consultation</a>
+        <a href="<?= BASE_URL ?>/consultations" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">My Consultations</a>
+        <a href="<?= BASE_URL ?>/consultation/create" class="block no-underline text-grapeGreen font-semibold text-sm hover:text-grapeGreen">+ New Consultation</a>
         <?php endif; ?>
         <a href="<?= BASE_URL ?>/profile" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Profile</a>
         <a href="<?= BASE_URL ?>/logout" class="block no-underline text-red-500 font-medium text-sm hover:text-red-600 pt-2 border-t border-gray-100">Logout</a>

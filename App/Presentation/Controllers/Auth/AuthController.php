@@ -193,7 +193,9 @@ final class AuthController
 
     private function redirectByRole(User $user): void
     {
-        if ($user->getType()->getValue() === 'admin') {
+        $role = $user->getType()->getValue();
+
+        if (in_array($role, ['admin', 'expert'], true)) {
             redirect('/dashboard');
         } else {
             redirect('/');

@@ -59,6 +59,12 @@ $roles = $roles ?? [];
                     <?php else: foreach ($users as $user): 
                         $roleVal = $user->getType()->getValue();
                         $uid = $user->getId();
+                        $roleBadgeClass = match (strtolower($roleVal)) {
+                            'farmer' => 'bg-emerald-100 text-emerald-700',
+                            'expert' => 'bg-sky-100 text-sky-700',
+                            'admin' => 'bg-amber-100 text-amber-700',
+                            default => 'bg-slate-100 text-slate-600',
+                        };
                     ?>
                         <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition">
                             <td class="py-4 pl-6 font-bold text-slate-900">
@@ -74,7 +80,7 @@ $roles = $roles ?? [];
                             <td class="py-4"><?= htmlspecialchars($user->getEmail()->getValue()) ?></td>
                             <td class="py-4"><?= htmlspecialchars($user->getPhoneNumber()) ?></td>
                             <td class="py-4">
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 capitalize"><?= htmlspecialchars($roleVal) ?></span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold capitalize <?= $roleBadgeClass ?>"><?= htmlspecialchars($roleVal) ?></span>
                             </td>
                             <td class="py-4">
                                 <span class="font-bold <?= $user->getStatus()->isActive() ? 'text-emerald-600' : 'text-slate-400' ?>"><?= ucfirst($user->getStatus()->getValue()) ?></span>
@@ -103,12 +109,14 @@ $roles = $roles ?? [];
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <p class="text-sm text-slate-500 mb-6" id="modalUserInfo"></p>
+        <p class="text-sm text-slate-500 mb-6">Selected role: <span id="modalUserInfo"></span><span id="modalCurrentRoleBadge" class="ml-2 inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold"></span></p>
         <form action="<?= BASE_URL ?>/admin/users/role" method="POST">
             <input type="hidden" name="user_id" id="modalUserId" value="">
             <div class="space-y-3">
-                <?php foreach ($roles as $r): ?>
-                    <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50/50 cursor-pointer hover:border-slate-300 transition">
+                <?php foreach ($roles as $r): 
+                    $optionRole = strtolower($r->getCode());
+                ?>
+                    <label data-role="<?= $optionRole ?>" class="role-option flex items-center gap-3 p-3 rounded-xl border border-slate-200 transition hover:border-slate-300 cursor-pointer">
                         <input type="radio" name="role_code" value="<?= $r->getCode() ?>" class="accent-amber-500 w-4 h-4 flex-shrink-0">
                         <div>
                             <div class="text-sm font-bold text-slate-900"><?= htmlspecialchars($r->getLabel()) ?></div>
@@ -126,15 +134,58 @@ $roles = $roles ?? [];
 </div>
 
 <script>
+function getRoleBadgeClass(role) {
+    switch (role.toLowerCase()) {
+        case 'farmer':
+            return 'bg-emerald-100 text-emerald-700';
+        case 'expert':
+            return 'bg-sky-100 text-sky-700';
+        case 'admin':
+            return 'bg-amber-100 text-amber-700';
+        default:
+            return 'bg-slate-100 text-slate-600';
+    }
+}
+
 function openRoleModal(userId, currentRole, userName) {
     document.getElementById('modalUserId').value = userId;
-    document.getElementById('modalUserInfo').textContent = userName + ' (Current: ' + currentRole + ')';
+    document.getElementById('modalUserInfo').textContent = userName;
+    const currentBadge = document.getElementById('modalCurrentRoleBadge');
+    currentBadge.textContent = currentRole;
+    currentBadge.className = 'ml-2 inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ' + getRoleBadgeClass(currentRole);
+
     document.querySelectorAll('#roleModal input[name="role_code"]').forEach(r => {
         r.checked = r.value.toLowerCase() === currentRole.toLowerCase();
     });
+    updateRoleOptionSelection();
     document.getElementById('roleModal').classList.remove('hidden');
     document.getElementById('roleModal').classList.add('flex');
 }
+
+function updateRoleOptionSelection() {
+    document.querySelectorAll('#roleModal label.role-option').forEach(label => {
+        const input = label.querySelector('input[name="role_code"]');
+        const role = label.dataset.role || '';
+        label.classList.remove('border-emerald-200', 'border-sky-200', 'border-amber-200', 'bg-emerald-50', 'bg-sky-50', 'bg-amber-50', 'text-emerald-700', 'text-sky-700', 'text-amber-700', 'ring-2', 'ring-offset-2', 'ring-slate-300');
+        label.classList.add('border-slate-200');
+
+        if (input.checked) {
+            label.classList.add('ring-2', 'ring-offset-2', 'ring-slate-300');
+            label.classList.remove('border-slate-200');
+            if (role === 'farmer') {
+                label.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+            } else if (role === 'expert') {
+                label.classList.add('border-sky-200', 'bg-sky-50', 'text-sky-700');
+            } else if (role === 'admin') {
+                label.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-700');
+            }
+        }
+    });
+}
+
+document.querySelectorAll('#roleModal input[name="role_code"]').forEach(input => {
+    input.addEventListener('change', updateRoleOptionSelection);
+});
 
 function closeRoleModal() {
     document.getElementById('roleModal').classList.add('hidden');
