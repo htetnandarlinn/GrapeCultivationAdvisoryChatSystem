@@ -92,6 +92,35 @@ class ChatController
         $stmt->execute([':id' => $userId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Notify the other participant
+        $senderRole = $_SESSION['user_role'] ?? '';
+        $senderName = $user['username'] ?? 'Someone';
+        $consultStmt = $this->connection->prepare('SELECT farmer_id, expert_id FROM consultations WHERE id = :cid');
+        $consultStmt->execute([':cid' => $consultationId]);
+        $consult = $consultStmt->fetch(PDO::FETCH_ASSOC);
+        if ($consult) {
+            $preview = mb_strlen($message) > 60 ? mb_substr($message, 0, 60) . '...' : $message;
+            if ($senderRole === 'farmer') {
+                if (!empty($consult['expert_id'])) {
+                    notify(
+                        (int) $consult['expert_id'],
+                        'expert',
+                        "$senderName sent a message in consultation #$consultationId",
+                        'message_received',
+                        '/expert/consultations/chat?id=' . $consultationId
+                    );
+                }
+            } else {
+                notify(
+                    (int) $consult['farmer_id'],
+                    'farmer',
+                    "$senderName sent a message in your consultation",
+                    'message_received',
+                    '/consultation/chat?id=' . $consultationId
+                );
+            }
+        }
+
         $replyToMessage = null;
         $replyToSender = null;
         if ($replyTo) {

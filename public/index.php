@@ -107,3 +107,42 @@ function can(string $permission): bool
 
     return in_array($permission, $_SESSION['user_permissions'] ?? [], true);
 }
+
+function notify(int $recipientId, string $recipientRole, string $message, string $type, ?string $link = null): void
+{
+    static $service = null;
+    if ($service === null) {
+        $conn = (new \App\Shared\Infrastructure\Database\Database())->getConnection();
+        $service = new \App\Application\NotificationManagement\NotificationService(
+            new \App\Infrastructure\Persistence\Repositories\NotificationRepository($conn),
+            $conn
+        );
+    }
+    $service->notify($recipientId, $recipientRole, $message, $type, $link);
+}
+
+function notifyAllAdmins(string $message, string $type, ?string $link = null): void
+{
+    static $service = null;
+    if ($service === null) {
+        $conn = (new \App\Shared\Infrastructure\Database\Database())->getConnection();
+        $service = new \App\Application\NotificationManagement\NotificationService(
+            new \App\Infrastructure\Persistence\Repositories\NotificationRepository($conn),
+            $conn
+        );
+    }
+    $service->notifyAllAdmins($message, $type, $link);
+}
+
+function notifyAllByRole(string $role, string $message, string $type, ?string $link = null): void
+{
+    static $service = null;
+    if ($service === null) {
+        $conn = (new \App\Shared\Infrastructure\Database\Database())->getConnection();
+        $service = new \App\Application\NotificationManagement\NotificationService(
+            new \App\Infrastructure\Persistence\Repositories\NotificationRepository($conn),
+            $conn
+        );
+    }
+    $service->notifyAllByRole($role, $message, $type, $link);
+}

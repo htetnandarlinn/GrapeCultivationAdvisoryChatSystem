@@ -80,7 +80,14 @@ final class ArticleController
             image: $imagePath,
         );
 
-        $this->articleRepository->save($article);
+        $articleId = $this->articleRepository->save($article);
+
+        $authorName = $_SESSION['user']['username'] ?? 'An expert';
+        notifyAllAdmins(
+            "$authorName submitted a new article: " . $title,
+            'article_created',
+            '/expert/articles/view?id=' . $articleId
+        );
 
         $_SESSION['article_message'] = 'Article created successfully.';
         redirect('/expert/articles');
@@ -246,6 +253,24 @@ final class ArticleController
         $article->setStatus(ArticleStatus::accepted());
         $this->articleRepository->save($article);
 
+        $authorId = (int) $article->getAuthorId();
+        if ($authorId) {
+            notify(
+                $authorId,
+                'expert',
+                'Your article "' . $article->getTitle() . '" has been accepted and published.',
+                'article_accepted',
+                '/expert/articles'
+            );
+        }
+
+        notifyAllByRole(
+            'farmer',
+            'New article published: "' . $article->getTitle() . '"',
+            'article_accepted',
+            '/articles/view?id=' . $article->getId()
+        );
+
         $_SESSION['article_message'] = 'Article accepted successfully.';
         redirect('/expert/articles');
     }
@@ -268,6 +293,17 @@ final class ArticleController
         $article->setStatus(ArticleStatus::rejected());
         $article->setRejectionNote($note !== '' ? $note : null);
         $this->articleRepository->save($article);
+
+        $authorId = (int) $article->getAuthorId();
+        if ($authorId) {
+            notify(
+                $authorId,
+                'expert',
+                'Your article "' . $article->getTitle() . '" was rejected.' . ($note ? ' Reason: ' . $note : ''),
+                'article_rejected',
+                '/expert/articles'
+            );
+        }
 
         $_SESSION['article_message'] = $note !== ''
             ? 'Article rejected. Reason: ' . $note

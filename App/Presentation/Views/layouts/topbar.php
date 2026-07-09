@@ -20,12 +20,27 @@ $currentUser = $_SESSION['user'] ?? [
     </div>
 
     <div class="flex items-center gap-3 sm:gap-4">
-        <button class="relative p-2 rounded-xl text-slate-500 hover:bg-slate-50 transition active:scale-95">
-            <span class="absolute top-2 right-2 w-1.5 h-1.5 bg-[#15803D] rounded-full ring-2 ring-white"></span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-        </button>
+        <div class="relative" id="notifContainer">
+            <button id="notifBell" class="relative p-2 rounded-xl text-slate-500 hover:bg-slate-50 transition active:scale-95">
+                <span id="notifDot" class="absolute top-2 right-2 w-1.5 h-1.5 bg-[#15803D] rounded-full ring-2 ring-white hidden"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 hidden"></span>
+            </button>
+            <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100/80 z-50 opacity-0 scale-95 transition-all duration-200 origin-top-right overflow-hidden">
+                <div class="px-4 py-3 border-b border-slate-50 flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Notifications</span>
+                    <button id="markAllReadBtn" class="text-[10px] font-semibold text-emerald-600 hover:text-emerald-700 hidden">Mark all read</button>
+                </div>
+                <div id="notifList" class="max-h-80 overflow-y-auto">
+                    <div class="px-4 py-6 text-center text-xs text-slate-400">Loading...</div>
+                </div>
+                <div class="border-t border-slate-50 px-4 py-2 text-center">
+                    <a href="#" class="text-[10px] font-semibold text-slate-400 hover:text-slate-600">View all notifications</a>
+                </div>
+            </div>
+        </div>
 
         <div class="relative" id="profileDropdownContainer">
             <button id="profileDropdownTrigger" class="flex items-center gap-2 sm:gap-3 p-1 sm:pr-2 rounded-xl hover:bg-slate-50 transition-colors duration-150 focus:outline-none">
@@ -110,4 +125,133 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 });
+
+// --- Notification System ---
+const notifBell = document.getElementById('notifBell');
+const notifBadge = document.getElementById('notifBadge');
+const notifDropdown = document.getElementById('notifDropdown');
+const notifList = document.getElementById('notifList');
+const markAllBtn = document.getElementById('markAllReadBtn');
+const BASE = '<?= BASE_URL ?>';
+
+function fetchNotifCount() {
+    fetch(BASE + '/notifications/unread-count')
+        .then(r => r.json())
+        .then(d => {
+            if (d.count > 0) {
+                notifBadge.textContent = d.count;
+                notifBadge.classList.remove('hidden');
+            } else {
+                notifBadge.classList.add('hidden');
+            }
+        })
+        .catch(() => {});
+}
+
+function fetchNotifList() {
+    notifList.innerHTML = '<div class="px-4 py-6 text-center text-xs text-slate-400">Loading...</div>';
+    fetch(BASE + '/notifications/list')
+        .then(r => r.json())
+        .then(notifs => {
+            if (!notifs.length) {
+                notifList.innerHTML = '<div class="px-4 py-6 text-center text-xs text-slate-400">No notifications yet</div>';
+                markAllBtn.classList.add('hidden');
+                return;
+            }
+            markAllBtn.classList.remove('hidden');
+            notifList.innerHTML = notifs.map(n => `
+                <a href="${BASE}${n.link || '#'}" data-id="${n.id}" class="notif-item flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition border-b border-slate-50 last:border-0 ${n.is_read ? '' : 'bg-emerald-50/40'}">
+                    <div class="w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.is_read ? 'bg-slate-200' : 'bg-emerald-500'}"></div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-slate-700 leading-relaxed ${n.is_read ? 'font-normal' : 'font-semibold'}">${escapeHtml(n.message)}</p>
+                        <span class="text-[10px] text-slate-400 mt-0.5 block">${n.time_ago}</span>
+                    </div>
+                </a>
+            `).join('');
+            // Mark individual notification as read on click
+            notifList.querySelectorAll('.notif-item').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    const id = this.dataset.id;
+                    if (id) {
+                        fetch(BASE + '/notifications/mark-read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'id=' + id,
+                            keepalive: true,
+                        });
+                        this.classList.remove('bg-emerald-50/40');
+                        this.querySelector('.w-2')?.classList.remove('bg-emerald-500');
+                        this.querySelector('.w-2')?.classList.add('bg-slate-200');
+                        this.querySelector('p')?.classList.remove('font-semibold');
+                        // Decrement badge
+                        const cur = parseInt(notifBadge.textContent, 10);
+                        if (cur > 1) {
+                            notifBadge.textContent = cur - 1;
+                        } else {
+                            notifBadge.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+        })
+        .catch(() => {
+            notifList.innerHTML = '<div class="px-4 py-6 text-center text-xs text-red-400">Failed to load</div>';
+        });
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+if (notifBell) {
+    notifBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = notifDropdown.classList.contains('hidden');
+        if (isHidden) {
+            fetchNotifList();
+            notifDropdown.classList.remove('hidden');
+            setTimeout(() => {
+                notifDropdown.classList.remove('opacity-0', 'scale-95');
+                notifDropdown.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+            notifDropdown.classList.add('opacity-0', 'scale-95');
+            notifDropdown.classList.remove('opacity-100', 'scale-100');
+            setTimeout(() => notifDropdown.classList.add('hidden'), 200);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const container = document.getElementById('notifContainer');
+        if (container && !container.contains(e.target)) {
+            notifDropdown.classList.add('opacity-0', 'scale-95');
+            notifDropdown.classList.remove('opacity-100', 'scale-100');
+            setTimeout(() => notifDropdown.classList.add('hidden'), 200);
+        }
+    });
+
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', () => {
+            fetch(BASE + '/notifications/mark-all-read', { method: 'POST' })
+                .then(() => {
+                    fetchNotifCount();
+                    notifList.querySelectorAll('.bg-emerald-50\\/40').forEach(el => {
+                        el.classList.remove('bg-emerald-50/40');
+                        el.querySelector('.w-2')?.classList.remove('bg-emerald-500');
+                        el.querySelector('.w-2')?.classList.add('bg-slate-200');
+                        el.querySelector('p')?.classList.remove('font-semibold');
+                    });
+                    markAllBtn.classList.add('hidden');
+                });
+        });
+    }
+}
+
+// Poll for new notifications every 10s
+if (typeof BASE !== 'undefined') {
+    fetchNotifCount();
+    setInterval(fetchNotifCount, 10000);
+}
 </script>

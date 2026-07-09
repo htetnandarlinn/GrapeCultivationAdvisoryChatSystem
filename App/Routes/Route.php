@@ -5,7 +5,7 @@ namespace App\Routes;
 final class Route
 {
     private ?string $permission = null;
-    private ?string $role = null;
+    private array $roles = [];
     private bool $requireAuth = false;
 
     private mixed $action;
@@ -24,9 +24,9 @@ final class Route
         return $this;
     }
 
-    public function role(string $role): self
+    public function role(string|array $role): self
     {
-        $this->role = $role;
+        $this->roles = is_array($role) ? $role : [$role];
         return $this;
     }
 
@@ -40,15 +40,15 @@ final class Route
     {
         $hasAuth = !empty($_SESSION['user']);
 
-        if ($this->requireAuth || $this->role !== null || $this->permission !== null) {
+        if ($this->requireAuth || !empty($this->roles) || $this->permission !== null) {
             if (!$hasAuth) {
                 \redirect('/login');
             }
         }
 
-        if ($this->role !== null) {
+        if (!empty($this->roles)) {
             $userRole = $_SESSION['user_role'] ?? '';
-            if ($userRole !== $this->role) {
+            if (!in_array($userRole, $this->roles, true)) {
                 \redirect('/access-denied');
             }
         }

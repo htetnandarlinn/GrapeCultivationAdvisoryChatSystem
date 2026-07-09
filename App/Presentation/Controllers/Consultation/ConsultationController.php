@@ -61,6 +61,13 @@ class ConsultationController
         $consultation = $this->createHandler->handle($command);
         $consultationId = $consultation->getId();
 
+        $farmerName = $_SESSION['user']['username'] ?? 'A farmer';
+        notifyAllAdmins(
+            "$farmerName submitted a new consultation: " . $title,
+            'consultation_created',
+            '/admin/consultations/view?id=' . $consultationId
+        );
+
         if (!empty($_FILES['images']['name'][0])) {
             $uploadDir = __DIR__ . '/../../../../public/uploads/consultations/';
             foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {

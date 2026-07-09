@@ -70,6 +70,30 @@ class ConsultationController
         $consultation->assignExpert($expertId);
         $this->consultationRepository->update($consultation);
 
+        $expert = $this->userRepository->findById($expertId);
+        $farmer = $this->userRepository->findById($consultation->getFarmerId());
+
+        if ($expert) {
+            notify(
+                $expert->getId(),
+                'expert',
+                'New consultation "' . $consultation->getTitle() . '" has been assigned to you.',
+                'consultation_assigned',
+                '/expert/consultations/view?id=' . $consultation->getId()
+            );
+        }
+
+        if ($farmer) {
+            $expertName = $expert ? $expert->getUsername() : 'an expert';
+            notify(
+                $farmer->getId(),
+                'farmer',
+                'Your consultation "' . $consultation->getTitle() . '" has been assigned to ' . $expertName . '.',
+                'consultation_assigned',
+                '/consultation/chat?id=' . $consultation->getId()
+            );
+        }
+
         $_SESSION['success'] = 'Expert assigned successfully.';
         redirect('/admin/consultations');
     }
