@@ -5,10 +5,8 @@ namespace App\Application\ConsultationManagement\CreateConsultation;
 final class CreateConsultationCommand
 {
     public function __construct(
-        public readonly string $id,
-        public readonly string $userId,
-        public readonly string $question
-    ) {
-    }
+        public readonly int $farmerId,
+        public readonly string $title,
+        public readonly string $description,
+    ) {}
 }
-

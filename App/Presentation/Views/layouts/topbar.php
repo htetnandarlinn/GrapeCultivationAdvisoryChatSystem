@@ -4,8 +4,8 @@ $currentUser = $_SESSION['user'] ?? [
     'role' => 'User',
     'avatar' => null,
 ];
-$initials = strtoupper(substr($currentUser['username'], 0, 2));
-$greeting = ['title' => 'Welcome back, ' . htmlspecialchars($currentUser['username']) . '! 👏', 'sub' => "Here's what's happening in the system today."];
+// $initials = strtoupper(substr($currentUser['username'], 0, 2));
+// $greeting = ['title' => 'Welcome back, ' . htmlspecialchars($currentUser['username']) . '! 👏', 'sub' => "Here's what's happening in the system today."];
 ?>
 <header class="fixed top-0 right-0 left-0 md:left-72 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 shadow-sm z-40">
     <div class="flex items-center gap-4">
@@ -15,10 +15,7 @@ $greeting = ['title' => 'Welcome back, ' . htmlspecialchars($currentUser['userna
             </svg>
         </button>
         <div class="hidden sm:block">
-            <h2 class="text-base sm:text-lg font-bold text-slate-800 tracking-tight leading-none mb-0.5"><?= $greeting['title'] ?></h2>
-            <?php if ($greeting['sub']): ?>
-                <p class="text-[11px] sm:text-xs text-slate-400"><?= $greeting['sub'] ?></p>
-            <?php endif; ?>
+            
         </div>
     </div>
 
@@ -36,7 +33,7 @@ $greeting = ['title' => 'Welcome back, ' . htmlspecialchars($currentUser['userna
                     <?php if (!empty($currentUser['avatar'])): ?>
                         <img src="<?= BASE_URL . htmlspecialchars($currentUser['avatar']) ?>" alt="Profile" class="w-full h-full object-cover rounded-xl">
                     <?php else: ?>
-                        <?= htmlspecialchars($initials) ?>
+                        
                     <?php endif; ?>
                 </div>
                 <div class="hidden sm:block text-left leading-none">

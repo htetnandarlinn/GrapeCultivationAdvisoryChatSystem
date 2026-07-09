@@ -2,7 +2,6 @@
 
 namespace App\Routes;
 
-use App\Application\ConsultationManagement\AskQuestion\AskQuestionHandler;
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
 use App\Application\Messaging\SendMessage\SendMessageHandler;
 use App\Application\PermissionManagement\PermissionRegistrar;
@@ -13,8 +12,8 @@ use App\Application\UserManagement\LoginUser\LoginUserHandler;
 use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
 use App\Application\UserManagement\ResetPassword\ResetPasswordHandler;
 use App\Infrastructure\Mail\PHPMailerService;
+use App\Infrastructure\Persistence\Repositories\ConsultationRepository;
 use App\Infrastructure\Persistence\Repositories\PermissionRepository;
-use App\Infrastructure\Persistence\Repositories\QuestionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Domain\UserManagement\Services\UserAuthenticationService;
@@ -22,8 +21,8 @@ use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
 use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
+use App\Presentation\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
-use App\Presentation\Controllers\Admin\QuestionManagementController;
 use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Admin\UserManagementController;
 use App\Presentation\Controllers\Auth\AuthController;
@@ -31,15 +30,14 @@ use App\Presentation\Controllers\Auth\ForgotPasswordController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
+use App\Presentation\Controllers\Chat\ChatController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
 
-use App\Presentation\Controllers\Expert\AnswerQuestionController;
-use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
+use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
-use App\Presentation\Controllers\Public\ConsultationController as PublicConsultationController;
 use App\Shared\Infrastructure\Database\Database;
 
 class Router
@@ -114,31 +112,34 @@ class Router
         return match ($controller) {
             ConsultationController::class =>
                 new ConsultationController(
-                    new AskQuestionHandler(
-                        new QuestionRepository($this->db())
-                    )
+                    new CreateConsultationHandler(
+                        new ConsultationRepository($this->db())
+                    ),
+                    new ConsultationRepository($this->db()),
+                    $this->db()
                 ),
 
-            AnswerQuestionController::class =>
-                new AnswerQuestionController(
-                    new QuestionRepository($this->db())
+            AdminConsultationController::class =>
+                new AdminConsultationController(
+                    new ConsultationRepository($this->db()),
+                    new UserRepository($this->db())
                 ),
 
-            AnswerQuestionPageController::class =>
-                new AnswerQuestionPageController(
-                    new QuestionRepository($this->db())
+            ExpertConsultationController::class =>
+                new ExpertConsultationController(
+                    new ConsultationRepository($this->db()),
+                    new UserRepository($this->db()),
+                    $this->db()
                 ),
 
-            QuestionManagementController::class =>
-                new QuestionManagementController(
-                    new QuestionRepository($this->db())
-                ),
+            ChatController::class =>
+                new ChatController($this->db()),
 
             DashboardController::class =>
                 new DashboardController(
                     new UserRepository($this->db()),
                     new ActivityRepository($this->db()),
-                    new QuestionRepository($this->db())
+                    new ConsultationRepository($this->db())
                 ),
 
             ArticleController::class =>
@@ -149,14 +150,6 @@ class Router
             PublicArticleController::class =>
                 new PublicArticleController(
                     new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
-                ),
-
-            PublicConsultationController::class =>
-                new PublicConsultationController(
-                    new QuestionRepository($this->db()),
-                    new AskQuestionHandler(
-                        new QuestionRepository($this->db())
-                    )
                 ),
 
             RoleController::class =>
