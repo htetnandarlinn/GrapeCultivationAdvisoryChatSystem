@@ -80,6 +80,17 @@ class ConsultationController
         $consultation->accept();
         $this->consultationRepository->update($consultation);
 
+        $farmer = $this->userRepository->findById($consultation->getFarmerId());
+        if ($farmer) {
+            notify(
+                $farmer->getId(),
+                'farmer',
+                'Your consultation "' . $consultation->getTitle() . '" has been accepted by an expert.',
+                'consultation_accepted',
+                '/consultation/chat?id=' . $consultation->getId()
+            );
+        }
+
         $_SESSION['success'] = 'Consultation accepted.';
         redirect('/expert/consultations/view?id=' . $id);
     }
@@ -112,6 +123,17 @@ class ConsultationController
 
         $consultation->reject($note);
         $this->consultationRepository->update($consultation);
+
+        $farmer = $this->userRepository->findById($consultation->getFarmerId());
+        if ($farmer) {
+            notify(
+                $farmer->getId(),
+                'farmer',
+                'Your consultation "' . $consultation->getTitle() . '" was rejected. Reason: ' . $note,
+                'consultation_rejected',
+                '/consultations'
+            );
+        }
 
         $_SESSION['success'] = 'Consultation rejected.';
         redirect('/expert/consultations');

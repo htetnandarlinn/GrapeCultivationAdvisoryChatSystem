@@ -21,6 +21,9 @@ use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
 use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
+use App\Infrastructure\Persistence\Repositories\NotificationRepository;
+use App\Application\NotificationManagement\NotificationService;
+use App\Presentation\Controllers\NotificationController;
 use App\Presentation\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\RoleController;
@@ -210,6 +213,11 @@ class Router
                     new \App\Application\UserManagement\UpdateProfile\UpdateProfileHandler(
                         new UserRepository($this->db())
                     )
+                ),
+
+            NotificationController::class =>
+                new NotificationController(
+                    new NotificationRepository($this->db())
                 ),
 
             default => new $controller()

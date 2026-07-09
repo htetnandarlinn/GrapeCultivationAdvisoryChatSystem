@@ -15,6 +15,7 @@ use App\Presentation\Controllers\Dashboard\DashboardController;
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
 use App\Presentation\Controllers\Farmer\ProfileController;
+use App\Presentation\Controllers\NotificationController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
 use App\Routes\Router;
 
@@ -81,15 +82,15 @@ $router->post('/admin/consultations/assign', [AdminConsultationController::class
 
 /* ================= EXPERT: ARTICLES ================= */
 
-$router->get('/expert/articles', [ArticleController::class, 'index'])->role('expert')->can('articles.view');
-$router->get('/expert/articles/create', [ArticleController::class, 'create'])->role('expert')->can('articles.create');
-$router->post('/expert/articles/store', [ArticleController::class, 'store'])->role('expert')->can('articles.create');
-$router->get('/expert/articles/edit', [ArticleController::class, 'edit'])->role('expert')->can('articles.update');
-$router->post('/expert/articles/update', [ArticleController::class, 'update'])->role('expert')->can('articles.update');
-$router->post('/expert/articles/delete', [ArticleController::class, 'delete'])->role('expert')->can('articles.delete');
-$router->get('/expert/articles/view', [ArticleController::class, 'view'])->role('expert')->can('articles.view');
-$router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role('expert')->can('articles.update');
-$router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role('expert')->can('articles.update');
+$router->get('/expert/articles', [ArticleController::class, 'index'])->role(['expert', 'admin'])->can('articles.view');
+$router->get('/expert/articles/create', [ArticleController::class, 'create'])->role(['expert', 'admin'])->can('articles.create');
+$router->post('/expert/articles/store', [ArticleController::class, 'store'])->role(['expert', 'admin'])->can('articles.create');
+$router->get('/expert/articles/edit', [ArticleController::class, 'edit'])->role(['expert', 'admin'])->can('articles.update');
+$router->post('/expert/articles/update', [ArticleController::class, 'update'])->role(['expert', 'admin'])->can('articles.update');
+$router->post('/expert/articles/delete', [ArticleController::class, 'delete'])->role(['expert', 'admin'])->can('articles.delete');
+$router->get('/expert/articles/view', [ArticleController::class, 'view'])->role(['expert', 'admin'])->can('articles.view');
+$router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role(['expert', 'admin'])->can('articles.update');
+$router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role(['expert', 'admin'])->can('articles.update');
 
 /* ================= EXPERT: CONSULTATIONS ================= */
 
@@ -112,6 +113,13 @@ $router->get('/consultations', [ConsultationController::class, 'frontendHistory'
 $router->get('/consultation/chat', [ConsultationController::class, 'chat'])->role('farmer');
 $router->get('/chat/history', [ChatController::class, 'history'])->auth();
 $router->post('/chat/send', [ChatController::class, 'send'])->auth();
+
+/* ================= NOTIFICATIONS (authenticated) ================= */
+
+$router->get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->auth();
+$router->get('/notifications/list', [NotificationController::class, 'list'])->auth();
+$router->post('/notifications/mark-read', [NotificationController::class, 'markRead'])->auth();
+$router->post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->auth();
 
 /* ================= ACCESS DENIED (public) ================= */
 
