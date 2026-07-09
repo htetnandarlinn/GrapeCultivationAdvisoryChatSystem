@@ -21,9 +21,9 @@
         <button class="bg-[#1a1a1a] text-white px-5 py-3 rounded-lg text-sm font-semibold hover:bg-black transition-all active:scale-[0.98]" id="askExpertBtn">
           Ask an Expert
         </button>
-        <button class="bg-white text-[#1a1a1a] px-5 py-3 rounded-lg text-sm font-semibold border-1.5 border-gray-300 hover:bg-gray-50 transition-all active:scale-[0.98]" id="browseArticlesBtn">
+        <a href="<?= BASE_URL ?>/articles" class="bg-white text-[#1a1a1a] px-5 py-3 rounded-lg text-sm font-semibold border-1.5 border-gray-300 hover:bg-gray-50 transition-all active:scale-[0.98]" id="browseArticlesBtn">
           Browse Articles
-        </button>
+        </a>
       </div>
       
       <!-- Social Proof Stack -->
@@ -85,7 +85,7 @@
       </div>
 
       <!-- Feature Card 4 -->
-      <div class="border border-[#e8e8e8] rounded-xl p-5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300">
+      <a href="<?= BASE_URL ?>/articles" class="border border-[#e8e8e8] rounded-xl p-5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 block">
         <div class="w-10 h-10 rounded-lg bg-[#e3f2fd] flex items-center justify-center mb-3.5">
           <svg width="20" height="20" fill="#1565c0" viewBox="0 0 24 24">
             <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H7V9h10v2zm-3 4H7v-2h7v2zM17 7H7V5h10v2z" />
@@ -93,7 +93,7 @@
         </div>
         <h4 class="text-sm font-bold mb-1.5">Cultivation Articles</h4>
         <p class="text-xs sm:text-sm text-[#777] leading-relaxed">Read helpful articles and guides on grape farming techniques.</p>
-      </div>
+      </a>
 
       <!-- Feature Card 5 -->
       <div class="border border-[#e8e8e8] rounded-xl p-5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300">
@@ -230,7 +230,7 @@
           <p class="text-sm text-white/80 mt-1 max-w-xl">Our experts are ready to help you with any grape cultivation challenge you face in the field.</p>
         </div>
       </div>
-      <a href="#" class="inline-flex items-center gap-2 bg-white text-[#2e7d32] px-6 py-3.5 rounded-lg text-sm font-bold transition-all transform hover:bg-gray-50 active:scale-[0.98] shadow-md shrink-0 w-full md:w-auto justify-center" id="startConsultationBtn">
+      <a href="<?= BASE_URL ?>/consultation/ask" class="inline-flex items-center gap-2 bg-white text-[#2e7d32] px-6 py-3.5 rounded-lg text-sm font-bold transition-all transform hover:bg-gray-50 active:scale-[0.98] shadow-md shrink-0 w-full md:w-auto justify-center" id="startConsultationBtn">
         <svg width="16" height="16" fill="none" stroke="#2e7d32" stroke-width="2" viewBox="0 0 24 24">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
@@ -241,14 +241,9 @@
 
 
   <script>
-    // System Interactive Script Handlers
-    document.getElementById("askExpertBtn").addEventListener("click", () => alert("Ask an Expert clicked"));
-    document.getElementById("browseArticlesBtn").addEventListener("click", () => alert("Browse Articles clicked"));
+    document.getElementById("askExpertBtn").addEventListener("click", () => { window.location.href = '<?= BASE_URL ?>/consultation/ask'; });
     document.getElementById("startConsultationBtn").addEventListener("click", e => {
       e.preventDefault();
       alert("Start Consultation clicked");
     });
   </script>
-
-</body>
-</html>

@@ -17,6 +17,8 @@ use App\Presentation\Controllers\Expert\AnswerQuestionController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Farmer\ProfileController;
+use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
+use App\Presentation\Controllers\Public\ConsultationController as PublicConsultationController;
 use App\Routes\Router;
 
 $router = new Router();
@@ -39,6 +41,11 @@ $router->get('/forgot-password', [ForgotPasswordController::class, 'showForm']);
 $router->post('/forgot-password', [ForgotPasswordController::class, 'send']);
 $router->get('/reset-password', [ForgotPasswordController::class, 'showReset']);
 $router->post('/reset-password', [ForgotPasswordController::class, 'reset']);
+
+/* ================= PUBLIC ARTICLES ================= */
+
+$router->get('/articles', [PublicArticleController::class, 'index']);
+$router->get('/articles/view', [PublicArticleController::class, 'view']);
 
 /* ================= HOME ================= */
 
@@ -107,6 +114,13 @@ $router->get(
     '/farmer-dashboard/question-submitted',
     [DashboardController::class, 'submitQuestion']
 );
+
+/* ================= FRONTEND CONSULTATION ================= */
+
+$router->get('/consultation/ask', [PublicConsultationController::class, 'ask']);
+$router->post('/consultation/ask', [PublicConsultationController::class, 'store']);
+$router->get('/consultation/submitted', [PublicConsultationController::class, 'submitted']);
+$router->get('/consultation/my-questions', [PublicConsultationController::class, 'myQuestions']);
 
 /* ================= PROFILE ================= */
 

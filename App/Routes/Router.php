@@ -38,6 +38,8 @@ use App\Presentation\Controllers\Expert\AnswerQuestionController;
 use App\Presentation\Controllers\Expert\AnswerQuestionPageController;
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Farmer\ProfileController;
+use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
+use App\Presentation\Controllers\Public\ConsultationController as PublicConsultationController;
 use App\Shared\Infrastructure\Database\Database;
 
 class Router
@@ -142,6 +144,19 @@ class Router
             ArticleController::class =>
                 new ArticleController(
                     new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
+                ),
+
+            PublicArticleController::class =>
+                new PublicArticleController(
+                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
+                ),
+
+            PublicConsultationController::class =>
+                new PublicConsultationController(
+                    new QuestionRepository($this->db()),
+                    new AskQuestionHandler(
+                        new QuestionRepository($this->db())
+                    )
                 ),
 
             RoleController::class =>

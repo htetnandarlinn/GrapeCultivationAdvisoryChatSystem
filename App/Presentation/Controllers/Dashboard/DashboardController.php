@@ -21,7 +21,7 @@ class DashboardController
 
     public function home(): void
     {
-        View::render('home');
+        View::render('home', [], 'app');
     }
 
     public function index(): void
@@ -70,38 +70,20 @@ class DashboardController
     public function askQuestion(): void
     {
         $this->authorize('questions.ask');
-        $categories = $this->questionRepository->findCategories();
-
-        View::render('farmer/ask-question', [
-            'activePage' => 'ask',
-            'categories' => $categories
-        ]);
+        redirect('/consultation/ask');
     }
 
     #[Permission('questions.ask', 'Ask Question')]
     public function submitQuestion(): void
     {
         $this->authorize('questions.ask');
-        View::render('farmer/question-submitted', [
-            'activePage' => 'submit'
-        ]);
+        redirect('/consultation/submitted');
     }
 
     #[Permission('questions.view', 'View My Questions')]
     public function totalQuestions(): void
     {
         $this->authorize('questions.view');
-        $farmerId = (int) $_SESSION['user']['id'];
-
-        $questions = $this->questionRepository->findByFarmer($farmerId);
-
-        View::render('admin/admin-dashboard', [
-            'activePage'        => 'dashboard',
-            'questions'         => $questions,
-            'totalQuestions'    => count($questions),
-            'pendingQuestions'  => count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Pending')),
-            'answeredQuestions' => count(array_filter($questions, fn($q) => ($q['status_name'] ?? '') === 'Answered')),
-            'imageCount'        => count(array_filter($questions, fn($q) => !empty($q['image'])))
-        ]);
+        redirect('/consultation/my-questions');
     }
 }
