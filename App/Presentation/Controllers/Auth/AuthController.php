@@ -182,7 +182,7 @@ final class AuthController
     {
         $roles = $this->roleRepo->findAll();
         foreach ($roles as $role) {
-            if ($role->getCode() === $roleCode) {
+            if (strcasecmp($role->getCode(), $roleCode) === 0) {
                 $permissions = $this->permRepo->findPermissionsByUserTypeId($role->getId());
                 return array_map(fn($p) => $p->getKey(), $permissions);
             }
@@ -193,12 +193,12 @@ final class AuthController
 
     private function redirectByRole(User $user): void
     {
-        $role = $user->getType()->getValue();
+        $dest = match ($user->getType()->getValue()) {
+            'farmer' => '/',
+            'expert' => '/expert/consultations',
+            'admin' => '/dashboard',
+        };
 
-        if (in_array($role, ['admin', 'expert'], true)) {
-            redirect('/dashboard');
-        } else {
-            redirect('/');
-        }
+        redirect($dest);
     }
 }

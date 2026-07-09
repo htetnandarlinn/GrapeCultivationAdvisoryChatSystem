@@ -33,6 +33,7 @@ use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Chat\ChatController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
+use App\Presentation\Attributes\Permission as PermissionAttribute;
 
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
@@ -54,24 +55,30 @@ class Router
         return $this->pdo;
     }
 
-    public function get(string $uri, callable|array $action): void
+    public function get(string $uri, callable|array $action): Route
     {
-        $this->addRoute('GET', $uri, $action);
+        return $this->addRoute('GET', $uri, $action);
     }
 
-    public function post(string $uri, callable|array $action): void
+    public function post(string $uri, callable|array $action): Route
     {
-        $this->addRoute('POST', $uri, $action);
+        return $this->addRoute('POST', $uri, $action);
     }
 
-    private function addRoute(string $httpMethod, string $uri, callable|array $action): void
+    private function addRoute(string $httpMethod, string $uri, callable|array $action): Route
     {
         $uri = rtrim($uri, '/') ?: '/';
-        $this->routes[$httpMethod][$uri] = $action;
+        $route = new Route($httpMethod, $uri, $action);
+        $this->routes[$httpMethod][$uri] = $route;
+        return $route;
     }
 
     public function dispatch(string $httpMethod, string $requestUri): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $path = parse_url($requestUri, PHP_URL_PATH);
         $path = rtrim($path, '/') ?: '/';
 
@@ -85,7 +92,13 @@ class Router
             return;
         }
 
-        $action = $this->routes[$httpMethod][$path];
+        /** @var Route $route */
+        $route = $this->routes[$httpMethod][$path];
+
+        // --- Route-level authorization ---
+        $route->authorize();
+
+        $action = $route->getAction();
 
         if (is_callable($action)) {
             call_user_func($action);
@@ -103,6 +116,9 @@ class Router
         if (!method_exists($instance, $method)) {
             throw new \Exception("Method {$method} not found in {$controller}.");
         }
+
+        // --- Controller-level authorization via #[Permission] attribute ---
+        $this->authorizePermissionAttribute($instance, $method);
 
         $instance->$method();
     }
@@ -237,4 +253,23 @@ class Router
         );
     }
 
+    private function authorizePermissionAttribute(object $instance, string $method): void
+    {
+        try {
+            $reflection = new \ReflectionMethod($instance, $method);
+        } catch (\ReflectionException) {
+            return;
+        }
+
+        $attributes = $reflection->getAttributes(PermissionAttribute::class);
+        if (empty($attributes)) {
+            return;
+        }
+
+        $perm = $attributes[0]->newInstance();
+
+        if (!\can($perm->key)) {
+            \redirect('/access-denied');
+        }
+    }
 }

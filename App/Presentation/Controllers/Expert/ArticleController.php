@@ -5,13 +5,10 @@ namespace App\Presentation\Controllers\Expert;
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
 use App\Domain\KnowledgeBase\ValueObjects\ArticleStatus;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 final class ArticleController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private ArticleRepositoryInterface $articleRepository,
     ) {}
@@ -19,7 +16,7 @@ final class ArticleController
     #[Permission('articles.view', 'View Articles')]
     public function index(): void
     {
-        $this->authorize('articles.view');
+        
 
         $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
         $authorId = (string) ($_SESSION['user']['id'] ?? 0);
@@ -40,7 +37,7 @@ final class ArticleController
     #[Permission('articles.create', 'Create Article')]
     public function create(): void
     {
-        $this->authorize('articles.create');
+        
 
         View::render('expert/article-form', [
             'activePage' => 'articles',
@@ -54,7 +51,7 @@ final class ArticleController
     #[Permission('articles.create', 'Create Article')]
     public function store(): void
     {
-        $this->authorize('articles.create');
+        
 
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
@@ -92,7 +89,7 @@ final class ArticleController
     #[Permission('articles.edit', 'Edit Article')]
     public function edit(): void
     {
-        $this->authorize('articles.edit');
+        
 
         $id = (int) ($_GET['id'] ?? 0);
         $currentUserId = (string) ($_SESSION['user']['id'] ?? 0);
@@ -123,7 +120,7 @@ final class ArticleController
     #[Permission('articles.edit', 'Edit Article')]
     public function update(): void
     {
-        $this->authorize('articles.edit');
+        
 
         $id = (int) ($_POST['id'] ?? 0);
         $title = trim($_POST['title'] ?? '');
@@ -172,7 +169,7 @@ final class ArticleController
     #[Permission('articles.delete', 'Delete Article')]
     public function delete(): void
     {
-        $this->authorize('articles.delete');
+
 
         $id = (int) ($_POST['id'] ?? 0);
         $currentUserId = (string) ($_SESSION['user']['id'] ?? 0);
@@ -215,7 +212,7 @@ final class ArticleController
     #[Permission('articles.view', 'View Article Detail')]
     public function view(): void
     {
-        $this->authorize('articles.view');
+        
 
         $id = (int) ($_GET['id'] ?? 0);
         $article = $this->articleRepository->findById($id);
@@ -235,7 +232,7 @@ final class ArticleController
     #[Permission('articles.edit', 'Accept Article')]
     public function accept(): void
     {
-        $this->authorize('articles.edit');
+        
 
         $id = (int) ($_POST['id'] ?? 0);
         $article = $this->articleRepository->findById($id);
@@ -256,7 +253,7 @@ final class ArticleController
     #[Permission('articles.edit', 'Reject Article')]
     public function reject(): void
     {
-        $this->authorize('articles.edit');
+        
 
         $id = (int) ($_POST['id'] ?? 0);
         $note = trim($_POST['rejection_note'] ?? '');

@@ -7,13 +7,10 @@ use App\Application\UserManagement\UpdateProfile\UpdateProfileHandler;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileRequestValidator;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 class ProfileController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private UserRepositoryInterface $repository,
         private UpdateProfileHandler $updateHandler,
@@ -22,7 +19,7 @@ class ProfileController
     #[Permission('profile.view', 'View Profile')]
     public function profile(): void
     {
-        $this->authorize('profile.view');
+        
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
@@ -45,7 +42,7 @@ class ProfileController
     #[Permission('profile.edit', 'Edit Profile')]
     public function edit(): void
     {
-        $this->authorize('profile.edit');
+
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');
@@ -62,7 +59,7 @@ class ProfileController
     #[Permission('profile.edit', 'Edit Profile')]
     public function update(): void
     {
-        $this->authorize('profile.edit');
+
 
         if (!isset($_SESSION['user_id'])) {
             redirect('/login');

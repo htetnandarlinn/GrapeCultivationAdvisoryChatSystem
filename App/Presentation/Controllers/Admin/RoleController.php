@@ -5,13 +5,10 @@ namespace App\Presentation\Controllers\Admin;
 use App\Application\RoleManagement\RoleService;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 class RoleController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private RoleRepositoryInterface $repository,
         private RoleService $service,
@@ -20,8 +17,6 @@ class RoleController
     #[Permission('roles.view', 'View Roles')]
     public function index(): void
     {
-        $this->authorize('roles.view');
-
         $message = $_SESSION['role_message'] ?? null;
         unset($_SESSION['role_message']);
 
@@ -35,7 +30,7 @@ class RoleController
     #[Permission('roles.create', 'Create Role')]
     public function create(): void
     {
-        $this->authorize('roles.create');
+
         View::render('admin/role-form', [
             'activePage' => 'roles',
             'mode' => 'create',
@@ -47,7 +42,7 @@ class RoleController
     #[Permission('roles.create', 'Create Role')]
     public function store(): void
     {
-        $this->authorize('roles.create');
+
         $name = trim($_POST['name'] ?? '');
 
         if ($name === '') {
@@ -71,7 +66,6 @@ class RoleController
     #[Permission('roles.edit', 'Edit Role')]
     public function edit(): void
     {
-        $this->authorize('roles.edit');
         $id = (int) ($_GET['id'] ?? 0);
 
         if ($id <= 0) {
@@ -99,7 +93,6 @@ class RoleController
     #[Permission('roles.edit', 'Edit Role')]
     public function update(): void
     {
-        $this->authorize('roles.edit');
         $id = (int) ($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
 
@@ -129,7 +122,6 @@ class RoleController
     #[Permission('roles.delete', 'Delete Role')]
     public function delete(): void
     {
-        $this->authorize('roles.delete');
         $id = (int) ($_POST['id'] ?? 0);
 
         if ($id <= 0) {

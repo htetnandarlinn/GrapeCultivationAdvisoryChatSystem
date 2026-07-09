@@ -5,13 +5,10 @@ namespace App\Presentation\Controllers\Admin;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
-use App\Presentation\Controllers\AuthorizesPermissions;
 use App\Presentation\Views\View;
 
 class ConsultationController
 {
-    use AuthorizesPermissions;
-
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
@@ -20,8 +17,6 @@ class ConsultationController
     #[Permission('consultations.view', 'View Consultations')]
     public function index(): void
     {
-        $this->authorize('consultations.view');
-
         $consultations = $this->consultationRepository->findAll();
 
         View::render('admin/consultations', [
@@ -33,8 +28,6 @@ class ConsultationController
     #[Permission('consultations.view', 'View Consultations')]
     public function view(): void
     {
-        $this->authorize('consultations.view');
-
         $id = (int) ($_GET['id'] ?? 0);
         $consultation = $this->consultationRepository->findById($id);
 
@@ -57,8 +50,6 @@ class ConsultationController
     #[Permission('consultations.assign', 'Assign Expert')]
     public function assignExpert(): void
     {
-        $this->authorize('consultations.assign');
-
         $id = (int) ($_POST['consultation_id'] ?? 0);
         $expertId = (int) ($_POST['expert_id'] ?? 0);
 
