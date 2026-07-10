@@ -99,6 +99,7 @@ $router->get('/expert/consultations/view', [ExpertConsultationController::class,
 $router->post('/expert/consultations/accept', [ExpertConsultationController::class, 'accept'])->role('expert')->can('consultations.answer');
 $router->post('/expert/consultations/reject', [ExpertConsultationController::class, 'reject'])->role('expert')->can('consultations.answer');
 $router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat'])->role('expert')->can('consultations.answer');
+$router->get('/expert/consultations/hub', [ExpertConsultationController::class, 'hub'])->role('expert')->can('consultations.answer');
 
 /* ================= FARMER: CONSULTATIONS ================= */
 
@@ -116,7 +117,8 @@ $router->post('/chat/send', [ChatController::class, 'send'])->auth();
 
 /* ================= NOTIFICATIONS (authenticated) ================= */
 
-$router->get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->auth();
+$router->get('/notifications',               [NotificationController::class, 'index'])->auth();
+$router->get('/notifications/unread-count',  [NotificationController::class, 'unreadCount'])->auth();
 $router->get('/notifications/list', [NotificationController::class, 'list'])->auth();
 $router->post('/notifications/mark-read', [NotificationController::class, 'markRead'])->auth();
 $router->post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->auth();
@@ -130,5 +132,10 @@ $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedContro
 $router->get('/profile', [ProfileController::class, 'profile'])->can('profile.view');
 $router->get('/profile/edit', [ProfileController::class, 'edit'])->can('profile.view');
 $router->post('/profile/update', [ProfileController::class, 'update'])->can('profile.view');
+
+/* ================= FRONTEND PROFILE (farmer) ================= */
+
+$router->get('/my-profile', [ProfileController::class, 'frontendProfile'])->role('farmer');
+$router->get('/my-profile/edit', [ProfileController::class, 'frontendEdit'])->role('farmer');
 
 return $router;

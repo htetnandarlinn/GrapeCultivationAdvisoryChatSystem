@@ -50,36 +50,49 @@ $avatar = $user['avatar'] ?? '';
                     </div>
                 </div>
             </div>
-            <div class="relative" id="userMenu">
-                <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                    <div class="w-7 h-7 rounded-full bg-grapeGreen text-white flex items-center justify-center text-xs font-bold">
-                        <?= strtoupper(substr($username, 0, 1)) ?>
+            <div class="relative" id="profileDropdownContainer">
+                <button id="profileDropdownTrigger" class="flex items-center gap-2 sm:gap-3 p-1 sm:pr-2 rounded-xl hover:bg-slate-50 transition-colors duration-150 focus:outline-none">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-grapeGreen font-bold text-xs sm:text-sm flex items-center justify-center border border-emerald-100/30 uppercase shrink-0">
+                        <?php if (!empty($avatar)): ?>
+                            <img src="<?= BASE_URL . htmlspecialchars($avatar) ?>" alt="Profile" class="w-full h-full object-cover rounded-xl">
+                        <?php else: ?>
+                            <?= strtoupper(substr($username, 0, 1)) ?>
+                        <?php endif; ?>
                     </div>
-                    <span class="text-sm font-semibold text-slate-700 hidden sm:inline"><?= htmlspecialchars($username) ?></span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <div class="hidden sm:block text-left leading-none">
+                        <span class="text-sm font-bold text-slate-800 block flex items-center gap-1">
+                            <?= htmlspecialchars($username) ?>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" id="dropdownArrow">
+                                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        <span class="text-[10px] text-grapeGreen font-bold tracking-wide uppercase mt-0.5 block"><?= htmlspecialchars($userRole) ?></span>
+                    </div>
                 </button>
-                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
-                    <div class="px-4 py-2 border-b border-slate-50">
-                        <p class="text-xs font-bold text-slate-900"><?= htmlspecialchars($username) ?></p>
-                        <p class="text-[10px] text-slate-400 capitalize"><?= htmlspecialchars($userRole) ?></p>
-                    </div>
-                    <a href="<?= BASE_URL ?>/profile" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        Profile
-                    </a>
 
-                    <?php if ($userRole !== 'admin'): ?>
-                        <a href="<?= BASE_URL ?>/dashboard" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
+                <div id="profileDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100/80 p-2 z-50 opacity-0 scale-95 transition-all duration-200 origin-top-right">
+                    <div class="px-4 py-2.5 border-b border-slate-50 text-left">
+                        <span class="block text-[11px] font-semibold text-slate-400 tracking-wide uppercase">Signed in as</span>
+                        <span class="block text-sm font-bold text-slate-700 truncate"><?= htmlspecialchars($username) ?></span>
+                    </div>
+                    <div class="py-1">
+                        <a href="<?= BASE_URL ?>/<?= $userRole === 'farmer' ? 'my-profile' : 'profile' ?>" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            My Profile Details
+                        </a>
+                        <?php if ($userRole !== 'farmer'): ?>
+                        <a href="<?= BASE_URL ?>/dashboard" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
                             Dashboard
                         </a>
-                    <?php endif; ?>
-                    <div class="border-t border-slate-50 mt-1 pt-1">
-                        <a href="<?= BASE_URL ?>/logout" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                            Logout
+                        <?php endif; ?>
+                        <a href="<?= BASE_URL ?>/logout" class="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout System
                         </a>
                     </div>
                 </div>
@@ -113,7 +126,7 @@ $avatar = $user['avatar'] ?? '';
         <a href="<?= BASE_URL ?>/consultations" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">My Consultations</a>
         <a href="<?= BASE_URL ?>/consultation/create" class="block no-underline text-grapeGreen font-semibold text-sm hover:text-grapeGreen">+ New Consultation</a>
         <?php endif; ?>
-        <a href="<?= BASE_URL ?>/profile" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Profile</a>
+        <a href="<?= BASE_URL ?>/<?= $userRole === 'farmer' ? 'my-profile' : 'profile' ?>" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Profile</a>
         <a href="<?= BASE_URL ?>/logout" class="block no-underline text-red-500 font-medium text-sm hover:text-red-600 pt-2 border-t border-gray-100">Logout</a>
     <?php else: ?>
         <a href="#" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">About</a>
@@ -128,16 +141,42 @@ function toggleMobileNavbar() {
     drawer.classList.toggle('hidden');
 }
 
-function toggleUserDropdown() {
-    const dropdown = document.getElementById('userDropdown');
-    dropdown.classList.toggle('hidden');
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('profileDropdownContainer');
+    const trigger = document.getElementById('profileDropdownTrigger');
+    const menu = document.getElementById('profileDropdownMenu');
+    const arrow = document.getElementById('dropdownArrow');
 
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('userMenu');
-    const dropdown = document.getElementById('userDropdown');
-    if (menu && dropdown && !menu.contains(e.target)) {
-        dropdown.classList.add('hidden');
+    if (!trigger || !menu) return;
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            setTimeout(() => {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+                if (arrow) arrow.classList.add('rotate-180');
+            }, 10);
+        } else {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (container && !container.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    function closeMenu() {
+        menu.classList.remove('opacity-100', 'scale-100');
+        menu.classList.add('opacity-0', 'scale-95');
+        if (arrow) arrow.classList.remove('rotate-180');
+        setTimeout(() => {
+            menu.classList.add('hidden');
+        }, 200);
     }
 });
 
@@ -186,13 +225,17 @@ function fetchNotifList() {
             // Mark individual notification as read on click
             notifList.querySelectorAll('.notif-item').forEach(el => {
                 el.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const id = this.dataset.id;
+                    const href = this.href;
                     if (id) {
                         fetch(BASE + '/notifications/mark-read', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: 'id=' + id,
                             keepalive: true,
+                        }).finally(() => {
+                            window.location.href = href;
                         });
                         this.classList.remove('bg-emerald-50/40');
                         this.querySelector('.w-2')?.classList.remove('bg-emerald-500');

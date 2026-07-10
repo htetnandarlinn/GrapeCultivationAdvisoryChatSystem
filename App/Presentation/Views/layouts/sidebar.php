@@ -21,10 +21,16 @@ function is_active($path) {
     <nav class="flex-grow p-4 space-y-1 overflow-y-auto">
 
 <?php if (!empty($_SESSION['user'])): ?>
-        <a href="<?= BASE_URL ?>/dashboard" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('dashboard') && !is_active('admin/') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+        <a href="<?= BASE_URL ?>/dashboard" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('dashboard') && !is_active('admin/') && !is_active('notifications') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
             <div class="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
                 Dashboard
+            </div>
+        </a>
+        <a href="<?= BASE_URL ?>/notifications" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('notifications') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                Notifications
             </div>
         </a>
 <?php endif; ?>
@@ -39,7 +45,7 @@ function is_active($path) {
 <?php endif; ?>
 
 <?php if (can('consultations.answer')): ?>
-        <a href="<?= BASE_URL ?>/expert/consultations" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/consultations') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+        <a href="<?= BASE_URL ?>/expert/consultations/hub" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/consultations/hub') ? 'bg-[#15803D] text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
             <div class="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Consultations

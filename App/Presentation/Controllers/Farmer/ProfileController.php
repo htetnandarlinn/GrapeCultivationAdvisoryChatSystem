@@ -39,6 +39,42 @@ class ProfileController
         ]);
     }
 
+    #[Permission('profile.view', 'View Profile')]
+    public function frontendProfile(): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            redirect('/login');
+            exit;
+        }
+
+        $user = $this->repository->findById($_SESSION['user_id']);
+
+        if ($user === null) {
+            session_destroy();
+            redirect('/login');
+            exit;
+        }
+
+        View::render('farmer/frontend-profile', [
+            'user' => $user
+        ], 'app');
+    }
+
+    #[Permission('profile.view', 'View Profile')]
+    public function frontendEdit(): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            redirect('/login');
+            exit;
+        }
+
+        $user = $this->repository->findById($_SESSION['user_id']);
+
+        View::render('farmer/frontend-update-profile', [
+            'user' => $user
+        ], 'app');
+    }
+
     #[Permission('profile.edit', 'Edit Profile')]
     public function edit(): void
     {
@@ -73,7 +109,8 @@ class ProfileController
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old'] = $_POST;
-            redirect('/profile/edit');
+            $editRoute = ($_SESSION['user_role'] ?? '') === 'farmer' ? '/my-profile/edit' : '/profile/edit';
+            redirect($editRoute);
             exit;
         }
 
@@ -88,6 +125,19 @@ class ProfileController
         );
 
         $this->updateHandler->handle($command);
+
+        $userRole = $_SESSION['user_role'] ?? '';
+        $username = $_SESSION['user']['username'] ?? 'A user';
+        if ($userRole === 'farmer') {
+            notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update', null);
+            notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update', null);
+        } elseif ($userRole === 'expert') {
+            notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update', null);
+            notifyAllByRole('farmer', "Expert {$username} has updated their profile.", 'profile_update', null);
+        } elseif ($userRole === 'admin') {
+            notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update', null);
+            notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update', null);
+        }
 
         $updatedUser = $this->repository->findById($_SESSION['user_id']);
 
@@ -105,6 +155,7 @@ class ProfileController
         }
         $_SESSION['success'] = 'Profile updated successfully';
 
-        redirect('/profile');
+        $profileRoute = ($_SESSION['user_role'] ?? '') === 'farmer' ? '/my-profile' : '/profile';
+        redirect($profileRoute);
     }
 }

@@ -67,6 +67,12 @@ class ConsultationController
             'consultation_created',
             '/admin/consultations/view?id=' . $consultationId
         );
+        notifyAllByRole(
+            'farmer',
+            "$farmerName submitted a new consultation: " . $title,
+            'consultation_created',
+            '/consultations'
+        );
 
         if (!empty($_FILES['images']['name'][0])) {
             $uploadDir = __DIR__ . '/../../../../public/uploads/consultations/';
@@ -118,6 +124,19 @@ class ConsultationController
         try {
             $consultation = $this->createHandler->handle($command);
             $consultationId = $consultation->getId();
+
+            $farmerName = $_SESSION['user']['username'] ?? 'A farmer';
+            notifyAllAdmins(
+                "$farmerName submitted a new consultation: " . $title,
+                'consultation_created',
+                '/admin/consultations/view?id=' . $consultationId
+            );
+            notifyAllByRole(
+                'farmer',
+                "$farmerName submitted a new consultation: " . $title,
+                'consultation_created',
+                '/consultations'
+            );
 
             if (!empty($_FILES['images']['name'][0])) {
                 $uploadDir = __DIR__ . '/../../../../public/uploads/consultations/';
@@ -171,31 +190,7 @@ class ConsultationController
 
     public function chat(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
-            redirect('/access-denied');
-            return;
-        }
-
-        $id = (int) ($_GET['id'] ?? 0);
-        $consultation = $this->consultationRepository->findById($id);
-
-        if (!$consultation || $consultation->getFarmerId() !== (int)($_SESSION['user']['id'] ?? 0)) {
-            redirect('/consultation/my-consultations');
-            return;
-        }
-
-        $stmt = $this->connection->prepare('SELECT * FROM consultation_images WHERE consultation_id = :cid');
-        $stmt->execute([':cid' => $id]);
-        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        View::render('consultation/chat', [
-            'consultation' => $consultation,
-            'images' => $images,
-        ], '');
+        redirect('/consultations');
     }
 
     public function frontendHistory(): void
@@ -240,14 +235,16 @@ class ConsultationController
                 $lastMessages[$row['consultation_id']] = $row;
             }
 
-            // Fetch expert names
+            // Fetch expert names and avatars
             $expertIds = array_unique(array_filter(array_map(fn($c) => $c->getExpertId(), $consultations)));
+            $expertAvatars = [];
             if (!empty($expertIds)) {
                 $ePlaceholders = implode(',', array_fill(0, count($expertIds), '?'));
-                $stmt = $this->connection->prepare("SELECT user_id, username FROM users WHERE user_id IN ($ePlaceholders)");
+                $stmt = $this->connection->prepare("SELECT user_id, username, profile_image FROM users WHERE user_id IN ($ePlaceholders)");
                 $stmt->execute(array_values($expertIds));
                 foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                     $expertNames[(int)$row['user_id']] = $row['username'];
+                    $expertAvatars[(int)$row['user_id']] = $row['profile_image'];
                 }
             }
         }
@@ -257,6 +254,7 @@ class ConsultationController
             'images' => $images,
             'lastMessages' => $lastMessages,
             'expertNames' => $expertNames,
+            'expertAvatars' => $expertAvatars,
         ], 'app');
     }
 }
