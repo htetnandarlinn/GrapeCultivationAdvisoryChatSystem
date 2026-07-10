@@ -1,10 +1,10 @@
 <?php
-$username = $_SESSION['user']['username'] ?? 'Farmer';
+$username = $_SESSION['user']['username'] ?? 'Expert';
 $userId = (int) ($_SESSION['user']['id'] ?? 0);
 $images = $images ?? [];
 $lastMessages = $lastMessages ?? [];
-$expertNames = $expertNames ?? [];
-$expertAvatars = $expertAvatars ?? [];
+$farmerNames = $farmerNames ?? [];
+$farmerAvatars = $farmerAvatars ?? [];
 
 function getInitials($string) {
     $words = explode(' ', preg_replace('/[^A-Za-z0-9 ]/', '', $string));
@@ -16,20 +16,21 @@ function getInitials($string) {
     return !empty($initials) ? $initials : 'C';
 }
 
-// Build JSON data for JS
-// Ensure $consultations is defined and iterable to avoid undefined variable errors
 $consultations = $consultations ?? [];
 $consultationsData = [];
 foreach ($consultations as $c) {
-    $expertId = $c->getExpertId();
+    $farmerId = $c->getFarmerId();
     $consultationsData[] = [
         'id' => $c->getId(),
         'title' => $c->getTitle(),
         'description' => $c->getDescription(),
         'status' => $c->getStatus()->getValue(),
         'created_at' => $c->getCreatedAt()->format('Y-m-d H:i:s'),
-        'expert_name' => $expertId ? ($expertNames[$expertId] ?? null) : null,
-        'expert_avatar' => $expertId ? ($expertAvatars[$expertId] ?? null) : null,
+        'farmer_id' => $farmerId,
+        'farmer_name' => $farmerNames[$farmerId] ?? null,
+        'farmer_avatar' => $farmerAvatars[$farmerId] ?? null,
+        'rejection_note' => $c->getRejectionNote(),
+        'images' => array_map(fn($img) => $img['image_path'], $images[$c->getId()] ?? []),
     ];
 }
 ?>
@@ -46,16 +47,20 @@ foreach ($consultations as $c) {
         </div>
         <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-circle-exclamation text-red-500"></i> <?= htmlspecialchars($_SESSION['error']) ?></span>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
 
     <div class="bg-white rounded-3xl border border-slate-200/70 shadow-sm flex h-[calc(95vh-105px)]">
         <!-- LEFT SIDEBAR -->
         <aside class="w-full md:w-[360px] border-r border-slate-100 flex flex-col shrink-0 bg-white">
             <div class="p-4 border-b border-slate-100/80">
                 <div class="flex items-center justify-between gap-3 mb-4">
-                    <h2 class="text-lg font-black text-slate-800 tracking-tight">Consultations</h2>
-                    <button onclick="showCreateForm()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all shadow-sm shadow-emerald-600/10">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                    </button>
+                    <h2 class="text-lg font-black text-slate-800 tracking-tight">Farmer Consultations</h2>
                 </div>
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -64,12 +69,11 @@ foreach ($consultations as $c) {
             </div>
 
             <div class="flex-1 overflow-y-auto p-3 hide-scrollbar">
-                <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase px-2 mb-2 block">Available Consultations</span>
+                <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase px-2 mb-2 block">Assigned Consultations</span>
                 <?php if (empty($consultations)): ?>
                 <div class="p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-300"><i class="fa-regular fa-comment-dots text-lg"></i></div>
-                    <p class="text-xs text-slate-400 font-medium mb-3">No consultations yet</p>
-                    <button onclick="showCreateForm()" class="inline-block px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-colors">Start Consultation</button>
+                    <p class="text-xs text-slate-400 font-medium mb-3">No consultations assigned yet</p>
                 </div>
                 <?php else: ?>
                 <div id="sidebar-list" class="space-y-1">
@@ -77,9 +81,9 @@ foreach ($consultations as $c) {
                         $status = $c->getStatus()->getValue();
                         $consultationImages = $images[$c->getId()] ?? [];
                         $lastMsg = $lastMessages[$c->getId()] ?? null;
-                        $expertName = $c->getExpertId() ? ($expertNames[$c->getExpertId()] ?? null) : null;
-                        $hasExpert = $expertName && $status !== 'pending' && $status !== 'rejected';
-                        $displayName = $hasExpert ? $expertName : $c->getTitle();
+                        $farmerName = $c->getFarmerId() ? ($farmerNames[$c->getFarmerId()] ?? null) : null;
+                        $hasFarmer = $farmerName && $status !== 'pending';
+                        $displayName = $hasFarmer ? $farmerName : $c->getTitle();
 
                         $themeMap = [
                             'pending' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-400', 'badge' => 'text-amber-500 bg-amber-50', 'label' => 'Pending'],
@@ -103,12 +107,12 @@ foreach ($consultations as $c) {
                         }
                     ?>
                     <div class="sidebar-item group flex items-start p-3.5 rounded-2xl transition-all border border-transparent hover:bg-slate-50/50 cursor-pointer"
-                         data-id="<?= $c->getId() ?>" onclick="selectConsultation(<?= $c->getId() ?>)">
+                         data-id="<?= $c->getId() ?>" data-status="<?= $c->getStatus()->getValue() ?>" onclick="selectConsultation(<?= $c->getId() ?>)">
                         <div class="relative w-11 h-11 rounded-2xl <?= $theme['bg'] ?> flex items-center justify-center text-white font-bold text-[13px] tracking-wider shrink-0 overflow-hidden shadow-sm shadow-black/5 transition-transform group-hover:scale-[1.02]">
                             <?php
-                            $expertAvatar = $c->getExpertId() ? ($expertAvatars[$c->getExpertId()] ?? null) : null;
-                            if ($expertAvatar): ?>
-                                <img src="<?= BASE_URL . htmlspecialchars($expertAvatar) ?>" alt="" class="w-full h-full object-cover">
+                            $farmerAvatar = $c->getFarmerId() ? ($farmerAvatars[$c->getFarmerId()] ?? null) : null;
+                            if ($farmerAvatar): ?>
+                                <img src="<?= BASE_URL . htmlspecialchars($farmerAvatar) ?>" alt="" class="w-full h-full object-cover">
                             <?php else: ?>
                                 <?= getInitials($displayName) ?>
                             <?php endif; ?>
@@ -126,7 +130,7 @@ foreach ($consultations as $c) {
                             </p>
                         </div>
                         <div class="ml-2 flex flex-col items-end shrink-0">
-                            <span class="text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md <?= $theme['badge'] ?>"><?= $theme['label'] ?></span>
+                            <span class="status-badge text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md <?= $theme['badge'] ?>"><?= $theme['label'] ?></span>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -135,18 +139,18 @@ foreach ($consultations as $c) {
             </div>
         </aside>
 
-        <!-- RIGHT MAIN PANE (dynamic) -->
+        <!-- RIGHT MAIN PANE -->
         <main id="right-pane" class="hidden md:flex flex-1 flex-col bg-slate-50/40">
-            <!-- Empty State (shown when no consultation selected) -->
+            <!-- Empty State -->
             <div id="right-empty" class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-slate-50/20">
                 <div class="w-16 h-16 mb-4 rounded-3xl bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-400">
                     <i class="fa-regular fa-comment text-2xl"></i>
                 </div>
                 <h3 class="text-sm font-bold text-slate-700 mb-1">Select a Consultation</h3>
-                <p class="text-xs text-slate-400 max-w-sm leading-relaxed">Choose a consultation from the list to view its details and messages.</p>
+                <p class="text-xs text-slate-400 max-w-sm leading-relaxed">Choose a consultation from the list to review and respond.</p>
             </div>
 
-            <!-- Active Consultation View (hidden by default) -->
+            <!-- Active Consultation View -->
             <div id="right-active" class="hidden flex-1 flex flex-col">
                 <!-- Header -->
                 <div id="right-header" class="px-4 md:px-6 py-4 border-b border-slate-100 bg-white flex items-center justify-between">
@@ -165,8 +169,13 @@ foreach ($consultations as $c) {
                     </div>
                 </div>
 
-                <!-- Messages -->
-                <div id="right-messages-wrapper" class="flex-1 relative overflow-hidden">
+                <!-- Consultation Details (for assigned/rejected) -->
+                <div id="right-details" class="hidden flex-1 overflow-y-auto p-6">
+                    <div id="detail-content" class="max-w-3xl mx-auto space-y-6"></div>
+                </div>
+
+                <!-- Messages (for accepted) -->
+                <div id="right-messages-wrapper" class="hidden flex-1 relative overflow-hidden">
                     <div id="right-messages" class="absolute inset-0 overflow-y-auto p-6 space-y-4 hide-scrollbar">
                         <div id="loading-msgs" class="text-center text-xs text-slate-400 py-8"><i class="fa-solid fa-spinner animate-spin"></i> Loading messages...</div>
                     </div>
@@ -178,14 +187,13 @@ foreach ($consultations as $c) {
 
                 <!-- Input (only for accepted) -->
                 <div id="right-input-area" class="hidden p-4 bg-white border-t border-slate-200 shrink-0">
-                    <!-- Reply preview bar -->
                     <div id="right-reply-bar" class="hidden flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl mb-2 border border-slate-200 text-xs">
                         <i class="fa-solid fa-reply text-slate-400 text-[10px]"></i>
                         <span class="flex-1 truncate font-medium text-slate-600"><span class="text-slate-400 font-normal">Replying to </span><span id="right-reply-name"></span><span id="right-reply-text" class="text-slate-400 font-normal">: </span></span>
                         <button type="button" onclick="cancelReply()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <form id="right-chat-form" class="flex items-center space-x-2">
-                        <button type="button" onclick="triggerFileSelector()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white white:bg-slate-800 hover:bg-slate-100 white:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors shrink-0" title="Attach Document / Prescription">
+                        <button type="button" onclick="triggerFileSelector()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-500 transition-colors shrink-0" title="Attach Document / Prescription">
                             <i class="fa-solid fa-paperclip"></i>
                         </button>
                         <input type="text" id="right-msg-input" placeholder="Type your message..." autofocus
@@ -202,44 +210,6 @@ foreach ($consultations as $c) {
                     </div>
                 </div>
             </div>
-            <!-- Create Consultation Form (hidden by default) -->
-            <div id="right-create" class="hidden flex-1 flex flex-col p-6 md:p-10 overflow-y-auto">
-                <div class="max-w-2xl mx-auto w-full">
-                    <div class="mb-6">
-                        <h2 class="text-xl font-black text-slate-900 tracking-tight">New Consultation</h2>
-                        <p class="text-xs text-slate-500 mt-1">Describe your grape cultivation issue to get expert advice.</p>
-                    </div>
-                    <form id="create-form" class="space-y-5">
-                        <div>
-                            <label for="create-title" class="block text-xs font-bold text-slate-700 mb-1.5">Title</label>
-                            <input type="text" id="create-title" name="title" required
-                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-                                   placeholder="e.g., Grape leaf discoloration problem">
-                        </div>
-                        <div>
-                            <label for="create-desc" class="block text-xs font-bold text-slate-700 mb-1.5">Description</label>
-                            <textarea id="create-desc" name="description" rows="6" required
-                                      class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-y"
-                                      placeholder="Describe your issue in detail..."></textarea>
-                        </div>
-                        <div>
-                            <label for="create-images" class="block text-xs font-bold text-slate-700 mb-1.5">Images (optional)</label>
-                            <input type="file" id="create-images" name="images[]" multiple accept="image/*"
-                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-                            <p class="text-[10px] text-slate-400 mt-1">Upload images of your grape issue for better diagnosis.</p>
-                        </div>
-                        <div class="flex items-center gap-3 pt-2">
-                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors">
-                                Submit Consultation
-                            </button>
-                            <button type="button" onclick="cancelCreateForm()" class="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                        <div id="create-error" class="hidden p-3 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-600"></div>
-                    </form>
-                </div>
-            </div>
         </main>
     </div>
 </div>
@@ -249,7 +219,7 @@ const consultationsData = <?= json_encode($consultationsData) ?>;
 const baseUrl = '<?= BASE_URL ?>';
 const userId = <?= $userId ?>;
 const userName = '<?= htmlspecialchars($username, ENT_QUOTES) ?>';
-const role = 'farmer';
+const role = 'expert';
 
 const themeMap = {
     pending:  { bg: 'bg-amber-500',  dot: 'bg-amber-400',  label: 'Pending',  badge: 'text-amber-500 bg-amber-50' },
@@ -274,30 +244,6 @@ function showSidebar() {
     document.getElementById('right-pane').classList.remove('flex');
 }
 
-function showCreateForm() {
-    cancelReply();
-    if (ws) { ws.close(); ws = null; }
-    selectedId = null;
-    document.getElementById('right-empty').classList.add('hidden');
-    document.getElementById('right-active').classList.add('hidden');
-    document.getElementById('right-create').classList.remove('hidden');
-    document.getElementById('right-create').classList.add('flex');
-    // Mobile: hide sidebar, show right pane
-    if (window.innerWidth < 768) {
-        document.querySelector('aside').classList.add('hidden');
-        document.getElementById('right-pane').classList.remove('hidden');
-        document.getElementById('right-pane').classList.add('flex');
-    }
-}
-
-function cancelCreateForm() {
-    document.getElementById('right-create').classList.add('hidden');
-    document.getElementById('right-create').classList.remove('flex');
-    document.getElementById('right-empty').classList.remove('hidden');
-    document.getElementById('create-error').classList.add('hidden');
-    document.getElementById('create-form').reset();
-}
-
 function setReply(msgId, senderName, msgText) {
     replyToId = msgId;
     document.getElementById('right-reply-bar').classList.remove('hidden');
@@ -315,7 +261,6 @@ function cancelReply() {
 function selectConsultation(id) {
     selectedId = id;
 
-    // Update sidebar active state
     document.querySelectorAll('.sidebar-item').forEach(el => {
         const isActive = parseInt(el.dataset.id) === id;
         el.className = 'sidebar-item group flex items-start p-3.5 rounded-2xl transition-all cursor-pointer ' +
@@ -325,11 +270,9 @@ function selectConsultation(id) {
     const data = getConsultation(id);
     if (!data) return;
 
-    // Show right active pane, hide empty
     document.getElementById('right-empty').classList.add('hidden');
     document.getElementById('right-active').classList.remove('hidden');
 
-    // Mobile: hide sidebar, show right pane full-width
     if (window.innerWidth < 768) {
         document.querySelector('aside').classList.add('hidden');
         document.getElementById('right-pane').classList.remove('hidden');
@@ -338,44 +281,192 @@ function selectConsultation(id) {
 
     cancelReply();
 
-    // Render header
     const theme = themeMap[data.status] || themeMap.pending;
-    const hasExpert = data.expert_name && data.status !== 'pending' && data.status !== 'rejected';
-    const displayName = hasExpert ? data.expert_name : data.title;
+    const hasFarmer = data.farmer_name && data.status !== 'pending';
+    const displayName = hasFarmer ? data.farmer_name : data.title;
     const avatar = document.getElementById('header-avatar');
     avatar.className = 'w-10 h-10 rounded-2xl ' + theme.bg + ' flex items-center justify-center text-white font-bold text-xs tracking-wider shrink-0 overflow-hidden shadow-sm shadow-black/5';
-    if (data.expert_avatar) {
-        avatar.innerHTML = '<img src="' + baseUrl + data.expert_avatar + '" alt="" class="w-full h-full object-cover">';
+    if (data.farmer_avatar) {
+        avatar.innerHTML = '<img src="' + baseUrl + data.farmer_avatar + '" alt="" class="w-full h-full object-cover">';
     } else {
         avatar.textContent = getInitialsFn(displayName);
     }
 
     document.getElementById('header-title').textContent = displayName;
-    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ${hasExpert ? 'Expert - ' : ''}${theme.label} Consultation`;
+    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ${hasFarmer ? 'Farmer - ' : ''}${theme.label} Consultation`;
 
     const badge = document.getElementById('header-badge');
     badge.className = 'text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md ' + theme.badge;
     badge.textContent = theme.label;
 
-    // Show/hide input
-    const isChatOpen = data.status === 'accepted';
-    document.getElementById('right-input-area').classList.toggle('hidden', !isChatOpen);
+    const detailsEl = document.getElementById('right-details');
+    const messagesWrapper = document.getElementById('right-messages-wrapper');
+    const inputArea = document.getElementById('right-input-area');
 
-    // Disconnect old WS
+    detailsEl.classList.add('hidden');
+    messagesWrapper.classList.add('hidden');
+    inputArea.classList.add('hidden');
+
     if (ws) { ws.close(); ws = null; }
 
-    // Connect WS if chat is open
-    if (isChatOpen) connectWebSocket(id);
+    if (data.status === 'accepted') {
+        messagesWrapper.classList.remove('hidden');
+        inputArea.classList.remove('hidden');
+        connectWebSocket(id);
+        loadMessages(id);
+    } else {
+        detailsEl.classList.remove('hidden');
+        renderConsultationDetails(data);
+    }
+}
 
-    // Load messages
-    loadMessages(id);
+function renderConsultationDetails(data) {
+    const container = document.getElementById('detail-content');
+    const theme = themeMap[data.status] || themeMap.pending;
+    const farmerDisplay = data.farmer_name || 'Farmer';
+    const farmerAvatarHtml = data.farmer_avatar
+        ? `<img src="${baseUrl}${data.farmer_avatar}" alt="" class="w-10 h-10 rounded-xl object-cover">`
+        : `<div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">${getInitialsFn(farmerDisplay)}</div>`;
+
+    const imagesHtml = (data.images && data.images.length > 0)
+        ? `<div class="px-6 py-4 border-t border-slate-100">
+             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Attached Images</p>
+             <div class="flex gap-2 flex-wrap">${data.images.map(img => `<a href="${baseUrl}/${img}" target="_blank"><img src="${baseUrl}/${img}" class="w-24 h-24 rounded-xl object-cover border border-slate-200 hover:opacity-90 transition-opacity" alt="Consultation image"></a>`).join('')}</div>
+           </div>`
+        : '';
+
+    let html = `
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-50 flex items-center gap-3">
+                ${farmerAvatarHtml}
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">${escapeHtml(farmerDisplay)}</h3>
+                    <p class="text-[10px] text-slate-400">${escapeHtml(data.title)} &middot; ${new Date(data.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                </div>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">${escapeHtml(data.description)}</p>
+            </div>
+            ${imagesHtml}
+        </div>
+    `;
+
+    if (data.status === 'assigned') {
+        html += `
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 bg-slate-50 space-y-3">
+                    <p class="text-xs font-semibold text-slate-600">Do you want to accept this consultation?</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="acceptConsultation(this, ${data.id})" class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                            Accept Consultation
+                        </button>
+                        <button type="button" onclick="toggleRejectForm()" class="px-5 py-2.5 bg-red-50 text-red-600 text-xs font-bold rounded-xl hover:bg-red-100 transition-colors">
+                            Reject
+                        </button>
+                    </div>
+                    <div id="reject-form-container" class="hidden">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Rejection Note</label>
+                                <textarea id="rejection-note-input" rows="3" required
+                                          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-y"
+                                          placeholder="Explain why you cannot take this consultation..."></textarea>
+                            </div>
+                            <button onclick="rejectConsultation(this, ${data.id})" class="px-5 py-2.5 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-colors">
+                                Submit Rejection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (data.status === 'rejected' && data.rejection_note) {
+        html += `
+            <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 bg-red-50">
+                    <h3 class="text-xs font-bold text-red-600 uppercase mb-1">Rejection Note</h3>
+                    <p class="text-sm text-red-700">${escapeHtml(data.rejection_note)}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+function toggleRejectForm() {
+    const el = document.getElementById('reject-form-container');
+    if (el) el.classList.toggle('hidden');
+}
+
+function acceptConsultation(btn, id) {
+    btn.disabled = true;
+    btn.textContent = 'Accepting...';
+    fetch(`${baseUrl}/expert/consultations/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'consultation_id=' + id,
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            updateConsultationStatus(id, 'accepted');
+            selectConsultation(id);
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Accept Consultation';
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Accept Consultation';
+    });
+}
+
+function rejectConsultation(btn, id) {
+    const note = document.getElementById('rejection-note-input');
+    if (!note || !note.value.trim()) return;
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    fetch(`${baseUrl}/expert/consultations/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'consultation_id=' + id + '&rejection_note=' + encodeURIComponent(note.value.trim()),
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            updateConsultationStatus(id, 'rejected');
+            selectConsultation(id);
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Submit Rejection';
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Submit Rejection';
+    });
+}
+
+function updateConsultationStatus(id, newStatus) {
+    const item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+    if (item) {
+        item.setAttribute('data-status', newStatus);
+        const badge = item.querySelector('.status-badge');
+        if (badge) {
+            const labels = { pending: 'Pending', assigned: 'Assigned', accepted: 'Active', rejected: 'Closed' };
+            badge.textContent = labels[newStatus] || newStatus;
+        }
+    }
+    const cons = consultationsData.find(c => c.id === id);
+    if (cons) cons.status = newStatus;
 }
 
 function loadMessages(id) {
     const container = document.getElementById('right-messages');
     container.innerHTML = '<div id="loading-msgs" class="text-center text-xs text-slate-400 py-8"><i class="fa-solid fa-spinner animate-spin"></i> Loading messages...</div>';
 
-    // Remove old scroll listener and attach new one
     container.onscroll = null;
     container.onscroll = function() { checkScroll(container); };
 
@@ -510,7 +601,6 @@ function checkScroll(container) {
 function escapeHtml(text) { if (text == null) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
 function getInitialsFn(str) { const m = str.match(/[A-Za-z0-9]/g); return m ? m.slice(0,2).join('').toUpperCase() : 'C'; }
 
-// Reply button event delegation
 document.getElementById('right-messages').addEventListener('click', function(e) {
     const btn = e.target.closest('.reply-btn');
     if (!btn) return;
@@ -521,7 +611,6 @@ document.getElementById('right-messages').addEventListener('click', function(e) 
     setReply(msgId, sender, textEl);
 });
 
-// Send message
 document.getElementById('right-chat-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const input = document.getElementById('right-msg-input');
@@ -536,7 +625,6 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
     cancelReply();
 
     if (text && file) {
-        // Send image with caption in one message
         const reader = new FileReader();
         reader.onload = function(ev) { appendImage(ev.target.result, userName, true, null, container, null, null, text); };
         reader.readAsDataURL(file);
@@ -625,50 +713,6 @@ function triggerFileSelector() {
     document.getElementById('right-img-input').click();
 }
 
-// Create consultation form submission
-document.getElementById('create-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const title = document.getElementById('create-title').value.trim();
-    const description = document.getElementById('create-desc').value.trim();
-    if (!title || !description) return;
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    const fileInput = document.getElementById('create-images');
-    for (const file of fileInput.files) {
-        formData.append('images[]', file);
-    }
-
-    const submitBtn = this.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-
-    fetch(`${baseUrl}/consultation/store-ajax`, { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                cancelCreateForm();
-                // Reload the page to pick up the new consultation
-                location.reload();
-            } else {
-                const err = document.getElementById('create-error');
-                err.textContent = data.error || 'Failed to create consultation.';
-                err.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Consultation';
-            }
-        })
-        .catch(() => {
-            const err = document.getElementById('create-error');
-            err.textContent = 'Network error. Please try again.';
-            err.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Consultation';
-        });
-});
-
-// Search filter
 document.getElementById('search-input')?.addEventListener('input', function() {
     const q = this.value.toLowerCase();
     document.querySelectorAll('.sidebar-item').forEach(el => {
@@ -677,7 +721,6 @@ document.getElementById('search-input')?.addEventListener('input', function() {
     });
 });
 
-// Auto-select consultation from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
 const consultationId = urlParams.get('id');
 if (consultationId) {
@@ -689,5 +732,4 @@ if (consultationId) {
         }
     }, 500);
 }
-
 </script>

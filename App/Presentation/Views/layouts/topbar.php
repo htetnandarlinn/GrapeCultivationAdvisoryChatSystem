@@ -37,7 +37,7 @@ $currentUser = $_SESSION['user'] ?? [
                     <div class="px-4 py-6 text-center text-xs text-slate-400">Loading...</div>
                 </div>
                 <div class="border-t border-slate-50 px-4 py-2 text-center">
-                    <a href="#" class="text-[10px] font-semibold text-slate-400 hover:text-slate-600">View all notifications</a>
+                    <a href="<?= BASE_URL ?>/notifications" class="text-[10px] font-semibold text-slate-400 hover:text-slate-600">View all notifications</a>
                 </div>
             </div>
         </div>
@@ -171,13 +171,17 @@ function fetchNotifList() {
             // Mark individual notification as read on click
             notifList.querySelectorAll('.notif-item').forEach(el => {
                 el.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const id = this.dataset.id;
+                    const href = this.href;
                     if (id) {
                         fetch(BASE + '/notifications/mark-read', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: 'id=' + id,
                             keepalive: true,
+                        }).finally(() => {
+                            window.location.href = href;
                         });
                         this.classList.remove('bg-emerald-50/40');
                         this.querySelector('.w-2')?.classList.remove('bg-emerald-500');

@@ -141,7 +141,8 @@ class Router
             AdminConsultationController::class =>
                 new AdminConsultationController(
                     new ConsultationRepository($this->db()),
-                    new UserRepository($this->db())
+                    new UserRepository($this->db()),
+                    $this->db()
                 ),
 
             ExpertConsultationController::class =>

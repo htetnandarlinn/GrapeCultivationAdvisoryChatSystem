@@ -3,12 +3,35 @@
 namespace App\Presentation\Controllers;
 
 use App\Domain\NotificationManagement\Repositories\NotificationRepositoryInterface;
+use App\Presentation\Views\View;
 
 class NotificationController
 {
     public function __construct(
         private NotificationRepositoryInterface $notificationRepo,
     ) {}
+
+    public function index(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $userId = (int) ($_SESSION['user']['id'] ?? 0);
+        $role = $_SESSION['user_role'] ?? '';
+
+        if (!$userId) {
+            redirect('/login');
+            return;
+        }
+
+        $notifications = $this->notificationRepo->findByRecipientId($userId, 100);
+
+        View::render('notification/index', [
+            'notifications' => $notifications,
+            'activePage' => 'notifications',
+        ], 'dashboard');
+    }
 
     public function unreadCount(): void
     {

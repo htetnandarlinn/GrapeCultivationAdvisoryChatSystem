@@ -6,12 +6,14 @@ use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterfa
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Views\View;
+use PDO;
 
 class ConsultationController
 {
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
+        private PDO $connection,
     ) {}
 
     #[Permission('consultations.view', 'View Consultations')]
@@ -36,11 +38,16 @@ class ConsultationController
             return;
         }
 
+        $stmt = $this->connection->prepare('SELECT * FROM consultation_images WHERE consultation_id = :cid');
+        $stmt->execute([':cid' => $id]);
+        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $experts = $this->userRepository->findExperts();
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
 
         View::render('admin/consultation-view', [
             'consultation' => $consultation,
+            'images' => $images,
             'experts' => $experts,
             'farmer' => $farmer,
             'activePage' => 'admin-consultations',
@@ -79,7 +86,7 @@ class ConsultationController
                 'expert',
                 'New consultation "' . $consultation->getTitle() . '" has been assigned to you.',
                 'consultation_assigned',
-                '/expert/consultations/view?id=' . $consultation->getId()
+                '/expert/consultations/hub'
             );
         }
 
@@ -90,7 +97,7 @@ class ConsultationController
                 'farmer',
                 'Your consultation "' . $consultation->getTitle() . '" has been assigned to ' . $expertName . '.',
                 'consultation_assigned',
-                '/consultation/chat?id=' . $consultation->getId()
+                '/consultations'
             );
         }
 

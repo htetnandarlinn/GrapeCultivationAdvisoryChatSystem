@@ -107,7 +107,7 @@ class ChatController
                         'expert',
                         "$senderName sent a message in consultation #$consultationId",
                         'message_received',
-                        '/expert/consultations/chat?id=' . $consultationId
+                        '/expert/consultations/hub'
                     );
                 }
             } else {
@@ -116,7 +116,7 @@ class ChatController
                     'farmer',
                     "$senderName sent a message in your consultation",
                     'message_received',
-                    '/consultation/chat?id=' . $consultationId
+                    '/consultations'
                 );
             }
         }
