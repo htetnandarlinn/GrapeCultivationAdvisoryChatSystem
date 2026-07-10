@@ -23,6 +23,7 @@ class UserRepository implements UserRepositoryInterface
 INSERT INTO users (
     username,
     email,
+    google_id,
     password,
     phone,
     address,
@@ -41,6 +42,7 @@ INSERT INTO users (
 VALUES (
     :username,
     :email,
+    :google_id,
     :password,
     :phone,
     :address,
@@ -62,6 +64,7 @@ VALUES (
         $stmt->execute([
             ':username' => $user->getUsername(),
             ':email' => $user->getEmail()->getValue(),
+            ':google_id' => $user->getGoogleId(),
             ':password' => $user->getPasswordHash(),
             ':phone' => $user->getPhoneNumber(),
             ':address' => $user->getAddress(),
@@ -86,6 +89,7 @@ UPDATE users
 SET
     username = :username,
     email = :email,
+    google_id = :google_id,
     password = :password,
     phone = :phone,
     address = :address,
@@ -109,6 +113,7 @@ WHERE user_id = :id
         $stmt->execute([
             ':username' => $user->getUsername(),
             ':email' => $user->getEmail()->getValue(),
+            ':google_id' => $user->getGoogleId(),
             ':password' => $user->getPasswordHash(),
             ':phone' => $user->getPhoneNumber(),
             ':address' => $user->getAddress(),
@@ -173,6 +178,24 @@ WHERE user_id = :id
 
         $stmt = $this->connection->prepare($sql);
         $stmt->execute([':token' => $token]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function findByGoogleId(string $googleId): ?User
+    {
+        $sql = '
+            SELECT *
+            FROM users
+            WHERE google_id = :google_id
+              AND deleted_at IS NULL
+            LIMIT 1
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':google_id' => $googleId]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -369,6 +392,7 @@ WHERE user_id = :id
             isVerified: (bool) ($row['is_verified'] ?? 0),
             isLogin: (bool) ($row['is_login'] ?? 0),
             profileImage: $row['profile_image'] ?? null,
+            googleId: $row['google_id'] ?? null,
             verificationToken: $row['verification_token'] ?? null,
             verificationTokenExpireAt: !empty($row['verification_token_expire_at'])
                 ? new \DateTimeImmutable($row['verification_token_expire_at'])

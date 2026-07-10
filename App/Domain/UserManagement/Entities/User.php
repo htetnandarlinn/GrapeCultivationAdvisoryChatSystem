@@ -20,6 +20,8 @@ final class User
 
     private ?string $profileImage;
 
+    private ?string $googleId;
+
     private string $passwordHash;
 
     private UserType $type;
@@ -54,6 +56,7 @@ final class User
         bool $isVerified = false,
         bool $isLogin = false,
         ?string $profileImage = null,
+        ?string $googleId = null,
         ?string $verificationToken = null,
         ?\DateTimeImmutable $verificationTokenExpireAt = null,
         ?\DateTimeImmutable $emailVerifiedAt = null,
@@ -72,6 +75,7 @@ final class User
         $this->isVerified = $isVerified;
         $this->isLogin = $isLogin;
         $this->profileImage = $profileImage;
+        $this->googleId = $googleId;
         $this->verificationToken = $verificationToken;
         $this->verificationTokenExpireAt = $verificationTokenExpireAt;
         $this->emailVerifiedAt = $emailVerifiedAt;
@@ -181,6 +185,20 @@ final class User
     public function setProfileImage(?string $image): void
     {
         $this->profileImage = $image;
+    }
+
+    /* ===========================
+       Google ID
+    =========================== */
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): void
+    {
+        $this->googleId = $googleId;
     }
 
     /* ===========================

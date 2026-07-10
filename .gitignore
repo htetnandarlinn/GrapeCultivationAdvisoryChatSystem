@@ -1,3 +1,6 @@
 # Composer dependencies
 /vendor/
 /node_modules/
+
+# Environment files
+.env

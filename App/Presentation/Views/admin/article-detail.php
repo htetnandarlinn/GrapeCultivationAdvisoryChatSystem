@@ -2,6 +2,12 @@
 $message = $_SESSION['article_message'] ?? '';
 unset($_SESSION['article_message']);
 
+$article = $article ?? ($data['article'] ?? null) ?? ($viewData['article'] ?? null);
+if (!$article) {
+    echo '<main class="max-w-5xl mx-auto px-6 py-10"><div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm"><h1 class="text-2xl font-black text-slate-900">Article not found</h1><p class="text-slate-500 mt-3">No article data is available for display.</p></div></main>';
+    return;
+}
+
 $st = $article->getStatus()->getValue();
 $stColors = [
     'pending' => 'bg-amber-50 text-amber-700 border-amber-200',

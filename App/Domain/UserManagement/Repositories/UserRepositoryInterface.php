@@ -16,6 +16,8 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?User;
 
+    public function findByGoogleId(string $googleId): ?User;
+
     public function findByUsername(string $username): ?User;
 
     public function findByUsernameOrEmail(string $identifier): ?User;
