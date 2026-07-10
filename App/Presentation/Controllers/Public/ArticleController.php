@@ -3,12 +3,14 @@
 namespace App\Presentation\Controllers\Public;
 
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
 
 final class ArticleController
 {
     public function __construct(
         private ArticleRepositoryInterface $articleRepository,
+        private UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(): void
@@ -31,8 +33,12 @@ final class ArticleController
             return;
         }
 
+        $author = $this->userRepository->findById((int) $article->getAuthorId());
+        $authorName = $author ? $author->getUsername() : 'Unknown';
+
         View::render('public/article-detail', [
             'article' => $article,
+            'authorName' => $authorName,
         ], 'app');
     }
 }

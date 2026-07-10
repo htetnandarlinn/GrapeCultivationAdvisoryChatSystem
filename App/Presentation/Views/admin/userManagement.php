@@ -33,17 +33,17 @@ $roles = $roles ?? [];
         <?php endforeach; ?>
     </div>
 
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="max-h-[470px] overflow-y-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50 bg-slate-50/50">
-                        <th class="py-4 pl-6">Profile</th>
-                        <th class="py-4">Email</th>
-                        <th class="py-4">Phone</th>
-                        <th class="py-4">Role</th>
-                        <th class="py-4">Status</th>
-                        <th class="py-4 text-right pr-6">Actions</th>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="text-left px-4 py-3">Profile</th>
+                        <th class="text-left px-4 py-3">Email</th>
+                        <th class="text-left px-4 py-3">Phone</th>
+                        <th class="text-left px-4 py-3">Role</th>
+                        <th class="text-left px-4 py-3">Status</th>
+                        <th class="text-center px-4 py-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-xs text-slate-700">
@@ -66,29 +66,23 @@ $roles = $roles ?? [];
                             default => 'bg-slate-100 text-slate-600',
                         };
                     ?>
-                        <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition">
-                            <td class="py-4 pl-6 font-bold text-slate-900">
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
                                         <span class="text-[10px] font-bold"><?= strtoupper(substr($user->getUsername(), 0, 1)) ?></span>
                                     </div>
-                                    <div>
-                                        <div class="font-bold"><?= htmlspecialchars($user->getUsername()) ?></div>
-                                    </div>
+                                    <span class="text-xs font-semibold text-slate-800"><?= htmlspecialchars($user->getUsername()) ?></span>
                                 </div>
                             </td>
-                            <td class="py-4"><?= htmlspecialchars($user->getEmail()->getValue()) ?></td>
-                            <td class="py-4"><?= htmlspecialchars($user->getPhoneNumber()) ?></td>
-                            <td class="py-4">
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold capitalize <?= $roleBadgeClass ?>"><?= htmlspecialchars($roleVal) ?></span>
-                            </td>
-                            <td class="py-4">
-                                <span class="font-bold <?= $user->getStatus()->isActive() ? 'text-emerald-600' : 'text-slate-400' ?>"><?= ucfirst($user->getStatus()->getValue()) ?></span>
-                            </td>
-                            <td class="py-4 text-right pr-6">
+                            <td class="px-4 py-3 text-xs text-slate-600"><?= htmlspecialchars($user->getEmail()->getValue()) ?></td>
+                            <td class="px-4 py-3 text-xs text-slate-600"><?= htmlspecialchars($user->getPhoneNumber()) ?: '—' ?></td>
+                            <td class="px-4 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold capitalize <?= $roleBadgeClass ?>"><?= htmlspecialchars($roleVal) ?></span></td>
+                            <td class="px-4 py-3"><span class="text-xs font-bold <?= $user->getStatus()->isActive() ? 'text-emerald-600' : 'text-slate-400' ?>"><?= ucfirst($user->getStatus()->getValue()) ?></span></td>
+                            <td class="px-4 py-3 text-center">
                                 <?php if (can('users.role')): ?>
                                     <button onclick="openRoleModal(<?= $uid ?>, '<?= htmlspecialchars($roleVal) ?>', '<?= htmlspecialchars($user->getUsername()) ?>')" 
-                                            class="bg-[#15803D] hover:bg-green-900 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
+                                            class="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-lg hover:bg-indigo-100 transition-colors">
                                         Manage
                                     </button>
                                 <?php endif; ?>

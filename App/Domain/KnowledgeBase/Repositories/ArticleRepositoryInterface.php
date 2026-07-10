@@ -14,5 +14,7 @@ interface ArticleRepositoryInterface
 
     public function findPublished(): array;
 
+    public function countAll(): int;
+
     public function delete(int $id): void;
 }

@@ -2,11 +2,15 @@
 
 namespace App\Routes;
 
+use App\Presentation\Middleware\AuthMiddleware;
+use App\Presentation\Middleware\MiddlewareInterface;
+use App\Presentation\Middleware\PermissionMiddleware;
+use App\Presentation\Middleware\RoleMiddleware;
+
 final class Route
 {
-    private ?string $permission = null;
-    private array $roles = [];
-    private bool $requireAuth = false;
+    /** @var MiddlewareInterface[] */
+    private array $middleware = [];
 
     private mixed $action;
 
@@ -20,43 +24,26 @@ final class Route
 
     public function can(string $permission): self
     {
-        $this->permission = $permission;
+        $this->middleware[] = new PermissionMiddleware($permission);
         return $this;
     }
 
     public function role(string|array $role): self
     {
-        $this->roles = is_array($role) ? $role : [$role];
+        $this->middleware[] = new RoleMiddleware($role);
         return $this;
     }
 
     public function auth(): self
     {
-        $this->requireAuth = true;
+        $this->middleware[] = new AuthMiddleware();
         return $this;
     }
 
     public function authorize(): void
     {
-        $hasAuth = !empty($_SESSION['user']);
-
-        if ($this->requireAuth || !empty($this->roles) || $this->permission !== null) {
-            if (!$hasAuth) {
-                \redirect('/login');
-            }
-        }
-
-        if (!empty($this->roles)) {
-            $userRole = $_SESSION['user_role'] ?? '';
-            if (!in_array($userRole, $this->roles, true)) {
-                \redirect('/access-denied');
-            }
-        }
-
-        if ($this->permission !== null) {
-            if (!\can($this->permission)) {
-                \redirect('/access-denied');
-            }
+        foreach ($this->middleware as $mw) {
+            $mw->handle();
         }
     }
 

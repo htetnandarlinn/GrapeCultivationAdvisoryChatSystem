@@ -8,8 +8,13 @@
         </a>
 
         <article class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-sm">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight"><?= htmlspecialchars($article->getTitle()) ?></h1>
-            <p class="text-sm text-slate-400 mt-2"><?= htmlspecialchars($article->getCreatedAt()->format('F d, Y')) ?></p>
+            <div class="flex items-start justify-between gap-4">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight"><?= htmlspecialchars($article->getTitle()) ?></h1>
+                <div class="text-right shrink-0">
+                    <p class="text-xs font-bold text-slate-700"><?= htmlspecialchars($authorName) ?></p>
+                    <p class="text-[10px] text-slate-400"><?= htmlspecialchars($article->getCreatedAt()->format('F d, Y')) ?></p>
+                </div>
+            </div>
 
             <?php if ($article->getImage()): ?>
                 <div class="mt-6 rounded-2xl overflow-hidden border border-slate-100">

@@ -210,6 +210,7 @@ class ConsultationController
         $images = [];
         $lastMessages = [];
         $expertNames = [];
+        $expertAvatars = [];
         if (!empty($consultations)) {
             $ids = array_map(fn($c) => $c->getId(), $consultations);
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -237,7 +238,6 @@ class ConsultationController
 
             // Fetch expert names and avatars
             $expertIds = array_unique(array_filter(array_map(fn($c) => $c->getExpertId(), $consultations)));
-            $expertAvatars = [];
             if (!empty($expertIds)) {
                 $ePlaceholders = implode(',', array_fill(0, count($expertIds), '?'));
                 $stmt = $this->connection->prepare("SELECT user_id, username, profile_image FROM users WHERE user_id IN ($ePlaceholders)");

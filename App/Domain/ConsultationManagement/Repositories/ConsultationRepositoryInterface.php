@@ -18,5 +18,7 @@ interface ConsultationRepositoryInterface
 
     public function findByStatus(string $status): array;
 
+    public function countAll(): int;
+
     public function update(Consultation $consultation): void;
 }

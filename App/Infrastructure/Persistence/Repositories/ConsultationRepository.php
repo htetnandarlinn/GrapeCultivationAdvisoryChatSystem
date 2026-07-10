@@ -60,6 +60,12 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
         return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
     }
 
+    public function countAll(): int
+    {
+        $stmt = $this->connection->query('SELECT COUNT(*) FROM consultations');
+        return (int) $stmt->fetchColumn();
+    }
+
     public function findByExpert(int $expertId): array
     {
         $sql = 'SELECT * FROM consultations WHERE expert_id = :expert_id ORDER BY created_at DESC';

@@ -88,6 +88,12 @@ final class ArticleRepository implements ArticleRepositoryInterface
         return array_map(fn(array $row): Article => $this->toEntity($row), $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    public function countAll(): int
+    {
+        $stmt = $this->connection->query('SELECT COUNT(*) FROM articles');
+        return (int) $stmt->fetchColumn();
+    }
+
     public function findPublished(): array
     {
         $stmt = $this->connection->prepare(

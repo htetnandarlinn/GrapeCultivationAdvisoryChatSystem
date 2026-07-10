@@ -6,6 +6,7 @@ use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Admin\UserManagementController;
 use App\Presentation\Controllers\Auth\AuthController;
 use App\Presentation\Controllers\Auth\ForgotPasswordController;
+use App\Presentation\Controllers\Auth\GoogleAuthController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
@@ -30,6 +31,11 @@ $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'authenticate']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
+/* ================= GOOGLE OAUTH (public) ================= */
+
+$router->get('/auth/google', [GoogleAuthController::class, 'redirect']);
+$router->get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+
 /* ================= EMAIL (public) ================= */
 
 $router->get('/verify-email', [AuthController::class, 'verifyEmail']);
@@ -49,6 +55,8 @@ $router->get('/articles/view', [PublicArticleController::class, 'view']);
 /* ================= HOME (public) ================= */
 
 $router->get('/', [DashboardController::class, 'home']);
+$router->get('/about', [DashboardController::class, 'about']);
+$router->get('/contact', [DashboardController::class, 'contact']);
 
 /* ================= DASHBOARD (authenticated) ================= */
 
@@ -85,12 +93,12 @@ $router->post('/admin/consultations/assign', [AdminConsultationController::class
 $router->get('/expert/articles', [ArticleController::class, 'index'])->role(['expert', 'admin'])->can('articles.view');
 $router->get('/expert/articles/create', [ArticleController::class, 'create'])->role(['expert', 'admin'])->can('articles.create');
 $router->post('/expert/articles/store', [ArticleController::class, 'store'])->role(['expert', 'admin'])->can('articles.create');
-$router->get('/expert/articles/edit', [ArticleController::class, 'edit'])->role(['expert', 'admin'])->can('articles.update');
-$router->post('/expert/articles/update', [ArticleController::class, 'update'])->role(['expert', 'admin'])->can('articles.update');
+$router->get('/expert/articles/edit', [ArticleController::class, 'edit'])->role(['expert', 'admin'])->can('articles.edit');
+$router->post('/expert/articles/update', [ArticleController::class, 'update'])->role(['expert', 'admin'])->can('articles.edit');
 $router->post('/expert/articles/delete', [ArticleController::class, 'delete'])->role(['expert', 'admin'])->can('articles.delete');
 $router->get('/expert/articles/view', [ArticleController::class, 'view'])->role(['expert', 'admin'])->can('articles.view');
-$router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role(['expert', 'admin'])->can('articles.update');
-$router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role(['expert', 'admin'])->can('articles.update');
+$router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role(['expert', 'admin'])->can('articles.edit');
+$router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role(['expert', 'admin'])->can('articles.edit');
 
 /* ================= EXPERT: CONSULTATIONS ================= */
 

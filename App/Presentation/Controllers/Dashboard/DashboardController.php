@@ -4,6 +4,7 @@ namespace App\Presentation\Controllers\Dashboard;
 
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
 
@@ -13,11 +14,34 @@ class DashboardController
         private ?UserRepositoryInterface $userRepository = null,
         private ?ActivityRepositoryInterface $activityRepository = null,
         private ?ConsultationRepositoryInterface $consultationRepository = null,
+        private ?ArticleRepositoryInterface $articleRepository = null,
     ) {}
 
     public function home(): void
     {
-        View::render('home', [], 'app');
+        $profiles = [];
+        if ($this->userRepository) {
+            $farmers = $this->userRepository->findFarmers();
+            $experts = $this->userRepository->findExperts();
+            shuffle($farmers);
+            shuffle($experts);
+            $profiles = array_merge(
+                array_slice($farmers, 0, 2),
+                array_slice($experts, 0, 1)
+            );
+            shuffle($profiles);
+        }
+        View::render('home', ['profiles' => $profiles], 'app');
+    }
+
+    public function about(): void
+    {
+        View::render('about', [], 'app');
+    }
+
+    public function contact(): void
+    {
+        View::render('contact', [], 'app');
     }
 
     public function index(): void
@@ -43,6 +67,14 @@ class DashboardController
 
         if ($this->activityRepository) {
             $data['activities'] = $this->activityRepository->getRecentActivities(8);
+        }
+
+        if ($this->consultationRepository && $role === 'admin') {
+            $data['totalConsultations'] = $this->consultationRepository->countAll();
+        }
+
+        if ($this->articleRepository && $role === 'admin') {
+            $data['totalArticles'] = $this->articleRepository->countAll();
         }
 
         if ($this->consultationRepository && $role === 'farmer') {

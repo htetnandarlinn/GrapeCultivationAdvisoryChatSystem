@@ -21,6 +21,7 @@ use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
 use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
+use App\Infrastructure\Persistence\Repositories\ArticleRepository;
 use App\Infrastructure\Persistence\Repositories\NotificationRepository;
 use App\Application\NotificationManagement\NotificationService;
 use App\Presentation\Controllers\NotificationController;
@@ -30,9 +31,12 @@ use App\Presentation\Controllers\Admin\RoleController;
 use App\Presentation\Controllers\Admin\UserManagementController;
 use App\Presentation\Controllers\Auth\AuthController;
 use App\Presentation\Controllers\Auth\ForgotPasswordController;
+use App\Presentation\Controllers\Auth\GoogleAuthController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
+
+
 use App\Presentation\Controllers\Chat\ChatController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
@@ -159,7 +163,8 @@ class Router
                 new DashboardController(
                     new UserRepository($this->db()),
                     new ActivityRepository($this->db()),
-                    new ConsultationRepository($this->db())
+                    new ConsultationRepository($this->db()),
+                    new ArticleRepository($this->db())
                 ),
 
             ArticleController::class =>
@@ -169,7 +174,8 @@ class Router
 
             PublicArticleController::class =>
                 new PublicArticleController(
-                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
+                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db()),
+                    new UserRepository($this->db())
                 ),
 
             RoleController::class =>
@@ -199,6 +205,8 @@ class Router
                 ),
 
             AuthController::class => $this->createAuthController(),
+
+            GoogleAuthController::class => $this->createGoogleAuthController(),
 
             ForgotPasswordController::class => $this->createForgotPasswordController(),
 
@@ -242,6 +250,18 @@ class Router
             ),
             new RegisterRequestValidator(),
             new LoginRequestValidator(),
+            $userRepo,
+            new ActivityRepository($this->db()),
+            new RoleRepository($this->db()),
+            new PermissionRepository($this->db())
+        );
+    }
+
+    private function createGoogleAuthController(): GoogleAuthController
+    {
+        $userRepo = new UserRepository($this->db());
+
+        return new GoogleAuthController(
             $userRepo,
             new ActivityRepository($this->db()),
             new RoleRepository($this->db()),

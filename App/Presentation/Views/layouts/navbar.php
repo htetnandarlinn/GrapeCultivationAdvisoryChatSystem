@@ -4,6 +4,18 @@ $userRole = $_SESSION['user_role'] ?? '';
 $isLoggedIn = $user !== null;
 $username = $user['username'] ?? '';
 $avatar = $user['avatar'] ?? '';
+
+$currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$basePath = rtrim(BASE_URL, '/');
+$route = str_replace($basePath, '', $currentPath);
+$route = $route ?: '/';
+
+function navClass(string $targetRoute, string $currentRoute): string {
+    if ($targetRoute === $currentRoute) {
+        return 'text-grapeGreen font-semibold';
+    }
+    return 'text-[#555] font-medium hover:text-grapeGreen hover:font-semibold';
+}
 ?>
 <nav class="flex items-center justify-between px-5 py-3.5 md:px-[60px] md:py-3.5 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.07)] sticky top-0 z-[100]">
     <div class="flex items-center gap-3">
@@ -16,13 +28,13 @@ $avatar = $user['avatar'] ?? '';
         </div>
     </div>
     <div class="hidden md:flex items-center gap-9">
-        <a href="<?= BASE_URL ?>/" class="no-underline text-grapeGreen font-semibold text-sm">Home</a>
-        <a href="<?= BASE_URL ?>/articles" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Articles</a>
+        <a href="<?= BASE_URL ?>/" class="no-underline text-sm transition-colors <?= navClass('/', $route) ?>">Home</a>
+        <a href="<?= BASE_URL ?>/articles" class="no-underline text-sm transition-colors <?= navClass('/articles', $route) ?>">Articles</a>
         <?php if ($isLoggedIn && $userRole === 'farmer'): ?>
-        <a href="<?= BASE_URL ?>/consultations" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">My Consultations</a>
+        <a href="<?= BASE_URL ?>/consultations" class="no-underline text-sm transition-colors <?= navClass('/consultations', $route) ?>">My Consultations</a>
         <?php endif; ?>
-        <a href="#" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">About</a>
-        <a href="#" class="no-underline text-[#555] font-medium text-sm hover:text-grapeGreen hover:font-semibold transition-colors">Contact</a>
+        <a href="<?= BASE_URL ?>/about" class="no-underline text-sm transition-colors <?= navClass('/about', $route) ?>">About Us</a>
+        <a href="<?= BASE_URL ?>/contact" class="no-underline text-sm transition-colors <?= navClass('/contact', $route) ?>">Contact Us</a>
     </div>
     <div class="flex items-center gap-2.5">
         <?php if ($isLoggedIn): ?>
@@ -119,19 +131,25 @@ $avatar = $user['avatar'] ?? '';
 </nav>
 
 <div id="mobileNavigationDrawer" class="hidden md:hidden bg-white border-b border-gray-100 px-6 py-4 space-y-3.5 shadow-inner">
-    <a href="<?= BASE_URL ?>/" class="block no-underline text-grapeGreen font-semibold text-sm">Home</a>
-    <a href="<?= BASE_URL ?>/articles" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Articles</a>
+    <a href="<?= BASE_URL ?>/" class="block no-underline text-sm <?= navClass('/', $route) ?>">Home</a>
+    <a href="<?= BASE_URL ?>/articles" class="block no-underline text-sm <?= navClass('/articles', $route) ?>">Articles</a>
     <?php if ($isLoggedIn): ?>
         <?php if ($userRole === 'farmer'): ?>
-        <a href="<?= BASE_URL ?>/consultations" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">My Consultations</a>
+        <a href="<?= BASE_URL ?>/consultations" class="block no-underline text-sm <?= navClass('/consultations', $route) ?>">My Consultations</a>
         <a href="<?= BASE_URL ?>/consultation/create" class="block no-underline text-grapeGreen font-semibold text-sm hover:text-grapeGreen">+ New Consultation</a>
         <?php endif; ?>
-        <a href="<?= BASE_URL ?>/<?= $userRole === 'farmer' ? 'my-profile' : 'profile' ?>" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Profile</a>
+        <a href="<?= BASE_URL ?>/<?= $userRole === 'farmer' ? 'my-profile' : 'profile' ?>" class="block no-underline text-sm <?= navClass('/' . ($userRole === 'farmer' ? 'my-profile' : 'profile'), $route) ?>">Profile</a>
         <a href="<?= BASE_URL ?>/logout" class="block no-underline text-red-500 font-medium text-sm hover:text-red-600 pt-2 border-t border-gray-100">Logout</a>
+        <div class="pt-2 border-t border-gray-100 space-y-3.5">
+            <a href="<?= BASE_URL ?>/about" class="block no-underline text-sm <?= navClass('/about', $route) ?>">About Us</a>
+            <a href="<?= BASE_URL ?>/contact" class="block no-underline text-sm <?= navClass('/contact', $route) ?>">Contact Us</a>
+        </div>
     <?php else: ?>
-        <a href="#" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">About</a>
-        <a href="#" class="block no-underline text-[#555] font-medium text-sm hover:text-grapeGreen">Contact</a>
         <a href="<?= BASE_URL ?>/register" class="block sm:hidden no-underline text-grapeGreen font-semibold text-sm pt-2 border-t border-gray-100">Register Account</a>
+        <div class="pt-2 border-t border-gray-100 space-y-3.5">
+            <a href="<?= BASE_URL ?>/about" class="block no-underline text-sm <?= navClass('/about', $route) ?>">About Us</a>
+            <a href="<?= BASE_URL ?>/contact" class="block no-underline text-sm <?= navClass('/contact', $route) ?>">Contact Us</a>
+        </div>
     <?php endif; ?>
 </div>
 
