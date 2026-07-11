@@ -94,6 +94,20 @@ final class ArticleRepository implements ArticleRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
+    public function countByAuthor(int $authorId): int
+    {
+        $stmt = $this->connection->prepare('SELECT COUNT(*) FROM articles WHERE author_id = :author_id');
+        $stmt->execute([':author_id' => $authorId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function countImagesByAuthor(int $authorId): int
+    {
+        $stmt = $this->connection->prepare("SELECT COUNT(*) FROM articles WHERE author_id = :author_id AND image IS NOT NULL AND image != ''");
+        $stmt->execute([':author_id' => $authorId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function findPublished(): array
     {
         $stmt = $this->connection->prepare(

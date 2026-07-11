@@ -72,15 +72,15 @@ $router->post('/admin/users/role', [UserManagementController::class, 'assignRole
 $router->get('/admin/roles', [RoleController::class, 'index'])->role('admin')->can('roles.view');
 $router->get('/admin/roles/create', [RoleController::class, 'create'])->role('admin')->can('roles.create');
 $router->post('/admin/roles/store', [RoleController::class, 'store'])->role('admin')->can('roles.create');
-$router->get('/admin/roles/edit', [RoleController::class, 'edit'])->role('admin')->can('roles.update');
-$router->post('/admin/roles/update', [RoleController::class, 'update'])->role('admin')->can('roles.update');
+$router->get('/admin/roles/edit', [RoleController::class, 'edit'])->role('admin')->can('roles.edit');
+$router->post('/admin/roles/update', [RoleController::class, 'update'])->role('admin')->can('roles.edit');
 $router->post('/admin/roles/delete', [RoleController::class, 'delete'])->role('admin')->can('roles.delete');
 
 /* ================= ADMIN: PERMISSIONS ================= */
 
 $router->get('/admin/permissions/sync', [PermissionAssignmentController::class, 'sync'])->role('admin')->can('permissions.sync');
-$router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list'])->role('admin')->can('permissions.update');
-$router->post('/admin/roles/permissions/update', [PermissionAssignmentController::class, 'update'])->role('admin')->can('permissions.update');
+$router->get('/admin/roles/permissions', [PermissionAssignmentController::class, 'list'])->role('admin')->can('permissions.assign');
+$router->post('/admin/roles/permissions/update', [PermissionAssignmentController::class, 'update'])->role('admin')->can('permissions.assign');
 
 /* ================= ADMIN: CONSULTATIONS ================= */
 

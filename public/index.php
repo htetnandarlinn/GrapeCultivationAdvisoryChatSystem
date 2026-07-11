@@ -12,7 +12,7 @@ session_start();
 |--------------------------------------------------------------------------
 */
 
-if (isset($_SESSION['user_role']) && $_SESSION['user_role'] !== 'admin' && isset($_SESSION['user'])) {
+if (isset($_SESSION['user_role']) && isset($_SESSION['user'])) {
     try {
         $permDb = new \App\Shared\Infrastructure\Database\Database();
         $permConn = $permDb->getConnection();
@@ -148,10 +148,6 @@ function redirect(string $path): never
 
 function can(string $permission): bool
 {
-    if (($_SESSION['user_role'] ?? '') === 'admin') {
-        return true;
-    }
-
     return in_array($permission, $_SESSION['user_permissions'] ?? [], true);
 }
 

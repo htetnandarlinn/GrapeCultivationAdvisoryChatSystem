@@ -114,6 +114,14 @@ final class AuthController
             $user = $this->userRepository->findById((int) $_SESSION['user_id']);
 
             if ($user !== null) {
+                $role = $_SESSION['user_role'] ?? 'unknown';
+                $username = $user->getUsername();
+                $this->activityRepository->logActivity(
+                    "{$role} \"{$username}\" logged out of the system.",
+                    (int) $_SESSION['user_id'],
+                    $role
+                );
+
                 $user->setLogin(false);
                 $user->setUpdatedAt($this->nowInMyanmarTime());
                 $this->userRepository->update($user);
@@ -195,7 +203,7 @@ final class AuthController
     {
         $dest = match ($user->getType()->getValue()) {
             'farmer' => '/',
-            'expert' => '/expert/consultations',
+            'expert' => '/dashboard',
             'admin' => '/dashboard',
         };
 

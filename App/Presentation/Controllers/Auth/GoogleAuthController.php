@@ -216,7 +216,7 @@ final class GoogleAuthController
 
         $dest = match ($user->getType()->getValue()) {
             'farmer' => '/',
-            'expert' => '/expert/consultations',
+            'expert' => '/dashboard',
             'admin' => '/dashboard',
         };
 

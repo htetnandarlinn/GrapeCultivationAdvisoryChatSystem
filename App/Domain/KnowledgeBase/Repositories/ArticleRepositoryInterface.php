@@ -16,5 +16,9 @@ interface ArticleRepositoryInterface
 
     public function countAll(): int;
 
+    public function countByAuthor(int $authorId): int;
+
+    public function countImagesByAuthor(int $authorId): int;
+
     public function delete(int $id): void;
 }

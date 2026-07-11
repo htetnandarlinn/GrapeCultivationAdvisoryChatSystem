@@ -59,6 +59,15 @@ function is_active($path) {
         </a>
 <?php endif; ?>
 
+<?php if (can('consultations.answer') && ($_SESSION['user_role'] ?? '') === 'expert'): ?>
+        <a href="<?= BASE_URL ?>/expert/consultations/hub" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/consultations/hub') ? 'bg-emerald-50 text-[#15803D] shadow-sm' : 'text-slate-600 hover:bg-emerald-50 hover:text-[#15803D]' ?>">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Consultations
+            </div>
+        </a>
+<?php endif; ?>
+
 <?php if (can('articles.view')): ?>
         <a href="<?= BASE_URL ?>/expert/articles" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/articles') ? 'bg-emerald-50 text-[#15803D] shadow-sm' : 'text-slate-600 hover:bg-emerald-50 hover:text-[#15803D]' ?>">
             <div class="flex items-center gap-3">
@@ -73,15 +82,6 @@ function is_active($path) {
             <div class="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                 Notifications
-            </div>
-        </a>
-<?php endif; ?>
-
-<?php if (can('consultations.answer') && ($_SESSION['user_role'] ?? '') === 'expert'): ?>
-        <a href="<?= BASE_URL ?>/expert/consultations/hub" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/consultations/hub') ? 'bg-emerald-50 text-[#15803D] shadow-sm' : 'text-slate-600 hover:bg-emerald-50 hover:text-[#15803D]' ?>">
-            <div class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Consultations
             </div>
         </a>
 <?php endif; ?>

@@ -7,6 +7,14 @@ $expertCount = $expertCount ?? 0;
 $totalConsultations = $totalConsultations ?? 0;
 $totalArticles = $totalArticles ?? 0;
 
+$userRole = $_SESSION['user_role'] ?? '';
+
+if ($userRole === 'expert') {
+    $totalConsultations = $expertConsultations ?? 0;
+    $totalArticles = $expertArticles ?? 0;
+    $farmerCount = $expertConsultingFarmers ?? 0;
+}
+
 $roleDotColors = [
 
     'ADMIN' => 'bg-red-500',
@@ -17,8 +25,6 @@ $roleDotColors = [
 
 ];
 
-$userRole = $_SESSION['user_role'] ?? '';
-
 $username = $_SESSION['user']['username'] ?? 'User';
 
 ?>
@@ -27,14 +33,35 @@ $username = $_SESSION['user']['username'] ?? 'User';
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
-        <div>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome back, <?= htmlspecialchars($username) ?>! 👋</h2>
+        <div class="animate-fadeInDown">
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome back, <?= htmlspecialchars($username) ?>! <span class="wave-hand">👋</span></h2>
             <p class="text-xs text-slate-500 mt-1">Here is a quick overview of your system.</p>
         </div>
-        <div class="px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-600">
+        <div class="px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-600 animate-fadeIn">
             <?= date('M d, Y') ?>
         </div>
     </div>
+
+<style>
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(14deg); }
+    40% { transform: rotate(-8deg); }
+    60% { transform: rotate(14deg); }
+    80% { transform: rotate(-4deg); }
+}
+.animate-fadeInDown { animation: fadeInDown 0.6s ease-out both; }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out 0.2s both; }
+.wave-hand { display: inline-block; animation: wave 1.5s ease-in-out infinite; transform-origin: 70% 70%; }
+</style>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
@@ -46,6 +73,17 @@ $username = $_SESSION['user']['username'] ?? 'User';
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </div>
         </div>
+<?php if ($userRole === 'expert'): ?>
+        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uploaded Images</p>
+                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $expertArticleImages ?? 0 ?></p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+            </div>
+        </div>
+<?php else: ?>
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Experts</p>
@@ -55,6 +93,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             </div>
         </div>
+<?php endif; ?>
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Consultations</p>
@@ -75,7 +114,72 @@ $username = $_SESSION['user']['username'] ?? 'User';
         </div>
     </div>
 
-    <?php if ($userRole === 'farmer'): ?>
+    <?php if ($userRole === 'expert'): ?>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
+                <h2 class="text-sm font-black text-slate-900">Recent Consultation Requests</h2>
+                <a href="<?= BASE_URL ?>/consultation/my-consultations" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
+            </div>
+            <div class="p-2">
+                <?php if (!empty($expertConsultationList)): ?>
+                    <?php foreach ($expertConsultationList as $c): ?>
+                    <div class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($c->getTitle()) ?></p>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><?= $c->getCreatedAt()->format('M d, Y') ?></p>
+                        </div>
+                        <span class="shrink-0 ml-3 px-2.5 py-1 rounded-full text-[10px] font-bold
+                            <?= match ($c->getStatus()->getValue()) {
+                                'pending' => 'bg-amber-50 text-amber-600',
+                                'assigned' => 'bg-blue-50 text-blue-600',
+                                'accepted' => 'bg-emerald-50 text-emerald-600',
+                                'rejected' => 'bg-red-50 text-red-600',
+                                default => 'bg-slate-50 text-slate-500',
+                            } ?>">
+                            <?= ucfirst($c->getStatus()->getValue()) ?>
+                        </span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-xs text-slate-400 text-center py-8">No consultation requests yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
+                <h2 class="text-sm font-black text-slate-900">Recent Articles</h2>
+                <a href="<?= BASE_URL ?>/expert/articles" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
+            </div>
+            <div class="p-2">
+                <?php if (!empty($expertArticleList)): ?>
+                    <?php foreach ($expertArticleList as $a): ?>
+                    <div class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($a->getTitle()) ?></p>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><?= $a->getCreatedAt()->format('M d, Y') ?></p>
+                        </div>
+                        <span class="shrink-0 ml-3 px-2.5 py-1 rounded-full text-[10px] font-bold
+                            <?= match ($a->getStatus()->getValue()) {
+                                'pending' => 'bg-amber-50 text-amber-600',
+                                'accepted' => 'bg-emerald-50 text-emerald-600',
+                                'rejected' => 'bg-red-50 text-red-600',
+                                default => 'bg-slate-50 text-slate-500',
+                            } ?>">
+                            <?= ucfirst($a->getStatus()->getValue()) ?>
+                        </span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-xs text-slate-400 text-center py-8">No articles written yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php elseif ($userRole === 'farmer'): ?>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Consultations</p>
@@ -93,11 +197,47 @@ $username = $_SESSION['user']['username'] ?? 'User';
     <?php endif; ?>
 
     <?php if ($userRole === 'admin'): ?>
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
+                <h2 class="text-sm font-black text-slate-900">Recent Consultations</h2>
+                <a href="<?= BASE_URL ?>/admin/consultations" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
+            </div>
+            <div class="p-2">
+                <?php if (!empty($adminConsultationList)): ?>
+                    <?php foreach ($adminConsultationList as $c): ?>
+                    <div class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($c->getTitle()) ?></p>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><?= $c->getCreatedAt()->format('M d, Y') ?></p>
+                        </div>
+                        <span class="shrink-0 ml-3 px-2.5 py-1 rounded-full text-[10px] font-bold
+                            <?= match ($c->getStatus()->getValue()) {
+                                'pending' => 'bg-amber-50 text-amber-600',
+                                'assigned' => 'bg-blue-50 text-blue-600',
+                                'accepted' => 'bg-emerald-50 text-emerald-600',
+                                'rejected' => 'bg-red-50 text-red-600',
+                                default => 'bg-slate-50 text-slate-500',
+                            } ?>">
+                            <?= ucfirst($c->getStatus()->getValue()) ?>
+                        </span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-xs text-slate-400 text-center py-8">No consultations yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
             <h2 class="text-sm font-black text-slate-900">Recent Activity</h2>
+            <?php if (($adminUnreadNotifications ?? 0) > 0): ?>
+            <span class="px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-bold"><?= $adminUnreadNotifications ?> unread</span>
+            <?php endif; ?>
         </div>
-        <div class="max-h-[300px] overflow-y-auto p-2 scrollbar-thin">
+        <div class="p-2">
             <div class="space-y-0.5">
                 <?php foreach ($activities as $act): ?>
                     <div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
@@ -109,6 +249,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
             </div>
         </div>
     </div>
+</div>
     <?php elseif ($userRole === 'farmer'): ?>
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
