@@ -20,5 +20,9 @@ interface ConsultationRepositoryInterface
 
     public function countAll(): int;
 
+    public function countByExpert(int $expertId): int;
+
+    public function countDistinctFarmersByExpert(int $expertId): int;
+
     public function update(Consultation $consultation): void;
 }

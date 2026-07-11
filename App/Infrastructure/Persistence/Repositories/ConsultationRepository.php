@@ -86,6 +86,20 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
         return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
     }
 
+    public function countByExpert(int $expertId): int
+    {
+        $stmt = $this->connection->prepare('SELECT COUNT(*) FROM consultations WHERE expert_id = :expert_id');
+        $stmt->execute([':expert_id' => $expertId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function countDistinctFarmersByExpert(int $expertId): int
+    {
+        $stmt = $this->connection->prepare('SELECT COUNT(DISTINCT farmer_id) FROM consultations WHERE expert_id = :expert_id');
+        $stmt->execute([':expert_id' => $expertId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function update(Consultation $consultation): void
     {
         $sql = '

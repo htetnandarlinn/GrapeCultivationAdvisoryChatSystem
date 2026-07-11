@@ -25,6 +25,8 @@ class NotificationController
             return;
         }
 
+        $this->notificationRepo->markAllAsRead($userId);
+
         $notifications = $this->notificationRepo->findByRecipientId($userId, 100);
 
         View::render('notification/index', [

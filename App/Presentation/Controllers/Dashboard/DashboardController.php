@@ -5,6 +5,7 @@ namespace App\Presentation\Controllers\Dashboard;
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
+use App\Domain\NotificationManagement\Repositories\NotificationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
 
@@ -15,6 +16,7 @@ class DashboardController
         private ?ActivityRepositoryInterface $activityRepository = null,
         private ?ConsultationRepositoryInterface $consultationRepository = null,
         private ?ArticleRepositoryInterface $articleRepository = null,
+        private ?NotificationRepositoryInterface $notificationRepository = null,
     ) {}
 
     public function home(): void
@@ -66,15 +68,50 @@ class DashboardController
         }
 
         if ($this->activityRepository) {
-            $data['activities'] = $this->activityRepository->getRecentActivities(8);
+            $data['activities'] = $this->activityRepository->getRecentActivities(5);
         }
 
-        if ($this->consultationRepository && $role === 'admin') {
-            $data['totalConsultations'] = $this->consultationRepository->countAll();
-        }
+        if ($role === 'admin') {
+            if ($this->consultationRepository) {
+                $data['totalConsultations'] = $this->consultationRepository->countAll();
 
-        if ($this->articleRepository && $role === 'admin') {
-            $data['totalArticles'] = $this->articleRepository->countAll();
+                $allConsultations = $this->consultationRepository->findAll();
+                $data['adminConsultationList'] = array_slice($allConsultations, 0, 5);
+
+                $pending = 0;
+                $assigned = 0;
+                $accepted = 0;
+                $rejected = 0;
+                foreach ($allConsultations as $c) {
+                    match ($c->getStatus()->getValue()) {
+                        'pending' => $pending++,
+                        'assigned' => $assigned++,
+                        'accepted' => $accepted++,
+                        'rejected' => $rejected++,
+                        default => null,
+                    };
+                }
+                $data['adminPendingConsultations'] = $pending;
+                $data['adminAssignedConsultations'] = $assigned;
+                $data['adminAcceptedConsultations'] = $accepted;
+                $data['adminRejectedConsultations'] = $rejected;
+            }
+            if ($this->articleRepository) {
+                $data['totalArticles'] = $this->articleRepository->countAll();
+
+                $allArticles = $this->articleRepository->findAll();
+                $pendingArticles = array_filter($allArticles, fn($a) => $a->getStatus()->getValue() === 'pending');
+                $data['adminPendingArticles'] = array_slice($pendingArticles, 0, 5);
+            }
+            if ($this->userRepository) {
+                $farmers = $this->userRepository->findFarmers();
+                $experts = $this->userRepository->findExperts();
+                $data['adminRecentFarmers'] = array_slice($farmers, 0, 3);
+                $data['adminRecentExperts'] = array_slice($experts, 0, 3);
+            }
+            if ($this->notificationRepository) {
+                $data['adminUnreadNotifications'] = $this->notificationRepository->countUnread($userId);
+            }
         }
 
         if ($this->consultationRepository && $role === 'farmer') {
@@ -84,6 +121,44 @@ class DashboardController
             $data['pendingConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'pending'));
             $data['acceptedConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'accepted'));
             $data['rejectedConsultations'] = count(array_filter($consultations, fn($c) => $c->getStatus()->getValue() === 'rejected'));
+        }
+
+        if ($role === 'expert') {
+            if ($this->consultationRepository) {
+                $data['expertConsultations'] = $this->consultationRepository->countByExpert($userId);
+                $data['expertConsultingFarmers'] = $this->consultationRepository->countDistinctFarmersByExpert($userId);
+
+                $consultations = $this->consultationRepository->findByExpert($userId);
+                $data['expertConsultationList'] = array_slice($consultations, 0, 5);
+
+                $pending = 0;
+                $assigned = 0;
+                $accepted = 0;
+                $rejected = 0;
+                foreach ($consultations as $c) {
+                    match ($c->getStatus()->getValue()) {
+                        'pending' => $pending++,
+                        'assigned' => $assigned++,
+                        'accepted' => $accepted++,
+                        'rejected' => $rejected++,
+                        default => null,
+                    };
+                }
+                $data['expertPendingConsultations'] = $pending;
+                $data['expertAssignedConsultations'] = $assigned;
+                $data['expertAcceptedConsultations'] = $accepted;
+                $data['expertRejectedConsultations'] = $rejected;
+            }
+            if ($this->articleRepository) {
+                $data['expertArticles'] = $this->articleRepository->countByAuthor($userId);
+                $data['expertArticleImages'] = $this->articleRepository->countImagesByAuthor($userId);
+
+                $articles = $this->articleRepository->findAll($userId);
+                $data['expertArticleList'] = array_slice($articles, 0, 5);
+            }
+            if ($this->notificationRepository) {
+                $data['expertUnreadNotifications'] = $this->notificationRepository->countUnread($userId);
+            }
         }
 
         View::render('admin/admin-dashboard', $data);

@@ -69,7 +69,7 @@ $label = $stLabels[$st] ?? ucfirst($st);
             </div>
         <?php endif; ?>
 
-        <?php if ($st === 'pending' && can('articles.edit')): ?>
+        <?php if ($st === 'pending' && ($_SESSION['user_role'] ?? '') === 'admin'): ?>
             <div class="pt-8 border-t border-slate-100">
                 <div class="flex items-center gap-4">
                     <form action="<?= BASE_URL ?>/expert/articles/accept" method="POST">
