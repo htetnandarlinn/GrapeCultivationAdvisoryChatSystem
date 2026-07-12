@@ -6,26 +6,49 @@ use App\Domain\Messaging\ValueObjects\MessageType;
 
 final class Message
 {
-    private string $id;
-    private string $conversationId;
-    private string $senderId;
-    private string $text;
-    private MessageType $type;
-    private \DateTimeImmutable $sentAt;
-
     public function __construct(
-        string $id,
-        string $conversationId,
-        string $senderId,
-        string $text,
-        MessageType $type
-    ) {
-        $this->id = $id;
-        $this->conversationId = $conversationId;
-        $this->senderId = $senderId;
-        $this->text = $text;
-        $this->type = $type;
-        $this->sentAt = new \DateTimeImmutable();
+        public readonly ?int $id,
+        public readonly int $consultationId,
+        public readonly int $senderId,
+        public readonly string $message,
+        public readonly MessageType $type,
+        public readonly ?int $replyTo = null,
+        public readonly ?string $caption = null,
+        public readonly ?\DateTimeImmutable $createdAt = null,
+    ) {}
+
+    public static function text(
+        int $consultationId,
+        int $senderId,
+        string $message,
+        ?int $replyTo = null,
+    ): self {
+        return new self(
+            id: null,
+            consultationId: $consultationId,
+            senderId: $senderId,
+            message: $message,
+            type: MessageType::text(),
+            replyTo: $replyTo,
+        );
+    }
+
+    public static function image(
+        int $consultationId,
+        int $senderId,
+        string $imagePath,
+        ?string $caption = null,
+        ?int $replyTo = null,
+    ): self {
+        return new self(
+            id: null,
+            consultationId: $consultationId,
+            senderId: $senderId,
+            message: $imagePath,
+            type: MessageType::image(),
+            replyTo: $replyTo,
+            caption: $caption,
+        );
     }
 }
 

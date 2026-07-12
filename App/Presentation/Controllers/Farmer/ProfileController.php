@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Controllers\Farmer;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileCommand;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileHandler;
 use App\Application\UserManagement\UpdateProfile\UpdateProfileRequestValidator;
@@ -14,6 +15,7 @@ class ProfileController
     public function __construct(
         private UserRepositoryInterface $repository,
         private UpdateProfileHandler $updateHandler,
+        private NotificationService $notificationService,
     ) {}
 
     #[Permission('profile.view', 'View Profile')]
@@ -129,14 +131,14 @@ class ProfileController
         $userRole = $_SESSION['user_role'] ?? '';
         $username = $_SESSION['user']['username'] ?? 'A user';
         if ($userRole === 'farmer') {
-            notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update', null);
-            notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update', null);
+            $this->notificationService->notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update');
         } elseif ($userRole === 'expert') {
-            notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update', null);
-            notifyAllByRole('farmer', "Expert {$username} has updated their profile.", 'profile_update', null);
+            $this->notificationService->notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('farmer', "Expert {$username} has updated their profile.", 'profile_update');
         } elseif ($userRole === 'admin') {
-            notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update', null);
-            notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update', null);
+            $this->notificationService->notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update');
         }
 
         $updatedUser = $this->repository->findById($_SESSION['user_id']);

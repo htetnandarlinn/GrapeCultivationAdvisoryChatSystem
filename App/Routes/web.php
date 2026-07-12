@@ -65,7 +65,7 @@ $router->get('/dashboard', [DashboardController::class, 'index'])->auth();
 /* ================= ADMIN: USER MANAGEMENT ================= */
 
 $router->get('/admin/users', [UserManagementController::class, 'index'])->role('admin')->can('users.view');
-$router->post('/admin/users/role', [UserManagementController::class, 'assignRole'])->role('admin')->can('users.manage');
+$router->post('/admin/users/role', [UserManagementController::class, 'assignRole'])->role('admin')->can('users.role');
 
 /* ================= ADMIN: ROLE MANAGEMENT ================= */
 
@@ -135,15 +135,31 @@ $router->post('/notifications/mark-all-read', [NotificationController::class, 'm
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
+/* ================= DEBUG (authenticated, remove in production) ================= */
+
+$router->get('/debug-permissions', function () {
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
+    echo '<h2>Session Debug</h2>';
+    echo '<h3>user_role:</h3>'; var_dump($_SESSION['user_role'] ?? 'NOT SET');
+    echo '<h3>user_permissions:</h3>';
+    $perms = $_SESSION['user_permissions'] ?? [];
+    if (empty($perms)) { echo '(empty array)'; } else { print_r($perms); }
+    echo '<h3>Has users.view:</h3>'; var_dump(in_array('users.view', $perms, true));
+    echo '<h3>Has roles.view:</h3>'; var_dump(in_array('roles.view', $perms, true));
+    echo '<h3>session_id:</h3>'; echo session_id();
+    echo '<h3>user session key:</h3>'; var_dump(isset($_SESSION['user']));
+    exit;
+})->auth();
+
 /* ================= PROFILE (authenticated) ================= */
 
 $router->get('/profile', [ProfileController::class, 'profile'])->can('profile.view');
-$router->get('/profile/edit', [ProfileController::class, 'edit'])->can('profile.view');
-$router->post('/profile/update', [ProfileController::class, 'update'])->can('profile.view');
+$router->get('/profile/edit', [ProfileController::class, 'edit'])->can('profile.edit');
+$router->post('/profile/update', [ProfileController::class, 'update'])->can('profile.edit');
 
 /* ================= FRONTEND PROFILE (farmer) ================= */
 
-$router->get('/my-profile', [ProfileController::class, 'frontendProfile'])->role('farmer');
-$router->get('/my-profile/edit', [ProfileController::class, 'frontendEdit'])->role('farmer');
+$router->get('/my-profile', [ProfileController::class, 'frontendProfile'])->role('farmer')->can('profile.view');
+$router->get('/my-profile/edit', [ProfileController::class, 'frontendEdit'])->role('farmer')->can('profile.view');
 
 return $router;

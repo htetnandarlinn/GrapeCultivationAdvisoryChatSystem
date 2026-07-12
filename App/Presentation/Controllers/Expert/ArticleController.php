@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Controllers\Expert;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
 use App\Domain\KnowledgeBase\ValueObjects\ArticleStatus;
 use App\Presentation\Attributes\Permission;
@@ -11,6 +12,7 @@ final class ArticleController
 {
     public function __construct(
         private ArticleRepositoryInterface $articleRepository,
+        private NotificationService $notificationService,
     ) {}
 
     #[Permission('articles.view', 'View Articles')]
@@ -83,7 +85,7 @@ final class ArticleController
         $articleId = $this->articleRepository->save($article);
 
         $authorName = $_SESSION['user']['username'] ?? 'An expert';
-        notifyAllAdmins(
+        $this->notificationService->notifyAllAdmins(
             "$authorName submitted a new article: " . $title,
             'article_created',
             '/expert/articles/view?id=' . $articleId
@@ -255,7 +257,7 @@ final class ArticleController
 
         $authorId = (int) $article->getAuthorId();
         if ($authorId) {
-            notify(
+            $this->notificationService->notify(
                 $authorId,
                 'expert',
                 'Your article "' . $article->getTitle() . '" has been accepted and published.',
@@ -264,7 +266,7 @@ final class ArticleController
             );
         }
 
-        notifyAllByRole(
+        $this->notificationService->notifyAllByRole(
             'farmer',
             'New article published: "' . $article->getTitle() . '"',
             'article_accepted',
@@ -296,7 +298,7 @@ final class ArticleController
 
         $authorId = (int) $article->getAuthorId();
         if ($authorId) {
-            notify(
+            $this->notificationService->notify(
                 $authorId,
                 'expert',
                 'Your article "' . $article->getTitle() . '" was rejected.' . ($note ? ' Reason: ' . $note : ''),

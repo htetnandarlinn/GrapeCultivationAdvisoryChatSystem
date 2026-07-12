@@ -8,21 +8,28 @@ use App\Domain\Messaging\ValueObjects\MessageType;
 
 final class SendMessageHandler
 {
-    public function __construct(private MessageRepositoryInterface $messageRepository)
-    {
-    }
+    public function __construct(private MessageRepositoryInterface $messageRepository) {}
 
-    public function handle(SendMessageCommand $command): void
+    public function handle(SendMessageCommand $command): int
     {
-        $message = new Message(
-            $command->id,
-            $command->conversationId,
-            $command->senderId,
-            $command->text,
-            MessageType::text(),
-        );
+        if ($command->messageType === 'image') {
+            $message = Message::image(
+                consultationId: $command->consultationId,
+                senderId: $command->senderId,
+                imagePath: $command->message,
+                caption: $command->caption,
+                replyTo: $command->replyTo,
+            );
+        } else {
+            $message = Message::text(
+                consultationId: $command->consultationId,
+                senderId: $command->senderId,
+                message: $command->message,
+                replyTo: $command->replyTo,
+            );
+        }
 
-        $this->messageRepository->save($message);
+        return $this->messageRepository->save($message);
     }
 }
 

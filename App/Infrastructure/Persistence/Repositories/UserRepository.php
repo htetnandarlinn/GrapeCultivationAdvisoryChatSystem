@@ -166,6 +166,27 @@ WHERE user_id = :id
         return $row ? $this->mapToEntity($row) : null;
     }
 
+    public function findByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->connection->prepare(
+            "SELECT * FROM users WHERE user_id IN ($placeholders) AND deleted_at IS NULL"
+        );
+        $stmt->execute(array_values($ids));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $users = [];
+        foreach ($rows as $row) {
+            $users[(int) $row['user_id']] = $this->mapToEntity($row);
+        }
+
+        return $users;
+    }
+
     public function findByVerificationToken(string $token): ?User
     {
         $sql = '
