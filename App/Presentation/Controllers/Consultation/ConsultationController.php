@@ -4,7 +4,10 @@ namespace App\Presentation\Controllers\Consultation;
 
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationCommand;
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
+use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\Messaging\Repositories\MessageRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
 use PDO;
 
@@ -13,6 +16,9 @@ class ConsultationController
     public function __construct(
         private CreateConsultationHandler $createHandler,
         private ConsultationRepositoryInterface $consultationRepository,
+        private MessageRepositoryInterface $messageRepository,
+        private UserRepositoryInterface $userRepository,
+        private NotificationService $notificationService,
         private PDO $connection,
     ) {}
 
@@ -62,12 +68,12 @@ class ConsultationController
         $consultationId = $consultation->getId();
 
         $farmerName = $_SESSION['user']['username'] ?? 'A farmer';
-        notifyAllAdmins(
+        $this->notificationService->notifyAllAdmins(
             "$farmerName submitted a new consultation: " . $title,
             'consultation_created',
             '/admin/consultations/view?id=' . $consultationId
         );
-        notifyAllByRole(
+        $this->notificationService->notifyAllByRole(
             'farmer',
             "$farmerName submitted a new consultation: " . $title,
             'consultation_created',
@@ -126,12 +132,12 @@ class ConsultationController
             $consultationId = $consultation->getId();
 
             $farmerName = $_SESSION['user']['username'] ?? 'A farmer';
-            notifyAllAdmins(
+            $this->notificationService->notifyAllAdmins(
                 "$farmerName submitted a new consultation: " . $title,
                 'consultation_created',
                 '/admin/consultations/view?id=' . $consultationId
             );
-            notifyAllByRole(
+            $this->notificationService->notifyAllByRole(
                 'farmer',
                 "$farmerName submitted a new consultation: " . $title,
                 'consultation_created',
@@ -222,29 +228,14 @@ class ConsultationController
                 $images[$row['consultation_id']][] = $row;
             }
 
-            // Fetch last messages with sender name
-            $stmt = $this->connection->prepare("
-                SELECT m.*, u.username as sender_name
-                FROM messages m
-                LEFT JOIN users u ON m.sender_id = u.user_id
-                WHERE m.message_id IN (
-                    SELECT MAX(m2.message_id) FROM messages m2 WHERE m2.consultation_id IN ($placeholders) GROUP BY m2.consultation_id
-                )
-            ");
-            $stmt->execute($ids);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                $lastMessages[$row['consultation_id']] = $row;
-            }
+            $lastMessages = $this->messageRepository->findLastMessageByConsultationIds($ids);
 
-            // Fetch expert names and avatars
             $expertIds = array_unique(array_filter(array_map(fn($c) => $c->getExpertId(), $consultations)));
             if (!empty($expertIds)) {
-                $ePlaceholders = implode(',', array_fill(0, count($expertIds), '?'));
-                $stmt = $this->connection->prepare("SELECT user_id, username, profile_image FROM users WHERE user_id IN ($ePlaceholders)");
-                $stmt->execute(array_values($expertIds));
-                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                    $expertNames[(int)$row['user_id']] = $row['username'];
-                    $expertAvatars[(int)$row['user_id']] = $row['profile_image'];
+                $experts = $this->userRepository->findByIds(array_values($expertIds));
+                foreach ($experts as $userId => $expert) {
+                    $expertNames[$userId] = $expert->getUsername();
+                    $expertAvatars[$userId] = $expert->getProfileImage();
                 }
             }
         }

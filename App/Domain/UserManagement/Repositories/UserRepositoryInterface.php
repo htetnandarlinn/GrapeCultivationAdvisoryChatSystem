@@ -12,6 +12,9 @@ interface UserRepositoryInterface
 
     public function findById(int $id): ?User;
 
+    /** @param int[] $ids @return User[] */
+    public function findByIds(array $ids): array;
+
     public function findByVerificationToken(string $token): ?User;
 
     public function findByEmail(string $email): ?User;

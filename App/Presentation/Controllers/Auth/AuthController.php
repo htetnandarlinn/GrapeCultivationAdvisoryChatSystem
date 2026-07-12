@@ -77,9 +77,7 @@ final class AuthController
             $_SESSION['user_id'] = $user->getId();
             $_SESSION['user_role'] = $user->getType()->getValue();
 
-            if ($user->getType()->getValue() !== 'admin') {
-                $_SESSION['user_permissions'] = $this->loadUserPermissions($user->getType()->getValue());
-            }
+            $_SESSION['user_permissions'] = $this->loadUserPermissions($user->getType()->getValue());
 
             $_SESSION['user'] = [
                 'id' => $user->getId(),

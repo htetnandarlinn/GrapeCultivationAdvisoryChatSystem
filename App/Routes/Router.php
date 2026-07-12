@@ -3,7 +3,9 @@
 namespace App\Routes;
 
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
+use App\Application\Messaging\GetConversationHistory\GetConversationHistoryHandler;
 use App\Application\Messaging\SendMessage\SendMessageHandler;
+use App\Infrastructure\Persistence\Repositories\MessageRepository;
 use App\Application\PermissionManagement\PermissionRegistrar;
 use App\Application\PermissionManagement\PermissionService;
 use App\Application\RoleManagement\RoleService;
@@ -133,31 +135,22 @@ class Router
     private function resolveController(string $controller)
     {
         return match ($controller) {
-            ConsultationController::class =>
-                new ConsultationController(
-                    new CreateConsultationHandler(
-                        new ConsultationRepository($this->db())
-                    ),
-                    new ConsultationRepository($this->db()),
-                    $this->db()
-                ),
+            ConsultationController::class => $this->createConsultationController(),
 
             AdminConsultationController::class =>
                 new AdminConsultationController(
                     new ConsultationRepository($this->db()),
                     new UserRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()),
+                        $this->db()
+                    ),
                     $this->db()
                 ),
 
-            ExpertConsultationController::class =>
-                new ExpertConsultationController(
-                    new ConsultationRepository($this->db()),
-                    new UserRepository($this->db()),
-                    $this->db()
-                ),
+            ExpertConsultationController::class => $this->createExpertConsultationController(),
 
-            ChatController::class =>
-                new ChatController($this->db()),
+            ChatController::class => $this->createChatController(),
 
             DashboardController::class =>
                 new DashboardController(
@@ -170,7 +163,11 @@ class Router
 
             ArticleController::class =>
                 new ArticleController(
-                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db())
+                    new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()),
+                        $this->db()
+                    )
                 ),
 
             PublicArticleController::class =>
@@ -222,6 +219,10 @@ class Router
                     new UserRepository($this->db()),
                     new \App\Application\UserManagement\UpdateProfile\UpdateProfileHandler(
                         new UserRepository($this->db())
+                    ),
+                    new NotificationService(
+                        new NotificationRepository($this->db()),
+                        $this->db()
                     )
                 ),
 
@@ -280,6 +281,62 @@ class Router
             new ForgotPasswordHandler($userRepo, $passwordResetRepo, $mailService),
             new ResetPasswordHandler($passwordResetRepo, $userRepo),
             $passwordResetRepo
+        );
+    }
+
+    private function createChatController(): ChatController
+    {
+        $messageRepo = new MessageRepository($this->db());
+        $notificationService = new NotificationService(
+            new NotificationRepository($this->db()),
+            $this->db()
+        );
+
+        return new ChatController(
+            new SendMessageHandler($messageRepo),
+            new GetConversationHistoryHandler($messageRepo),
+            $messageRepo,
+            $notificationService,
+            new ConsultationRepository($this->db()),
+        );
+    }
+
+    private function createConsultationController(): ConsultationController
+    {
+        $userRepo = new UserRepository($this->db());
+        $messageRepo = new MessageRepository($this->db());
+        $notificationService = new NotificationService(
+            new NotificationRepository($this->db()),
+            $this->db()
+        );
+
+        return new ConsultationController(
+            new CreateConsultationHandler(
+                new ConsultationRepository($this->db())
+            ),
+            new ConsultationRepository($this->db()),
+            $messageRepo,
+            $userRepo,
+            $notificationService,
+            $this->db()
+        );
+    }
+
+    private function createExpertConsultationController(): ExpertConsultationController
+    {
+        $userRepo = new UserRepository($this->db());
+        $messageRepo = new MessageRepository($this->db());
+        $notificationService = new NotificationService(
+            new NotificationRepository($this->db()),
+            $this->db()
+        );
+
+        return new ExpertConsultationController(
+            new ConsultationRepository($this->db()),
+            $userRepo,
+            $messageRepo,
+            $notificationService,
+            $this->db()
         );
     }
 

@@ -2,7 +2,9 @@
 
 namespace App\Presentation\Controllers\Expert;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\Messaging\Repositories\MessageRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Views\View;
@@ -13,6 +15,8 @@ class ConsultationController
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
+        private MessageRepositoryInterface $messageRepository,
+        private NotificationService $notificationService,
         private PDO $connection,
     ) {}
 
@@ -85,7 +89,7 @@ class ConsultationController
 
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
         if ($farmer) {
-            notify(
+            $this->notificationService->notify(
                 $farmer->getId(),
                 'farmer',
                 'Your consultation "' . $consultation->getTitle() . '" has been accepted by an expert.',
@@ -139,7 +143,7 @@ class ConsultationController
 
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
         if ($farmer) {
-            notify(
+            $this->notificationService->notify(
                 $farmer->getId(),
                 'farmer',
                 'Your consultation "' . $consultation->getTitle() . '" was rejected. Reason: ' . $note,
@@ -186,27 +190,14 @@ class ConsultationController
                 $images[$row['consultation_id']][] = $row;
             }
 
-            $stmt = $this->connection->prepare("
-                SELECT m.*, u.username as sender_name
-                FROM messages m
-                LEFT JOIN users u ON m.sender_id = u.user_id
-                WHERE m.message_id IN (
-                    SELECT MAX(m2.message_id) FROM messages m2 WHERE m2.consultation_id IN ($placeholders) GROUP BY m2.consultation_id
-                )
-            ");
-            $stmt->execute($ids);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                $lastMessages[$row['consultation_id']] = $row;
-            }
+            $lastMessages = $this->messageRepository->findLastMessageByConsultationIds($ids);
 
             $farmerIds = array_unique(array_map(fn($c) => $c->getFarmerId(), $consultations));
             if (!empty($farmerIds)) {
-                $ePlaceholders = implode(',', array_fill(0, count($farmerIds), '?'));
-                $stmt = $this->connection->prepare("SELECT user_id, username, profile_image FROM users WHERE user_id IN ($ePlaceholders)");
-                $stmt->execute(array_values($farmerIds));
-                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                    $farmerNames[(int)$row['user_id']] = $row['username'];
-                    $farmerAvatars[(int)$row['user_id']] = $row['profile_image'];
+                $farmers = $this->userRepository->findByIds(array_values($farmerIds));
+                foreach ($farmers as $userId => $farmer) {
+                    $farmerNames[$userId] = $farmer->getUsername();
+                    $farmerAvatars[$userId] = $farmer->getProfileImage();
                 }
             }
         }

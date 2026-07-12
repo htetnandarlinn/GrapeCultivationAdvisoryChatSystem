@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Controllers\Admin;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
@@ -13,6 +14,7 @@ class ConsultationController
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
+        private NotificationService $notificationService,
         private PDO $connection,
     ) {}
 
@@ -81,7 +83,7 @@ class ConsultationController
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
 
         if ($expert) {
-            notify(
+            $this->notificationService->notify(
                 $expert->getId(),
                 'expert',
                 'New consultation "' . $consultation->getTitle() . '" has been assigned to you.',
@@ -92,7 +94,7 @@ class ConsultationController
 
         if ($farmer) {
             $expertName = $expert ? $expert->getUsername() : 'an expert';
-            notify(
+            $this->notificationService->notify(
                 $farmer->getId(),
                 'farmer',
                 'Your consultation "' . $consultation->getTitle() . '" has been assigned to ' . $expertName . '.',

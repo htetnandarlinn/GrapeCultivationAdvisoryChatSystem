@@ -20,15 +20,33 @@ if (isset($_SESSION['user_role']) && isset($_SESSION['user'])) {
         $permRepo = new \App\Infrastructure\Persistence\Repositories\PermissionRepository($permConn);
 
         $roles = $roleRepo->findAll();
+        $matched = false;
         foreach ($roles as $role) {
             if (strcasecmp($role->getCode(), $_SESSION['user_role']) === 0) {
+                $matched = true;
                 $permissions = $permRepo->findPermissionsByUserTypeId($role->getId());
-                $_SESSION['user_permissions'] = array_map(fn($p) => $p->getKey(), $permissions);
+                $newPerms = array_map(fn($p) => $p->getKey(), $permissions);
+
+                // If the reload returned permissions, overwrite session.
+                // If it returned an empty set, preserve existing session permissions
+                // to avoid transient DB glitches removing access unexpectedly.
+                if (!empty($newPerms) || !isset($_SESSION['user_permissions'])) {
+                    $_SESSION['user_permissions'] = $newPerms;
+                    error_log('Permission reload SUCCESS for role=' . $_SESSION['user_role'] . ' count=' . count($newPerms));
+                } else {
+                    error_log('Permission reload returned empty for role=' . $_SESSION['user_role'] . ' - preserving existing session permissions count=' . count($_SESSION['user_permissions']));
+                }
                 break;
             }
         }
-    } catch (\Throwable) {
-        $_SESSION['user_permissions'] = [];
+        if (!$matched) {
+            error_log('Permission reload: no matching role found for role=' . $_SESSION['user_role']);
+        }
+    } catch (\Throwable $e) {
+        error_log('Permission reload FAILED for role=' . ($_SESSION['user_role'] ?? 'none') . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+        if (!isset($_SESSION['user_permissions'])) {
+            $_SESSION['user_permissions'] = [];
+        }
     }
 }
 
