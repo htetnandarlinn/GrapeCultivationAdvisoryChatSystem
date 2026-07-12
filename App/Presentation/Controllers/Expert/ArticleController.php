@@ -90,6 +90,12 @@ final class ArticleController
             'article_created',
             '/expert/articles/view?id=' . $articleId
         );
+        $this->notificationService->notifyAllByRole(
+            'expert',
+            "$authorName submitted a new article: " . $title,
+            'article_created',
+            '/expert/articles/view?id=' . $articleId
+        );
 
         $_SESSION['article_message'] = 'Article created successfully.';
         redirect('/expert/articles');
@@ -213,6 +219,19 @@ final class ArticleController
         }
 
         $this->articleRepository->delete($id);
+
+        $title = $article->getTitle();
+        $this->notificationService->notifyAllByRole(
+            'expert',
+            'Article "' . $title . '" has been deleted.',
+            'article_deleted',
+            '/expert/articles'
+        );
+        $this->notificationService->notifyAllAdmins(
+            'Article "' . $title . '" has been deleted.',
+            'article_deleted',
+            '/expert/articles'
+        );
 
         $_SESSION['article_message'] = 'Article deleted successfully.';
         redirect('/expert/articles');

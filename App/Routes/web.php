@@ -57,6 +57,7 @@ $router->get('/articles/view', [PublicArticleController::class, 'view']);
 $router->get('/', [DashboardController::class, 'home']);
 $router->get('/about', [DashboardController::class, 'about']);
 $router->get('/contact', [DashboardController::class, 'contact']);
+$router->post('/contact', [DashboardController::class, 'handleContact']);
 
 /* ================= DASHBOARD (authenticated) ================= */
 
