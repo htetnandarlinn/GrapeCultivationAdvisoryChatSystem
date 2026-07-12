@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Controllers\Dashboard;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
@@ -17,6 +18,7 @@ class DashboardController
         private ?ConsultationRepositoryInterface $consultationRepository = null,
         private ?ArticleRepositoryInterface $articleRepository = null,
         private ?NotificationRepositoryInterface $notificationRepository = null,
+        private ?NotificationService $notificationService = null,
     ) {}
 
     public function home(): void
@@ -44,6 +46,35 @@ class DashboardController
     public function contact(): void
     {
         View::render('contact', [], 'app');
+    }
+
+    public function handleContact(): void
+    {
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $subject = trim($_POST['subject'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+
+        $errors = [];
+        if ($name === '') $errors[] = 'Name is required.';
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email is required.';
+        if ($subject === '') $errors[] = 'Subject is required.';
+        if ($message === '') $errors[] = 'Message is required.';
+
+        if (!empty($errors)) {
+            echo json_encode(['success' => false, 'message' => implode(' ', $errors)]);
+            return;
+        }
+
+        if ($this->notificationService) {
+            $this->notificationService->notifyAllAdmins(
+                "New contact message from $name ($email): $subject",
+                'system',
+                null
+            );
+        }
+
+        echo json_encode(['success' => true]);
     }
 
     public function index(): void

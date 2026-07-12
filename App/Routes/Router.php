@@ -158,7 +158,11 @@ class Router
                     new ActivityRepository($this->db()),
                     new ConsultationRepository($this->db()),
                     new ArticleRepository($this->db()),
-                    new NotificationRepository($this->db())
+                    new NotificationRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()),
+                        $this->db()
+                    )
                 ),
 
             ArticleController::class =>

@@ -154,11 +154,13 @@ foreach ($consultations as $c) {
                         <button id="mobile-back-btn" class="md:hidden w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 transition-colors" onclick="showSidebar()" title="Back">
                             <i class="fa-solid fa-arrow-left text-sm"></i>
                         </button>
-                        <div id="header-avatar" class="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-xs tracking-wider shrink-0 shadow-sm shadow-black/5"></div>
-                        <div class="ml-0">
-                            <h3 id="header-title" class="text-sm font-bold text-slate-800 leading-tight"></h3>
-                            <p id="header-subtitle" class="text-[10px] text-blue-500 font-semibold mt-0.5 flex items-center gap-1"></p>
-                        </div>
+                        <button onclick="openExpertProfile()" class="flex items-center gap-3 text-left">
+                            <div id="header-avatar" class="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-xs tracking-wider shrink-0 shadow-sm shadow-black/5"></div>
+                            <div class="ml-0">
+                                <h3 id="header-title" class="text-sm font-bold text-slate-800 leading-tight"></h3>
+                                <p id="header-subtitle" class="text-[10px] text-blue-500 font-semibold mt-0.5 flex items-center gap-1"></p>
+                            </div>
+                        </button>
                     </div>
                     <div class="flex items-center gap-2">
                         <span id="header-badge" class="text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md"></span>
@@ -241,6 +243,39 @@ foreach ($consultations as $c) {
                 </div>
             </div>
         </main>
+    </div>
+</div>
+
+<!-- Expert Profile Modal -->
+<div id="expert-profile-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+        <!-- Modal header -->
+        <div class="flex items-center justify-between p-5 border-b border-slate-100">
+            <h3 class="text-base font-black text-slate-900">Expert Profile</h3>
+            <button onclick="closeExpertProfile()" class="w-8 h-8 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <!-- Expert info -->
+        <div class="p-5 flex items-center gap-4">
+            <div id="modal-expert-avatar" class="w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center text-white font-bold text-lg shrink-0"></div>
+            <div>
+                <h4 id="modal-expert-name" class="text-lg font-bold text-slate-900"></h4>
+                <p class="text-sm text-slate-500">Expert</p>
+            </div>
+        </div>
+        <!-- Shared media -->
+        <div class="px-5 pb-5">
+            <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><i class="fa-regular fa-images text-emerald-500"></i> Shared Media</h4>
+            <div id="modal-shared-images" class="grid grid-cols-3 gap-2"></div>
+            <div id="modal-no-images" class="hidden text-center py-10 text-slate-400 text-sm">
+                <i class="fa-regular fa-image text-3xl mb-3 block"></i>
+                No images shared yet
+            </div>
+            <div id="modal-loading" class="text-center py-10 text-slate-400 text-sm">
+                <i class="fa-solid fa-spinner animate-spin"></i> Loading images...
+            </div>
+        </div>
     </div>
 </div>
 
@@ -688,6 +723,79 @@ if (consultationId) {
             selectConsultation(id);
         }
     }, 500);
+}
+
+// Expert Profile Modal
+function openExpertProfile() {
+    if (!selectedId) return;
+    const data = getConsultation(selectedId);
+    if (!data || (!data.expert_name && (data.status === 'pending' || data.status === 'rejected'))) return;
+
+    const modal = document.getElementById('expert-profile-modal');
+    modal.classList.remove('hidden');
+
+    // Set expert info
+    const avatarEl = document.getElementById('modal-expert-avatar');
+    const nameEl = document.getElementById('modal-expert-name');
+
+    if (data.expert_avatar) {
+        avatarEl.innerHTML = '<img src="' + baseUrl + data.expert_avatar + '" alt="" class="w-full h-full object-cover">';
+    } else {
+        avatarEl.textContent = getInitialsFn(data.expert_name || 'Expert');
+    }
+    nameEl.textContent = data.expert_name || 'Expert';
+
+    // Load shared images
+    loadSharedImages(selectedId);
+}
+
+function closeExpertProfile() {
+    document.getElementById('expert-profile-modal').classList.add('hidden');
+}
+
+// Close modal on backdrop click
+document.getElementById('expert-profile-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExpertProfile();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeExpertProfile();
+});
+
+function loadSharedImages(consultationId) {
+    const grid = document.getElementById('modal-shared-images');
+    const loading = document.getElementById('modal-loading');
+    const noImages = document.getElementById('modal-no-images');
+
+    grid.innerHTML = '';
+    loading.classList.remove('hidden');
+    noImages.classList.add('hidden');
+
+    fetch(baseUrl + '/chat/history?consultation_id=' + consultationId)
+        .then(res => res.json())
+        .then(messages => {
+            loading.classList.add('hidden');
+            const images = messages.filter(m => m.message_type === 'image');
+            if (images.length === 0) {
+                noImages.classList.remove('hidden');
+                return;
+            }
+            images.forEach(img => {
+                const imgUrl = baseUrl + '/' + img.message;
+                const div = document.createElement('a');
+                div.href = imgUrl;
+                div.target = '_blank';
+                div.className = 'aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200 hover:opacity-90 transition-opacity';
+                div.innerHTML = '<img src="' + imgUrl + '" alt="Shared image" class="w-full h-full object-cover">';
+                grid.appendChild(div);
+            });
+        })
+        .catch(() => {
+            loading.classList.add('hidden');
+            noImages.classList.remove('hidden');
+            noImages.textContent = 'Failed to load images.';
+        });
 }
 
 </script>
