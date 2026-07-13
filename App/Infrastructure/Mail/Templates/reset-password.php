@@ -52,7 +52,7 @@
                             </h2>
                             
                             <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #334155;">
-                                Hello <strong style="color: #0f172a;"><?= htmlspecialchars($username) ?></strong>,
+                                Hello <strong style="color: #0f172a;"><?= htmlspecialchars($username ?? 'User') ?></strong>,
                             </p>
                             
                             <p style="margin: 0 0 32px 0; font-size: 15px; line-height: 24px; color: #475569;">
@@ -62,7 +62,7 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="btn-wrapper" style="margin: 0 auto 32px auto;">
                                 <tr>
                                     <td align="center" style="border-radius: 12px;" bgcolor="#15803D">
-                                        <a href="<?= htmlspecialchars($resetLink) ?>" class="btn" target="_blank" style="font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 14px 32px; display: inline-block; border-radius: 12px; background-color: #15803D;">
+                                        <a href="<?= htmlspecialchars($resetLink ?? '#') ?>" class="btn" target="_blank" style="font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; padding: 14px 32px; display: inline-block; border-radius: 12px; background-color: #15803D;">
                                             Reset Password
                                         </a>
                                     </td>

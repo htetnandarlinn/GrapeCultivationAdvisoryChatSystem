@@ -61,6 +61,12 @@ $componentOld = $old;
 
                 <div class="text-center pb-2">
                     <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Account Sign In</h2>
+                    <?php $emailVerificationError = $componentErrors['email'] ?? null; ?>
+                    <?php if (!empty($emailVerificationError)): ?>
+                        <div class="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
+                            <?= htmlspecialchars($emailVerificationError, ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Username or Email Field Module -->

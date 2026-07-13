@@ -15,14 +15,14 @@ final class ForgotPasswordHandler
         private MailServiceInterface $mailService,
     ) {}
 
-    public function handle(ForgotPasswordCommand $command): bool
+    public function handle(ForgotPasswordCommand $command): ?string
     {
         $email = trim($command->email);
 
         $user = $this->userRepository->findByEmail($email);
 
         if ($user === null) {
-            return false;
+            return null;
         }
 
         $token = bin2hex(random_bytes(24));
@@ -115,6 +115,6 @@ final class ForgotPasswordHandler
             error_log('Failed to write reset log: ' . $e->getMessage());
         }
 
-        return true;
+        return $activeToken;
     }
 }

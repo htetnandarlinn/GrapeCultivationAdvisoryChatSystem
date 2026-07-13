@@ -22,12 +22,22 @@ final class RegisterUserHandler
     {
         $errors = [];
 
-        if ($this->userRepository->findByUsername($command->username) !== null) {
-            $errors['username'] = 'Username is already taken.';
+        $existingByUsername = $this->userRepository->findByUsername($command->username);
+        if ($existingByUsername !== null) {
+            if (!$existingByUsername->isVerified()) {
+                $this->userRepository->deleteById($existingByUsername->getId());
+            } else {
+                $errors['username'] = 'Username is already taken.';
+            }
         }
 
-        if ($this->userRepository->findByEmail($command->email) !== null) {
-            $errors['email'] = 'Email address is already registered.';
+        $existingByEmail = $this->userRepository->findByEmail($command->email);
+        if ($existingByEmail !== null) {
+            if (!$existingByEmail->isVerified()) {
+                $this->userRepository->deleteById($existingByEmail->getId());
+            } else {
+                $errors['email'] = 'Email address is already registered.';
+            }
         }
 
         if (!empty($errors)) {
@@ -71,7 +81,9 @@ final class RegisterUserHandler
         $verificationLink =
             APP_URL
             . '/verify-email?token='
-            . urlencode($token);
+            . urlencode($token)
+            . '&uid='
+            . $user->getId();
 
         try {
             $this->mailService->sendVerificationEmail(

@@ -135,6 +135,7 @@ final class AuthController
     public function verifyEmail(): void
     {
         $token = trim($_GET['token'] ?? '');
+        $uid = isset($_GET['uid']) ? (int) $_GET['uid'] : 0;
 
         if ($token === '') {
             View::render('auth/verification_failed', [
@@ -144,6 +145,13 @@ final class AuthController
         }
 
         $user = $this->userRepository->findByVerificationToken($token);
+
+        if ($user === null && $uid > 0) {
+            $user = $this->userRepository->findById($uid);
+            if ($user !== null && $user->getVerificationToken() !== $token) {
+                $user = null;
+            }
+        }
 
         if ($user === null) {
             View::render('auth/verification_failed', [
@@ -170,8 +178,6 @@ final class AuthController
 
         $user->setStatus(\App\Domain\UserManagement\ValueObjects\UserStatus::active());
         $user->setVerified(true);
-        $user->setVerificationToken(null);
-        $user->setVerificationTokenExpireAt(null);
         $user->setEmailVerifiedAt($this->nowInMyanmarTime());
 
         $this->userRepository->update($user);

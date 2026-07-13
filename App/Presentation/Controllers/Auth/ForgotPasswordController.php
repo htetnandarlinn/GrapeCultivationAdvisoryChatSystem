@@ -28,16 +28,16 @@ class ForgotPasswordController
 
         $command = new ForgotPasswordCommand($email);
 
-        $result = $this->forgotHandler->handle($command);
+        $token = $this->forgotHandler->handle($command);
 
-        if (!$result) {
+        if ($token === null) {
             $_SESSION['errors'] = ['email' => 'Email not found.'];
             redirect('/forgot-password');
             return;
         }
 
-        $_SESSION['success'] = 'If the email exists, a password reset link has been sent.';
-        redirect('/login');
+        $_SESSION['success'] = 'Please set a new password using the form below.';
+        redirect('/reset-password?token=' . urlencode($token));
     }
 
     public function showReset(): void
