@@ -21,9 +21,9 @@ $images = $images ?? [];
                 </p>
             </div>
             <span class="px-3 py-1.5 rounded-full text-[10px] font-bold <?php
-                $colors = ['pending' => 'bg-amber-100 text-amber-700', 'assigned' => 'bg-blue-100 text-blue-700', 'awaiting_payment' => 'bg-violet-100 text-violet-700', 'accepted' => 'bg-emerald-100 text-emerald-700', 'rejected' => 'bg-red-100 text-red-700', 'expired' => 'bg-red-100 text-red-700'];
+                $colors = ['pending' => 'bg-amber-100 text-amber-700', 'assigned' => 'bg-blue-100 text-blue-700', 'expert_accepted' => 'bg-blue-100 text-blue-700', 'awaiting_payment' => 'bg-violet-100 text-violet-700', 'payment_submitted' => 'bg-amber-100 text-amber-700', 'accepted' => 'bg-emerald-100 text-emerald-700', 'chat_started' => 'bg-emerald-100 text-emerald-700', 'completed' => 'bg-blue-100 text-blue-700', 'closed' => 'bg-slate-100 text-slate-600', 'rejected' => 'bg-red-100 text-red-700', 'expired' => 'bg-red-100 text-red-700'];
                 echo $colors[$consultation->getStatus()->getValue()] ?? 'bg-slate-100 text-slate-600';
-            ?>"><?= ucfirst($consultation->getStatus()->getValue()) ?></span>
+            ?>"><?= ucwords(str_replace('_', ' ', $consultation->getStatus()->getValue())) ?></span>
         </div>
 
         <div class="px-6 py-5">
@@ -43,7 +43,8 @@ $images = $images ?? [];
         </div>
         <?php endif; ?>
 
-        <?php if ($consultation->getStatus()->getValue() === 'assigned'): ?>
+        <?php $status = $consultation->getStatus()->getValue(); ?>
+        <?php if ($status === 'assigned'): ?>
         <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 space-y-3">
             <div class="flex gap-2">
                 <form action="<?= BASE_URL ?>/expert/consultations/accept" method="POST" class="inline">
@@ -73,21 +74,25 @@ $images = $images ?? [];
                 </form>
             </div>
         </div>
-        <?php elseif ($consultation->getStatus()->getValue() === 'accepted'): ?>
+        <?php elseif (in_array($status, ['accepted', 'chat_started'])): ?>
         <div class="px-6 py-5 bg-emerald-50 border-t border-emerald-100">
             <a href="<?= BASE_URL ?>/expert/consultations/chat?id=<?= $consultation->getId() ?>" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
-                <i class="fa-regular fa-comment-dots"></i> Start Chat with Farmer
+                <i class="fa-regular fa-comment-dots"></i> Chat with Farmer
             </a>
         </div>
-        <?php elseif ($consultation->getStatus()->getValue() === 'awaiting_payment'): ?>
+        <?php elseif (in_array($status, ['awaiting_payment', 'expert_accepted'])): ?>
         <div class="px-6 py-5 bg-violet-50 border-t border-violet-100">
             <p class="text-xs text-violet-700"><strong>Awaiting Payment</strong> &mdash; The farmer needs to complete payment before the consultation period starts.</p>
         </div>
-        <?php elseif ($consultation->getStatus()->getValue() === 'expired'): ?>
+        <?php elseif ($status === 'payment_submitted'): ?>
+        <div class="px-6 py-5 bg-amber-50 border-t border-amber-100">
+            <p class="text-xs text-amber-700"><strong>Payment Submitted</strong> &mdash; The farmer has submitted payment. Waiting for admin approval.</p>
+        </div>
+        <?php elseif ($status === 'expired'): ?>
         <div class="px-6 py-5 bg-red-50 border-t border-red-100">
             <p class="text-xs text-red-700"><strong>Expired</strong> &mdash; The consultation period has ended. The farmer may renew to continue.</p>
         </div>
-        <?php elseif ($consultation->getStatus()->getValue() === 'rejected' && $consultation->getRejectionNote()): ?>
+        <?php elseif ($status === 'rejected' && $consultation->getRejectionNote()): ?>
         <div class="px-6 py-5 bg-red-50 border-t border-red-100">
             <h3 class="text-xs font-bold text-red-600 uppercase mb-1">Rejection Note</h3>
             <p class="text-sm text-red-700"><?= htmlspecialchars($consultation->getRejectionNote()) ?></p>

@@ -77,7 +77,7 @@ class ChatController
 
         $chatStatus = $consultation->getStatus()->getValue();
         $isExpired = $consultation->isExpired();
-        if ($chatStatus !== 'accepted' || $isExpired) {
+        if (!in_array($chatStatus, ['accepted', 'chat_started'], true) || $isExpired) {
             http_response_code(403);
             echo json_encode([
                 'error' => $isExpired
@@ -156,7 +156,8 @@ class ChatController
 
     private function expireIfPastDue(\App\Domain\ConsultationManagement\Entities\Consultation $consultation): void
     {
-        if ($consultation->getStatus()->getValue() === 'accepted' && $consultation->isExpired()) {
+        $status = $consultation->getStatus()->getValue();
+        if (in_array($status, ['accepted', 'chat_started'], true) && $consultation->isExpired()) {
             $consultation->markExpired();
             $this->consultationRepository->update($consultation);
         }

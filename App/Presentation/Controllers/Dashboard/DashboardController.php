@@ -111,35 +111,60 @@ class DashboardController
 
                 $pending = 0;
                 $assigned = 0;
+                $expertAccepted = 0;
                 $accepted = 0;
+                $chatStarted = 0;
+                $completed = 0;
                 $rejected = 0;
                 foreach ($allConsultations as $c) {
                     match ($c->getStatus()->getValue()) {
                         'pending' => $pending++,
                         'assigned' => $assigned++,
+                        'expert_accepted' => $expertAccepted++,
                         'accepted' => $accepted++,
+                        'chat_started' => $chatStarted++,
+                        'completed' => $completed++,
                         'rejected' => $rejected++,
                         default => null,
                     };
                 }
                 $data['adminPendingConsultations'] = $pending;
-                $data['adminAssignedConsultations'] = $assigned;
-                $data['adminAcceptedConsultations'] = $accepted;
+                $data['adminAssignedConsultations'] = $assigned + $expertAccepted;
+                $data['adminAcceptedConsultations'] = $accepted + $chatStarted + $completed;
                 $data['adminRejectedConsultations'] = $rejected;
 
                 // Payment metrics
                 $awaitingPayment = 0;
+                $pendingReview = 0;
                 $expiredCount = 0;
                 $totalRevenue = 0;
+                $refundedCount = 0;
                 foreach ($allConsultations as $c) {
                     $s = $c->getStatus()->getValue();
                     if ($s === 'awaiting_payment') $awaitingPayment++;
+                    if ($s === 'payment_submitted') $pendingReview++;
                     if ($s === 'expired') $expiredCount++;
-                    if ($s === 'accepted' || ($s === 'expired' && $c->getPaidAt())) $totalRevenue += 29.99;
+                    if ($c->getRefundStatus() === 'refunded') $refundedCount++;
+                    if (in_array($s, ['accepted', 'chat_started', 'completed'], true) || ($s === 'expired' && $c->getPaidAt())) $totalRevenue += 29.99;
                 }
                 $data['adminAwaitingPayment'] = $awaitingPayment;
+                $data['adminPendingReview'] = $pendingReview;
                 $data['adminExpiredConsultations'] = $expiredCount;
                 $data['adminTotalRevenue'] = $totalRevenue;
+                $data['adminRefundedPayments'] = $refundedCount;
+
+                // Top expert by income
+                $expertIncome = [];
+                foreach ($allConsultations as $c) {
+                    $eid = $c->getExpertId();
+                    $s = $c->getStatus()->getValue();
+                    if ($eid && in_array($s, ['accepted', 'chat_started', 'completed'], true)) {
+                        $expertIncome[$eid] = ($expertIncome[$eid] ?? 0) + 29.99;
+                    }
+                }
+                arsort($expertIncome);
+                $data['adminTopExpertId'] = array_key_first($expertIncome);
+                $data['adminTopExpertIncome'] = reset($expertIncome);
             }
             if ($this->articleRepository) {
                 $data['totalArticles'] = $this->articleRepository->countAll();

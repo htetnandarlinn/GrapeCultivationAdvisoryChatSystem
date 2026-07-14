@@ -32,6 +32,7 @@ function navClass(string $targetRoute, string $currentRoute): string {
         <a href="<?= BASE_URL ?>/articles" class="no-underline text-sm transition-colors <?= navClass('/articles', $route) ?>">Articles</a>
         <?php if ($isLoggedIn && $userRole === 'farmer'): ?>
         <a href="<?= BASE_URL ?>/consultations" class="no-underline text-sm transition-colors <?= navClass('/consultations', $route) ?>">My Consultations</a>
+        <a href="<?= BASE_URL ?>/payment/history" class="no-underline text-sm transition-colors <?= str_starts_with($route, '/invoice') ? 'text-grapeGreen font-semibold' : navClass('/payment/history', $route) ?>">Payments</a>
         <?php endif; ?>
         <a href="<?= BASE_URL ?>/about" class="no-underline text-sm transition-colors <?= navClass('/about', $route) ?>">About Us</a>
         <a href="<?= BASE_URL ?>/contact" class="no-underline text-sm transition-colors <?= navClass('/contact', $route) ?>">Contact Us</a>
@@ -136,6 +137,7 @@ function navClass(string $targetRoute, string $currentRoute): string {
     <?php if ($isLoggedIn): ?>
         <?php if ($userRole === 'farmer'): ?>
         <a href="<?= BASE_URL ?>/consultations" class="block no-underline text-sm <?= navClass('/consultations', $route) ?>">My Consultations</a>
+        <a href="<?= BASE_URL ?>/payment/history" class="block no-underline text-sm <?= navClass('/payment/history', $route) ?>">Payment History</a>
         <a href="<?= BASE_URL ?>/consultation/create" class="block no-underline text-grapeGreen font-semibold text-sm hover:text-grapeGreen">+ New Consultation</a>
         <?php endif; ?>
         <a href="<?= BASE_URL ?>/<?= $userRole === 'farmer' ? 'my-profile' : 'profile' ?>" class="block no-underline text-sm <?= navClass('/' . ($userRole === 'farmer' ? 'my-profile' : 'profile'), $route) ?>">Profile</a>

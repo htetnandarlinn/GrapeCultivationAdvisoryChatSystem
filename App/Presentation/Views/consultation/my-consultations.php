@@ -5,12 +5,17 @@
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">My Consultations</h2>
             <p class="text-xs text-slate-500 mt-1">Track your submitted consultations.</p>
         </div>
-        <a href="<?= BASE_URL ?>/consultations" class="mr-3 px-4 py-2 text-emerald-600 text-xs font-bold hover:text-emerald-700 transition-colors">
-            <i class="fa-regular fa-comment-dots mr-1"></i> Chat View
-        </a>
-        <a href="<?= BASE_URL ?>/consultation/create" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
-            + New Consultation
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="<?= BASE_URL ?>/payment/history" class="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                <i class="fa-regular fa-credit-card mr-1"></i> Payment History
+            </a>
+            <a href="<?= BASE_URL ?>/consultations" class="px-4 py-2 text-emerald-600 text-xs font-bold hover:text-emerald-700 transition-colors">
+                <i class="fa-regular fa-comment-dots mr-1"></i> Chat View
+            </a>
+            <a href="<?= BASE_URL ?>/consultation/create" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                + New Consultation
+            </a>
+        </div>
     </div>
 
     <?php if (!empty($_SESSION['success'])): ?>
@@ -37,14 +42,21 @@
                 $statusColors = [
                     'pending' => 'bg-amber-100 text-amber-700',
                     'assigned' => 'bg-blue-100 text-blue-700',
+                    'expert_accepted' => 'bg-blue-100 text-blue-700',
                     'awaiting_payment' => 'bg-violet-100 text-violet-700',
+                    'payment_submitted' => 'bg-amber-100 text-amber-700',
                     'accepted' => 'bg-emerald-100 text-emerald-700',
+                    'chat_started' => 'bg-emerald-100 text-emerald-700',
+                    'completed' => 'bg-blue-100 text-blue-700',
+                    'closed' => 'bg-slate-100 text-slate-600',
                     'rejected' => 'bg-red-100 text-red-700',
                     'expired' => 'bg-red-100 text-red-700',
                 ];
                 $color = $statusColors[$c->getStatus()->getValue()] ?? 'bg-slate-100 text-slate-600';
                 $consultationImages = $images[$c->getId()] ?? [];
                 $status = $c->getStatus()->getValue();
+                $statusLabel = str_replace('_', ' ', $status);
+                $statusLabel = ucwords($statusLabel);
                 ?>
                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                     <div class="flex items-start justify-between">
@@ -53,19 +65,26 @@
                             <p class="text-xs text-slate-500 mt-1"><?= htmlspecialchars(mb_strimwidth($c->getDescription(), 0, 200, '...')) ?></p>
                             <p class="text-[10px] text-slate-400 mt-2">
                                 <i class="fa-regular fa-calendar mr-1"></i> <?= $c->getCreatedAt()->format('M d, Y h:i A') ?>
-                                <?php if ($c->getExpiresAt() && $status === 'accepted'): ?>
+                                <?php if ($c->getExpiresAt() && in_array($status, ['accepted', 'chat_started'])): ?>
                                     &middot; <span class="<?= $c->isExpired() ? 'text-red-500' : 'text-emerald-500' ?>">
                                         <i class="fa-regular fa-clock mr-1"></i><?= $c->isExpired() ? 'Expired' : 'Expires ' . $c->getExpiresAt()->format('M d, Y') ?>
                                     </span>
                                 <?php endif; ?>
+                                <?php if ($c->getRefundStatus() === 'refunded'): ?>
+                                    &middot; <span class="text-rose-500"><i class="fa-solid fa-rotate-left mr-1"></i>Refunded $<?= number_format($c->getRefundAmount() ?? 0, 2) ?></span>
+                                <?php endif; ?>
                             </p>
                         </div>
                         <div class="flex flex-col items-end gap-2 shrink-0">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold <?= $color ?>"><?= ucfirst(str_replace('_', ' ', $status)) ?></span>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold <?= $color ?>"><?= $statusLabel ?></span>
                             <?php if ($status === 'awaiting_payment'): ?>
                                 <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-colors">
                                     <i class="fa-solid fa-lock text-[8px]"></i> Pay $29.99
                                 </a>
+                            <?php elseif ($status === 'payment_submitted'): ?>
+                                <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg">
+                                    <i class="fa-solid fa-hourglass-half text-[8px]"></i> Pending Approval
+                                </span>
                             <?php elseif ($status === 'expired'): ?>
                                 <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-colors">
                                     <i class="fa-solid fa-arrows-rotate text-[8px]"></i> Renew $29.99
@@ -88,9 +107,9 @@
                             <p class="text-xs text-red-700 mt-0.5"><?= htmlspecialchars($c->getRejectionNote()) ?></p>
                         </div>
                     <?php endif; ?>
-                    <?php if ($status === 'accepted'): ?>
+                    <?php if (in_array($status, ['accepted', 'chat_started'])): ?>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
-                            <a href="<?= BASE_URL ?>/consultation/chat?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                            <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
                                 <i class="fa-regular fa-comment-dots"></i> Open Chat
                             </a>
                             <?php if ($c->getExpiresAt() && !$c->isExpired()): ?>

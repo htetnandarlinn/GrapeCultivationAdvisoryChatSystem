@@ -17,6 +17,7 @@ use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\NotificationController;
+use App\Presentation\Controllers\Payment\InvoiceController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
 use App\Routes\Router;
 
@@ -89,6 +90,9 @@ $router->get('/admin/consultations', [AdminConsultationController::class, 'index
 $router->get('/admin/consultations/view', [AdminConsultationController::class, 'view'])->role('admin')->can('consultations.view');
 $router->post('/admin/consultations/assign', [AdminConsultationController::class, 'assignExpert'])->role('admin')->can('consultations.assign');
 $router->get('/admin/payments', [AdminConsultationController::class, 'payments'])->role('admin')->can('consultations.view');
+$router->post('/admin/payments/approve', [AdminConsultationController::class, 'approvePayment'])->role('admin')->can('consultations.view');
+$router->post('/admin/payments/reject', [AdminConsultationController::class, 'rejectPayment'])->role('admin')->can('consultations.view');
+$router->post('/admin/payments/refund', [AdminConsultationController::class, 'refundPayment'])->role('admin')->can('consultations.view');
 
 /* ================= EXPERT: ARTICLES ================= */
 
@@ -123,6 +127,10 @@ $router->get('/consultations', [ConsultationController::class, 'frontendHistory'
 
 $router->get('/payment/consultation', [\App\Presentation\Controllers\Payment\ConsultationPaymentController::class, 'showPayment'])->role('farmer');
 $router->post('/payment/consultation/process', [\App\Presentation\Controllers\Payment\ConsultationPaymentController::class, 'processPayment'])->role('farmer');
+$router->get('/payment/history', [ConsultationController::class, 'paymentHistory'])->role('farmer');
+$router->get('/invoice', [InvoiceController::class, 'view'])->auth();
+$router->get('/invoice/download', [InvoiceController::class, 'downloadPdf'])->auth();
+
 
 /* ================= CONSULTATION CHAT (farmer + expert) ================= */
 

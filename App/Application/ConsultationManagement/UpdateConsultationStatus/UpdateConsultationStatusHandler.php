@@ -23,7 +23,8 @@ final class UpdateConsultationStatusHandler
                 $consultation->assignExpert($command->expertId);
                 break;
             case 'accepted':
-                $consultation->accept();
+                $consultation->markExpertAccepted();
+                $consultation->markAwaitingPayment();
                 break;
             case 'rejected':
                 $consultation->reject($command->rejectionNote ?? '');
