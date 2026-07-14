@@ -28,6 +28,7 @@ use App\Infrastructure\Persistence\Repositories\ArticleRepository;
 use App\Infrastructure\Persistence\Repositories\NotificationRepository;
 use App\Application\NotificationManagement\NotificationService;
 use App\Presentation\Controllers\NotificationController;
+use App\Presentation\Controllers\Payment\InvoiceController;
 use App\Presentation\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Presentation\Controllers\Admin\PermissionAssignmentController;
 use App\Presentation\Controllers\Admin\RoleController;
@@ -249,6 +250,13 @@ class Router
             NotificationController::class =>
                 new NotificationController(
                     new NotificationRepository($this->db())
+                ),
+
+            InvoiceController::class =>
+                new InvoiceController(
+                    new ConsultationRepository($this->db()),
+                    new UserRepository($this->db()),
+                    $this->db()
                 ),
 
             default => new $controller()

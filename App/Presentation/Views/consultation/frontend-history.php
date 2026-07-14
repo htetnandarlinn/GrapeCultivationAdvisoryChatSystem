@@ -84,8 +84,13 @@ foreach ($consultations as $c) {
                         $themeMap = [
                             'pending' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-400', 'badge' => 'text-amber-500 bg-amber-50', 'label' => 'Pending'],
                             'assigned' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Assigned'],
+                            'expert_accepted' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Accepted'],
                             'awaiting_payment' => ['bg' => 'bg-violet-500', 'dot' => 'bg-violet-500', 'badge' => 'text-violet-600 bg-violet-50', 'label' => 'Awaiting Payment'],
+                            'payment_submitted' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-500', 'badge' => 'text-amber-600 bg-amber-50', 'label' => 'Pending Review'],
                             'accepted' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
+                            'chat_started' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
+                            'completed' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Completed'],
+                            'closed' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
                             'rejected' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
                             'expired' => ['bg' => 'bg-red-500', 'dot' => 'bg-red-500', 'badge' => 'text-red-600 bg-red-50', 'label' => 'Expired'],
                         ];
@@ -320,8 +325,13 @@ const role = 'farmer';
 const themeMap = {
     pending:  { bg: 'bg-amber-500',  dot: 'bg-amber-400',  label: 'Pending',  badge: 'text-amber-500 bg-amber-50' },
     assigned: { bg: 'bg-blue-500',   dot: 'bg-blue-500',   label: 'Assigned', badge: 'text-blue-600 bg-blue-50' },
+    expert_accepted: { bg: 'bg-blue-500', dot: 'bg-blue-500', label: 'Accepted', badge: 'text-blue-600 bg-blue-50' },
     awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
+    payment_submitted: { bg: 'bg-amber-500', dot: 'bg-amber-500', label: 'Pending Review', badge: 'text-amber-600 bg-amber-50' },
     accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
+    chat_started: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active', badge: 'text-emerald-600 bg-emerald-50' },
+    completed: { bg: 'bg-blue-500',  dot: 'bg-blue-500',   label: 'Completed', badge: 'text-blue-600 bg-blue-50' },
+    closed: { bg: 'bg-slate-400',    dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
     rejected: { bg: 'bg-slate-400',  dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
     expired: { bg: 'bg-red-500',     dot: 'bg-red-500',    label: 'Expired',  badge: 'text-red-600 bg-red-50' },
 };
@@ -426,12 +436,12 @@ function selectConsultation(id) {
     badge.textContent = theme.label;
 
     // Show/hide input
-    const isChatOpen = data.status === 'accepted';
+    const isChatOpen = data.status === 'accepted' || data.status === 'chat_started';
     document.getElementById('right-input-area').classList.toggle('hidden', !isChatOpen);
 
     // Show/hide payment overlay
     const paymentOverlay = document.getElementById('right-payment-overlay');
-    if (data.status === 'awaiting_payment' || data.status === 'expired') {
+    if (data.status === 'awaiting_payment' || data.status === 'payment_submitted' || data.status === 'expired') {
         paymentOverlay.classList.remove('hidden');
         paymentOverlay.classList.add('flex');
         const isExpired = data.status === 'expired';

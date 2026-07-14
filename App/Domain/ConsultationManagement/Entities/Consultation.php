@@ -16,6 +16,14 @@ final class Consultation
     private ?\DateTimeImmutable $paidAt;
     private ?\DateTimeImmutable $expiresAt;
     private ?string $idempotencyKey;
+    private ?string $paymentMethod;
+    private ?string $transactionImage;
+    private ?string $verifiedBy;
+    private ?\DateTimeImmutable $verifiedAt;
+    private ?string $refundStatus;
+    private ?\DateTimeImmutable $refundDate;
+    private ?float $refundAmount;
+    private ?string $adminNotes;
     private \DateTimeImmutable $createdAt;
     private ?\DateTimeImmutable $updatedAt;
 
@@ -30,6 +38,14 @@ final class Consultation
         ?\DateTimeImmutable $paidAt = null,
         ?\DateTimeImmutable $expiresAt = null,
         ?string $idempotencyKey = null,
+        ?string $paymentMethod = null,
+        ?string $transactionImage = null,
+        ?string $verifiedBy = null,
+        ?\DateTimeImmutable $verifiedAt = null,
+        ?string $refundStatus = null,
+        ?\DateTimeImmutable $refundDate = null,
+        ?float $refundAmount = null,
+        ?string $adminNotes = null,
         ?\DateTimeImmutable $createdAt = null,
         ?\DateTimeImmutable $updatedAt = null,
     ) {
@@ -43,6 +59,14 @@ final class Consultation
         $this->paidAt = $paidAt;
         $this->expiresAt = $expiresAt;
         $this->idempotencyKey = $idempotencyKey;
+        $this->paymentMethod = $paymentMethod;
+        $this->transactionImage = $transactionImage;
+        $this->verifiedBy = $verifiedBy;
+        $this->verifiedAt = $verifiedAt;
+        $this->refundStatus = $refundStatus;
+        $this->refundDate = $refundDate;
+        $this->refundAmount = $refundAmount;
+        $this->adminNotes = $adminNotes;
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
         $this->updatedAt = $updatedAt;
     }
@@ -55,6 +79,36 @@ final class Consultation
     public function setId(int $id): void
     {
         $this->id = $id;
+    }
+
+    public function getVerifiedBy(): ?string
+    {
+        return $this->verifiedBy;
+    }
+
+    public function getVerifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->verifiedAt;
+    }
+
+    public function getRefundStatus(): ?string
+    {
+        return $this->refundStatus;
+    }
+
+    public function getRefundDate(): ?\DateTimeImmutable
+    {
+        return $this->refundDate;
+    }
+
+    public function getRefundAmount(): ?float
+    {
+        return $this->refundAmount;
+    }
+
+    public function getAdminNotes(): ?string
+    {
+        return $this->adminNotes;
     }
 
     public function getFarmerId(): int
@@ -102,6 +156,26 @@ final class Consultation
         return $this->idempotencyKey;
     }
 
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function getTransactionImage(): ?string
+    {
+        return $this->transactionImage;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): void
+    {
+        $this->paymentMethod = $paymentMethod;
+    }
+
+    public function setTransactionImage(?string $transactionImage): void
+    {
+        $this->transactionImage = $transactionImage;
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
@@ -119,20 +193,55 @@ final class Consultation
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    public function markExpertAccepted(): void
+    {
+        $this->status = ConsultationStatus::expertAccepted();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
     public function markAwaitingPayment(): void
     {
         $this->status = ConsultationStatus::awaitingPayment();
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function markPaid(string $idempotencyKey): void
+    public function markPaymentSubmitted(string $idempotencyKey, string $paymentMethod, string $transactionImage): void
+    {
+        $now = new \DateTimeImmutable();
+        $this->status = ConsultationStatus::paymentSubmitted();
+        $this->idempotencyKey = $idempotencyKey;
+        $this->paymentMethod = $paymentMethod;
+        $this->transactionImage = $transactionImage;
+        $this->updatedAt = $now;
+    }
+
+    public function markPaymentApproved(string $verifiedBy): void
     {
         $now = new \DateTimeImmutable();
         $this->status = ConsultationStatus::accepted();
         $this->paidAt = $now;
         $this->expiresAt = $now->modify('+30 days');
-        $this->idempotencyKey = $idempotencyKey;
+        $this->verifiedBy = $verifiedBy;
+        $this->verifiedAt = $now;
         $this->updatedAt = $now;
+    }
+
+    public function markChatStarted(): void
+    {
+        $this->status = ConsultationStatus::chatStarted();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function markCompleted(): void
+    {
+        $this->status = ConsultationStatus::completed();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function markClosed(): void
+    {
+        $this->status = ConsultationStatus::closed();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function markExpired(): void
@@ -141,40 +250,24 @@ final class Consultation
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function renewPayment(string $idempotencyKey): void
+    public function markRefunded(float $amount, ?string $adminNotes = null): void
     {
         $now = new \DateTimeImmutable();
-        $this->status = ConsultationStatus::accepted();
-        $this->paidAt = $now;
-        $this->expiresAt = $now->modify('+30 days');
-        $this->idempotencyKey = $idempotencyKey;
+        $this->refundStatus = 'refunded';
+        $this->refundDate = $now;
+        $this->refundAmount = $amount;
+        $this->adminNotes = $adminNotes;
+        $this->paidAt = null;
+        $this->expiresAt = null;
+        $this->idempotencyKey = null;
+        $this->verifiedBy = null;
+        $this->verifiedAt = null;
+        $this->status = ConsultationStatus::awaitingPayment();
         $this->updatedAt = $now;
     }
 
-    public function isExpired(): bool
+    public function setAdminNotes(?string $adminNotes): void
     {
-        if ($this->expiresAt === null) {
-            return false;
-        }
-        return $this->expiresAt < new \DateTimeImmutable();
-    }
-
-    public function accept(): void
-    {
-        $this->status = ConsultationStatus::accepted();
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function reject(string $note): void
-    {
-        $this->rejectionNote = $note;
-        $this->status = ConsultationStatus::rejected();
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function markAnswered(): void
-    {
-        $this->status = ConsultationStatus::accepted();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->adminNotes = $adminNotes;
     }
 }

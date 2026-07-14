@@ -114,6 +114,20 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                         <span class="text-slate-500">Status</span>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $theme['bg'] ?> <?= $theme['text'] ?>"><?= $theme['label'] ?></span>
                     </div>
+                    <?php if ($consultation->getPaymentMethod()): ?>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Method</span>
+                        <span class="font-medium text-slate-700"><?= ucfirst($consultation->getPaymentMethod()) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($consultation->getTransactionImage()): ?>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Receipt</span>
+                        <a href="<?= BASE_URL . '/' . htmlspecialchars($consultation->getTransactionImage()) ?>" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-lg hover:bg-emerald-100 transition-colors">
+                            <i class="fa-regular fa-image"></i> View
+                        </a>
+                    </div>
+                    <?php endif; ?>
                     <?php if ($consultation->getPaidAt()): ?>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Paid At</span>

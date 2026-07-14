@@ -195,6 +195,44 @@ class ConsultationController
         ], 'dashboard');
     }
 
+    public function paymentHistory(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user']) || ($_SESSION['user_role'] ?? '') !== 'farmer') {
+            redirect('/login');
+            return;
+        }
+
+        $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
+        $allConsultations = $this->consultationRepository->findByFarmer($farmerId);
+
+        $consultations = array_filter($allConsultations, fn($c) => in_array(
+            $c->getStatus()->getValue(),
+            ['awaiting_payment', 'payment_submitted', 'accepted', 'chat_started', 'completed', 'closed', 'expired'],
+            true
+        ));
+
+        // Get payment data for each consultation
+        $paymentRecords = [];
+        if (!empty($consultations)) {
+            $ids = array_map(fn($c) => $c->getId(), $consultations);
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $stmt = $this->connection->prepare("SELECT * FROM payments WHERE consultation_id IN ($placeholders)");
+            $stmt->execute(array_values($ids));
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $paymentRecords[(int) $row['consultation_id']] = $row;
+            }
+        }
+
+        View::render('consultation/payment-history', [
+            'consultations' => $consultations,
+            'paymentRecords' => $paymentRecords,
+        ], 'app');
+    }
+
     public function chat(): void
     {
         redirect('/consultations');

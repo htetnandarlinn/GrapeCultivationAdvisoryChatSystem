@@ -258,8 +258,13 @@ const role = 'expert';
 const themeMap = {
     pending:  { bg: 'bg-amber-500',  dot: 'bg-amber-400',  label: 'Pending',  badge: 'text-amber-500 bg-amber-50' },
     assigned: { bg: 'bg-blue-500',   dot: 'bg-blue-500',   label: 'Assigned', badge: 'text-blue-600 bg-blue-50' },
+    expert_accepted: { bg: 'bg-blue-500', dot: 'bg-blue-500', label: 'Accepted', badge: 'text-blue-600 bg-blue-50' },
     awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
+    payment_submitted: { bg: 'bg-amber-500', dot: 'bg-amber-500', label: 'Pending Review', badge: 'text-amber-600 bg-amber-50' },
     accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
+    chat_started: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active', badge: 'text-emerald-600 bg-emerald-50' },
+    completed: { bg: 'bg-blue-500',  dot: 'bg-blue-500',   label: 'Completed', badge: 'text-blue-600 bg-blue-50' },
+    closed: { bg: 'bg-slate-400',    dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
     rejected: { bg: 'bg-slate-400',  dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
     expired: { bg: 'bg-red-500',     dot: 'bg-red-500',    label: 'Expired',  badge: 'text-red-600 bg-red-50' },
 };
@@ -345,7 +350,7 @@ function selectConsultation(id) {
 
     if (ws) { ws.close(); ws = null; }
 
-    if (data.status === 'accepted') {
+    if (data.status === 'accepted' || data.status === 'chat_started') {
         messagesWrapper.classList.remove('hidden');
         inputArea.classList.remove('hidden');
         connectWebSocket(id);
@@ -435,6 +440,18 @@ function toggleRejectForm() {
     if (el) el.classList.toggle('hidden');
 }
 
+function showAcceptError(msg) {
+    const container = document.getElementById('detail-content');
+    if (!container) return;
+    const errEl = document.createElement('div');
+    errEl.className = 'p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2 mt-4';
+    errEl.innerHTML = '<i class="fa-solid fa-circle-exclamation text-red-500"></i> ' + escapeHtml(msg);
+    container.prepend(errEl);
+    setTimeout(() => { if (errEl.parentNode) errEl.parentNode.removeChild(errEl); }, 8000);
+    const btn = container.querySelector('button[onclick^="acceptConsultation"]');
+    if (btn) { btn.disabled = false; btn.textContent = 'Accept Consultation'; }
+}
+
 function acceptConsultation(btn, id) {
     btn.disabled = true;
     btn.textContent = 'Accepting...';
@@ -443,17 +460,22 @@ function acceptConsultation(btn, id) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
         body: 'consultation_id=' + id,
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
     .then(res => {
         if (res.success) {
-            updateConsultationStatus(id, 'accepted');
+            updateConsultationStatus(id, 'awaiting_payment');
             selectConsultation(id);
         } else {
+            showAcceptError(res.error || 'Failed to accept consultation.');
             btn.disabled = false;
             btn.textContent = 'Accept Consultation';
         }
     })
-    .catch(() => {
+    .catch(err => {
+        showAcceptError('Network or server error: ' + err.message);
         btn.disabled = false;
         btn.textContent = 'Accept Consultation';
     });
@@ -491,7 +513,7 @@ function updateConsultationStatus(id, newStatus) {
         item.setAttribute('data-status', newStatus);
         const badge = item.querySelector('.status-badge');
         if (badge) {
-            const labels = { pending: 'Pending', assigned: 'Assigned', accepted: 'Active', rejected: 'Closed' };
+            const labels = { pending: 'Pending', assigned: 'Assigned', awaiting_payment: 'Awaiting Payment', payment_submitted: 'Pending Review', accepted: 'Active', chat_started: 'Active', completed: 'Completed', closed: 'Closed', rejected: 'Closed', expired: 'Expired' };
             badge.textContent = labels[newStatus] || newStatus;
         }
     }

@@ -13,12 +13,20 @@ use App\Shared\Exceptions\PaymentException;
 
 class ConsultationPaymentController
 {
+    private string $uploadDir;
+
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
         private ProcessPaymentHandler $paymentHandler,
         private NotificationService $notificationService,
-    ) {}
+    ) {
+        $base = defined('BASE_URL') ? dirname($_SERVER['DOCUMENT_ROOT'] . BASE_URL) : $_SERVER['DOCUMENT_ROOT'];
+        $this->uploadDir = $base . '/public/uploads/payments';
+        if (!is_dir($this->uploadDir)) {
+            mkdir($this->uploadDir, 0755, true);
+        }
+    }
 
     public function showPayment(): void
     {
@@ -37,7 +45,7 @@ class ConsultationPaymentController
         }
 
         $status = $consultation->getStatus()->getValue();
-        if (!in_array($status, ['awaiting_payment', 'expired'], true)) {
+        if (!in_array($status, ['awaiting_payment', 'payment_submitted', 'expired'], true)) {
             redirect('/consultations');
             return;
         }
@@ -57,6 +65,7 @@ class ConsultationPaymentController
         $id = (int) ($_POST['consultation_id'] ?? 0);
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
         $idempotencyKey = trim($_POST['idempotency_key'] ?? '');
+        $paymentMethod = trim($_POST['payment_method'] ?? '');
 
         if (!$id || !$idempotencyKey) {
             $_SESSION['error'] = 'Invalid payment request.';
@@ -64,41 +73,70 @@ class ConsultationPaymentController
             return;
         }
 
+        if (!in_array($paymentMethod, ['kpay', 'wavepay', 'paypal'], true)) {
+            $_SESSION['error'] = 'Please select a valid payment method.';
+            redirect('/payment/consultation?id=' . $id);
+            return;
+        }
+
+        if (!isset($_FILES['transaction_image']) || $_FILES['transaction_image']['error'] !== UPLOAD_ERR_OK) {
+            $_SESSION['error'] = 'Please upload a transaction screenshot.';
+            redirect('/payment/consultation?id=' . $id);
+            return;
+        }
+
+        $file = $_FILES['transaction_image'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            $_SESSION['error'] = 'Invalid image format. Accepted: jpg, png, gif, webp.';
+            redirect('/payment/consultation?id=' . $id);
+            return;
+        }
+
+        $filename = 'payment_' . $id . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $destPath = $this->uploadDir . '/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+            $_SESSION['error'] = 'Failed to upload receipt. Please try again.';
+            redirect('/payment/consultation?id=' . $id);
+            return;
+        }
+
+        $transactionImage = 'uploads/payments/' . $filename;
+
         try {
             $this->paymentHandler->handle(
                 new ProcessPaymentCommand(
                     consultationId: $id,
                     farmerId: $farmerId,
                     idempotencyKey: $idempotencyKey,
+                    paymentMethod: $paymentMethod,
+                    transactionImage: $transactionImage,
                 )
             );
 
-            $consultation = $this->consultationRepository->findById($id);
+            // Notify all admins that payment has been submitted for review
+            $this->notificationService->notifyAllAdmins(
+                "Payment submitted for consultation #{$id}. Please review the receipt.",
+                'payment_submitted_admin',
+                '/admin/payments'
+            );
 
-            $farmer = $this->userRepository->findById($farmerId);
-            if ($farmer && $consultation?->getExpertId()) {
-                $expert = $this->userRepository->findById($consultation->getExpertId());
-                if ($expert) {
-                    $this->notificationService->notify(
-                        $consultation->getExpertId(),
-                        'expert',
-                        "Payment received for consultation #{$id}. You can now start the consultation.",
-                        'payment_received',
-                        '/expert/consultations/hub'
-                    );
-                }
+            // Notify farmer that receipt is under review
+            $this->notificationService->notify(
+                $farmerId,
+                'farmer',
+                "Payment receipt submitted for consultation #{$id}. Waiting for admin approval.",
+                'payment_submitted',
+                '/consultations'
+            );
 
-                $this->notificationService->notify(
-                    $farmerId,
-                    'farmer',
-                    "Payment successful! Your consultation is now active for 30 days.",
-                    'payment_success',
-                    '/consultations'
-                );
-            }
-
-            $_SESSION['success'] = 'Payment successful! Your consultation is now active.';
+            $_SESSION['success'] = 'Payment receipt submitted! Waiting for admin approval.';
         } catch (PaymentException $e) {
+            // Clean up uploaded file on failure
+            if (file_exists($destPath)) {
+                unlink($destPath);
+            }
             $_SESSION['error'] = $e->getMessage();
         }
 
