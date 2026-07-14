@@ -24,5 +24,9 @@ interface ConsultationRepositoryInterface
 
     public function countDistinctFarmersByExpert(int $expertId): int;
 
+    public function findByIdempotencyKey(string $key): ?Consultation;
+
+    public function findExpiredActiveConsultations(): array;
+
     public function update(Consultation $consultation): void;
 }

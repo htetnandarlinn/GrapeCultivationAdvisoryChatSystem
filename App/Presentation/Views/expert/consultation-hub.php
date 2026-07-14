@@ -88,8 +88,10 @@ foreach ($consultations as $c) {
                         $themeMap = [
                             'pending' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-400', 'badge' => 'text-amber-500 bg-amber-50', 'label' => 'Pending'],
                             'assigned' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Assigned'],
+                            'awaiting_payment' => ['bg' => 'bg-violet-500', 'dot' => 'bg-violet-500', 'badge' => 'text-violet-600 bg-violet-50', 'label' => 'Awaiting Payment'],
                             'accepted' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
                             'rejected' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
+                            'expired' => ['bg' => 'bg-red-500', 'dot' => 'bg-red-500', 'badge' => 'text-red-600 bg-red-50', 'label' => 'Expired'],
                         ];
                         $theme = $themeMap[$status] ?? $themeMap['pending'];
 
@@ -256,8 +258,10 @@ const role = 'expert';
 const themeMap = {
     pending:  { bg: 'bg-amber-500',  dot: 'bg-amber-400',  label: 'Pending',  badge: 'text-amber-500 bg-amber-50' },
     assigned: { bg: 'bg-blue-500',   dot: 'bg-blue-500',   label: 'Assigned', badge: 'text-blue-600 bg-blue-50' },
+    awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
     accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
     rejected: { bg: 'bg-slate-400',  dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
+    expired: { bg: 'bg-red-500',     dot: 'bg-red-500',    label: 'Expired',  badge: 'text-red-600 bg-red-50' },
 };
 
 let selectedId = null;

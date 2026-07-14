@@ -66,6 +66,27 @@ class ChatController
             return;
         }
 
+        $consultation = $this->consultationRepository->findById($consultationId);
+        if (!$consultation) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Consultation not found']);
+            return;
+        }
+
+        $this->expireIfPastDue($consultation);
+
+        $chatStatus = $consultation->getStatus()->getValue();
+        $isExpired = $consultation->isExpired();
+        if ($chatStatus !== 'accepted' || $isExpired) {
+            http_response_code(403);
+            echo json_encode([
+                'error' => $isExpired
+                    ? 'Your one-month consultation period has ended. Please renew your payment to continue.'
+                    : 'Chat is not available for this consultation.'
+            ]);
+            return;
+        }
+
         $messageType = 'text';
         $finalMessage = $messageText;
 
@@ -93,7 +114,6 @@ class ChatController
         $messageId = $this->sendMessageHandler->handle($command);
 
         $senderName = $_SESSION['user']['username'] ?? 'Someone';
-        $consultation = $this->consultationRepository->findById($consultationId);
 
         if ($consultation) {
             $senderRole = $_SESSION['user_role'] ?? '';
@@ -134,4 +154,11 @@ class ChatController
         ]);
     }
 
+    private function expireIfPastDue(\App\Domain\ConsultationManagement\Entities\Consultation $consultation): void
+    {
+        if ($consultation->getStatus()->getValue() === 'accepted' && $consultation->isExpired()) {
+            $consultation->markExpired();
+            $this->consultationRepository->update($consultation);
+        }
+    }
 }

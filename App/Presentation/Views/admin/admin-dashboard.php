@@ -114,6 +114,30 @@ $username = $_SESSION['user']['username'] ?? 'User';
         </div>
     </div>
 
+    <?php if ($userRole === 'admin'): ?>
+    <!-- Payment Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Revenue</p>
+                <p class="text-2xl font-black text-emerald-600 mt-1">$<?= number_format($adminTotalRevenue ?? 0, 2) ?></p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Records</p>
+                <p class="text-2xl font-black text-slate-900 mt-1"><?= ($adminAcceptedConsultations ?? 0) + ($adminExpiredConsultations ?? 0) ?></p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <?php if ($userRole === 'expert'): ?>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -134,11 +158,13 @@ $username = $_SESSION['user']['username'] ?? 'User';
                             <?= match ($c->getStatus()->getValue()) {
                                 'pending' => 'bg-amber-50 text-amber-600',
                                 'assigned' => 'bg-blue-50 text-blue-600',
+                                'awaiting_payment' => 'bg-violet-50 text-violet-600',
                                 'accepted' => 'bg-emerald-50 text-emerald-600',
                                 'rejected' => 'bg-red-50 text-red-600',
+                                'expired' => 'bg-red-50 text-red-600',
                                 default => 'bg-slate-50 text-slate-500',
                             } ?>">
-                            <?= ucfirst($c->getStatus()->getValue()) ?>
+                            <?= ucfirst(str_replace('_', ' ', $c->getStatus()->getValue())) ?>
                         </span>
                     </div>
                     <?php endforeach; ?>
@@ -216,11 +242,13 @@ $username = $_SESSION['user']['username'] ?? 'User';
                             <?= match ($c->getStatus()->getValue()) {
                                 'pending' => 'bg-amber-50 text-amber-600',
                                 'assigned' => 'bg-blue-50 text-blue-600',
+                                'awaiting_payment' => 'bg-violet-50 text-violet-600',
                                 'accepted' => 'bg-emerald-50 text-emerald-600',
                                 'rejected' => 'bg-red-50 text-red-600',
+                                'expired' => 'bg-red-50 text-red-600',
                                 default => 'bg-slate-50 text-slate-500',
                             } ?>">
-                            <?= ucfirst($c->getStatus()->getValue()) ?>
+                            <?= ucfirst(str_replace('_', ' ', $c->getStatus()->getValue())) ?>
                         </span>
                     </div>
                     <?php endforeach; ?>

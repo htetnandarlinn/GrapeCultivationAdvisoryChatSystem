@@ -59,6 +59,15 @@ function is_active($path) {
         </a>
 <?php endif; ?>
 
+<?php if (can('consultations.view')): ?>
+        <a href="<?= BASE_URL ?>/admin/payments" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('admin/payments') ? 'bg-emerald-50 text-[#15803D] shadow-sm' : 'text-slate-600 hover:bg-emerald-50 hover:text-[#15803D]' ?>">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+                Payment Management
+            </div>
+        </a>
+<?php endif; ?>
+
 <?php if (can('consultations.answer') && ($_SESSION['user_role'] ?? '') === 'expert'): ?>
         <a href="<?= BASE_URL ?>/expert/consultations/hub" class="flex items-center justify-between p-3 rounded-xl font-bold text-sm transition-all <?= is_active('expert/consultations/hub') ? 'bg-emerald-50 text-[#15803D] shadow-sm' : 'text-slate-600 hover:bg-emerald-50 hover:text-[#15803D]' ?>">
             <div class="flex items-center gap-3">

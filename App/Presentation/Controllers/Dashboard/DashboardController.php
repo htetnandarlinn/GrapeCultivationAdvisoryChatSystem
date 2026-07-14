@@ -126,6 +126,20 @@ class DashboardController
                 $data['adminAssignedConsultations'] = $assigned;
                 $data['adminAcceptedConsultations'] = $accepted;
                 $data['adminRejectedConsultations'] = $rejected;
+
+                // Payment metrics
+                $awaitingPayment = 0;
+                $expiredCount = 0;
+                $totalRevenue = 0;
+                foreach ($allConsultations as $c) {
+                    $s = $c->getStatus()->getValue();
+                    if ($s === 'awaiting_payment') $awaitingPayment++;
+                    if ($s === 'expired') $expiredCount++;
+                    if ($s === 'accepted' || ($s === 'expired' && $c->getPaidAt())) $totalRevenue += 29.99;
+                }
+                $data['adminAwaitingPayment'] = $awaitingPayment;
+                $data['adminExpiredConsultations'] = $expiredCount;
+                $data['adminTotalRevenue'] = $totalRevenue;
             }
             if ($this->articleRepository) {
                 $data['totalArticles'] = $this->articleRepository->countAll();
