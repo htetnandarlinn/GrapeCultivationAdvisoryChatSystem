@@ -25,8 +25,10 @@
                 $statusColors = [
                     'pending' => 'bg-amber-100 text-amber-700',
                     'assigned' => 'bg-blue-100 text-blue-700',
+                    'awaiting_payment' => 'bg-violet-100 text-violet-700',
                     'accepted' => 'bg-emerald-100 text-emerald-700',
                     'rejected' => 'bg-red-100 text-red-700',
+                    'expired' => 'bg-red-100 text-red-700',
                 ];
                 $color = $statusColors[$c->getStatus()->getValue()] ?? 'bg-slate-100 text-slate-600';
                 ?>

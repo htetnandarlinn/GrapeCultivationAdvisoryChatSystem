@@ -159,6 +159,7 @@ class ConsultationController
             echo json_encode(['success' => true]);
         } catch (\Throwable $e) {
             http_response_code(500);
+            error_log('Consultation create failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             echo json_encode(['success' => false, 'error' => 'Failed to create consultation.']);
         }
     }

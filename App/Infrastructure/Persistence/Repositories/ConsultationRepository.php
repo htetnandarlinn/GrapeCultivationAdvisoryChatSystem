@@ -14,8 +14,8 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
     public function save(Consultation $consultation): void
     {
         $sql = '
-            INSERT INTO consultations (farmer_id, title, description, status, expert_id, rejection_note, created_at, updated_at)
-            VALUES (:farmer_id, :title, :description, :status, :expert_id, :rejection_note, NOW(), NOW())
+            INSERT INTO consultations (farmer_id, title, description, status, expert_id, rejection_note, paid_at, expires_at, idempotency_key, created_at, updated_at)
+            VALUES (:farmer_id, :title, :description, :status, :expert_id, :rejection_note, :paid_at, :expires_at, :idempotency_key, NOW(), NOW())
         ';
 
         $stmt = $this->connection->prepare($sql);
@@ -26,6 +26,9 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             ':status' => $consultation->getStatus()->getValue(),
             ':expert_id' => $consultation->getExpertId(),
             ':rejection_note' => $consultation->getRejectionNote(),
+            ':paid_at' => $this->formatDateTime($consultation->getPaidAt()),
+            ':expires_at' => $this->formatDateTime($consultation->getExpiresAt()),
+            ':idempotency_key' => $consultation->getIdempotencyKey(),
         ]);
 
         $consultation->setId((int) $this->connection->lastInsertId());
@@ -100,6 +103,25 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
+    public function findByIdempotencyKey(string $key): ?Consultation
+    {
+        $sql = 'SELECT * FROM consultations WHERE idempotency_key = :key LIMIT 1';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':key' => $key]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function findExpiredActiveConsultations(): array
+    {
+        $sql = "SELECT * FROM consultations WHERE status = 'accepted' AND expires_at IS NOT NULL AND expires_at <= NOW()";
+        $stmt = $this->connection->query($sql);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
     public function update(Consultation $consultation): void
     {
         $sql = '
@@ -107,6 +129,9 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             SET status = :status,
                 expert_id = :expert_id,
                 rejection_note = :rejection_note,
+                paid_at = :paid_at,
+                expires_at = :expires_at,
+                idempotency_key = :idempotency_key,
                 updated_at = NOW()
             WHERE id = :id
         ';
@@ -116,6 +141,9 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             ':status' => $consultation->getStatus()->getValue(),
             ':expert_id' => $consultation->getExpertId(),
             ':rejection_note' => $consultation->getRejectionNote(),
+            ':paid_at' => $this->formatDateTime($consultation->getPaidAt()),
+            ':expires_at' => $this->formatDateTime($consultation->getExpiresAt()),
+            ':idempotency_key' => $consultation->getIdempotencyKey(),
             ':id' => $consultation->getId(),
         ]);
     }
@@ -130,8 +158,16 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             status: ConsultationStatus::fromString($row['status']),
             expertId: $row['expert_id'] ? (int) $row['expert_id'] : null,
             rejectionNote: $row['rejection_note'] ?? null,
+            paidAt: !empty($row['paid_at']) ? new \DateTimeImmutable($row['paid_at']) : null,
+            expiresAt: !empty($row['expires_at']) ? new \DateTimeImmutable($row['expires_at']) : null,
+            idempotencyKey: $row['idempotency_key'] ?? null,
             createdAt: new \DateTimeImmutable($row['created_at']),
             updatedAt: !empty($row['updated_at']) ? new \DateTimeImmutable($row['updated_at']) : null,
         );
+    }
+
+    private function formatDateTime(?\DateTimeImmutable $dateTime): ?string
+    {
+        return $dateTime?->format('Y-m-d H:i:s');
     }
 }

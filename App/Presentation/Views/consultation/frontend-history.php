@@ -84,8 +84,10 @@ foreach ($consultations as $c) {
                         $themeMap = [
                             'pending' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-400', 'badge' => 'text-amber-500 bg-amber-50', 'label' => 'Pending'],
                             'assigned' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Assigned'],
+                            'awaiting_payment' => ['bg' => 'bg-violet-500', 'dot' => 'bg-violet-500', 'badge' => 'text-violet-600 bg-violet-50', 'label' => 'Awaiting Payment'],
                             'accepted' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
                             'rejected' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
+                            'expired' => ['bg' => 'bg-red-500', 'dot' => 'bg-red-500', 'badge' => 'text-red-600 bg-red-50', 'label' => 'Expired'],
                         ];
                         $theme = $themeMap[$status] ?? $themeMap['pending'];
 
@@ -202,9 +204,38 @@ foreach ($consultations as $c) {
                         <span><i class="fa-solid fa-leaf text-emerald-500 mr-1"></i> Grape Cultivation Advisory</span>
                         <span id="right-conn-status">Connecting...</span>
                     </div>
+                    </div>
                 </div>
-            </div>
-            <!-- Create Consultation Form (hidden by default) -->
+
+                <!-- Payment / Expired overlay -->
+                <div id="right-payment-overlay" class="hidden flex-1 flex flex-col bg-white">
+                    <div class="flex-1 flex flex-col items-center justify-center p-8">
+                        <div class="max-w-sm text-center animate-[fadeIn_0.5s_ease-out]">
+                            <!-- Animated icon container -->
+                            <div id="payment-overlay-icon" class="w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center relative">
+                                <div id="payment-overlay-icon-bg" class="absolute inset-0 rounded-2xl opacity-20"></div>
+                                <svg id="payment-overlay-svg" class="w-9 h-9 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+
+                            <h3 id="payment-overlay-title" class="text-xl font-black text-slate-900 mb-2"></h3>
+                            <p id="payment-overlay-text" class="text-sm text-slate-500 leading-relaxed mb-8"></p>
+
+                            <div class="space-y-3">
+                                <a id="payment-overlay-btn" href="#"
+                                   class="inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm">
+                                </a>
+                                <p class="text-[10px] text-slate-400">
+                                    <i class="fa-solid fa-lock text-emerald-400 mr-1"></i>
+                                    Secured payment via encrypted connection
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Consultation Form (hidden by default) -->
             <div id="right-create" class="hidden flex-1 flex flex-col p-6 md:p-10 overflow-y-auto">
                 <div class="max-w-2xl mx-auto w-full">
                     <div class="mb-6">
@@ -289,8 +320,10 @@ const role = 'farmer';
 const themeMap = {
     pending:  { bg: 'bg-amber-500',  dot: 'bg-amber-400',  label: 'Pending',  badge: 'text-amber-500 bg-amber-50' },
     assigned: { bg: 'bg-blue-500',   dot: 'bg-blue-500',   label: 'Assigned', badge: 'text-blue-600 bg-blue-50' },
+    awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
     accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
     rejected: { bg: 'bg-slate-400',  dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
+    expired: { bg: 'bg-red-500',     dot: 'bg-red-500',    label: 'Expired',  badge: 'text-red-600 bg-red-50' },
 };
 
 let selectedId = null;
@@ -395,6 +428,44 @@ function selectConsultation(id) {
     // Show/hide input
     const isChatOpen = data.status === 'accepted';
     document.getElementById('right-input-area').classList.toggle('hidden', !isChatOpen);
+
+    // Show/hide payment overlay
+    const paymentOverlay = document.getElementById('right-payment-overlay');
+    if (data.status === 'awaiting_payment' || data.status === 'expired') {
+        paymentOverlay.classList.remove('hidden');
+        paymentOverlay.classList.add('flex');
+        const isExpired = data.status === 'expired';
+        const iconContainer = document.getElementById('payment-overlay-icon');
+        const iconBg = document.getElementById('payment-overlay-icon-bg');
+        const svg = document.getElementById('payment-overlay-svg');
+        const title = document.getElementById('payment-overlay-title');
+        const text = document.getElementById('payment-overlay-text');
+        const btn = document.getElementById('payment-overlay-btn');
+
+        if (isExpired) {
+            iconContainer.className = 'w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center relative bg-amber-50';
+            iconBg.className = 'absolute inset-0 rounded-2xl opacity-20 bg-amber-500';
+            svg.className = 'w-9 h-9 relative z-10 text-amber-600';
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5"/>';
+            title.textContent = 'Consultation Expired';
+            text.textContent = 'Your 30-day consultation period has ended. Renew your subscription to continue messaging with your expert.';
+            btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Renew Payment — $29.99';
+            btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 shadow-amber-200 hover:shadow-xl hover:shadow-amber-300';
+        } else {
+            iconContainer.className = 'w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center relative bg-violet-50';
+            iconBg.className = 'absolute inset-0 rounded-2xl opacity-20 bg-violet-500';
+            svg.className = 'w-9 h-9 relative z-10 text-violet-600';
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>';
+            title.textContent = 'Payment Required';
+            text.textContent = 'An expert has been assigned to your consultation. Complete your payment to unlock 30 days of expert guidance.';
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay $29.99 Now';
+            btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300';
+        }
+        btn.href = baseUrl + '/payment/consultation?id=' + id;
+    } else {
+        paymentOverlay.classList.add('hidden');
+        paymentOverlay.classList.remove('flex');
+    }
 
     // Disconnect old WS
     if (ws) { ws.close(); ws = null; }

@@ -4,8 +4,10 @@ $images = $images ?? [];
 $statusColors = [
     'pending' => ['bg' => 'bg-amber-50 border-amber-200', 'text' => 'text-amber-700', 'dot' => 'bg-amber-500', 'label' => 'Pending'],
     'assigned' => ['bg' => 'bg-blue-50 border-blue-200', 'text' => 'text-blue-700', 'dot' => 'bg-blue-500', 'label' => 'Assigned'],
+    'awaiting_payment' => ['bg' => 'bg-violet-50 border-violet-200', 'text' => 'text-violet-700', 'dot' => 'bg-violet-500', 'label' => 'Awaiting Payment'],
     'accepted' => ['bg' => 'bg-emerald-50 border-emerald-200', 'text' => 'text-emerald-700', 'dot' => 'bg-emerald-500', 'label' => 'Active'],
     'rejected' => ['bg' => 'bg-red-50 border-red-200', 'text' => 'text-red-700', 'dot' => 'bg-red-500', 'label' => 'Rejected'],
+    'expired' => ['bg' => 'bg-red-50 border-red-200', 'text' => 'text-red-700', 'dot' => 'bg-red-500', 'label' => 'Expired'],
 ];
 $status = $consultation->getStatus()->getValue();
 $theme = $statusColors[$status] ?? $statusColors['pending'];
@@ -98,6 +100,56 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                 <?php endif; ?>
             </div>
 
+            <!-- Payment Info Card -->
+            <div class="bg-white rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Payment Details</h3>
+                </div>
+                <div class="px-5 py-4 space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Amount</span>
+                        <span class="font-bold text-slate-800">$29.99</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Status</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $theme['bg'] ?> <?= $theme['text'] ?>"><?= $theme['label'] ?></span>
+                    </div>
+                    <?php if ($consultation->getPaidAt()): ?>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Paid At</span>
+                        <span class="font-medium text-slate-700"><?= $consultation->getPaidAt()->format('M d, Y g:i A') ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($consultation->getExpiresAt()): ?>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Expires</span>
+                        <span class="font-medium text-slate-700 <?= $consultation->isExpired() ? 'text-red-600 font-bold' : 'text-emerald-600' ?>">
+                            <?= $consultation->isExpired() ? 'Expired' : $consultation->getExpiresAt()->format('M d, Y') ?>
+                        </span>
+                    </div>
+                    <?php if (!$consultation->isExpired()): ?>
+                    <div class="pt-1">
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <?php
+                            $now = new DateTimeImmutable();
+                            $total = $consultation->getExpiresAt()->getTimestamp() - ($consultation->getPaidAt()?->getTimestamp() ?? $now->getTimestamp());
+                            $elapsed = $now->getTimestamp() - ($consultation->getPaidAt()?->getTimestamp() ?? $now->getTimestamp());
+                            $pct = $total > 0 ? max(0, min(100, ($elapsed / $total) * 100)) : 0;
+                            ?>
+                            <div class="h-full rounded-full <?= $pct > 80 ? 'bg-red-500' : ($pct > 50 ? 'bg-amber-500' : 'bg-emerald-500') ?>" style="width: <?= $pct ?>%"></div>
+                        </div>
+                        <p class="text-[9px] text-slate-400 mt-1"><?= round(100 - $pct) ?>% remaining</p>
+                    </div>
+                    <?php endif; ?>
+                    <?php endif; ?>
+                    <?php if (!$consultation->getPaidAt() && !$consultation->getExpiresAt()): ?>
+                    <div class="px-3 py-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <p class="text-[11px] text-slate-500 text-center">No payment recorded yet</p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Actions Card -->
             <div class="bg-white rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100">
@@ -129,7 +181,23 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                 <div class="px-5 py-4">
                     <div class="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-blue-50 border border-blue-100">
                         <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p class="text-xs text-blue-700 font-medium">Assigned to an expert — awaiting response.</p>
+                        <p class="text-xs text-blue-700 font-medium">Assigned to an expert — awaiting payment.</p>
+                    </div>
+                </div>
+
+                <?php elseif ($status === 'awaiting_payment'): ?>
+                <div class="px-5 py-4">
+                    <div class="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-violet-50 border border-violet-100">
+                        <svg class="w-4 h-4 text-violet-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-xs text-violet-700 font-medium">Awaiting payment from farmer to activate.</p>
+                    </div>
+                </div>
+
+                <?php elseif ($status === 'expired'): ?>
+                <div class="px-5 py-4">
+                    <div class="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-red-50 border border-red-100">
+                        <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-xs text-red-700 font-medium">Consultation expired. Farmer can renew.</p>
                     </div>
                 </div>
 

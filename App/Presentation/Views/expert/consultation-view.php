@@ -21,7 +21,7 @@ $images = $images ?? [];
                 </p>
             </div>
             <span class="px-3 py-1.5 rounded-full text-[10px] font-bold <?php
-                $colors = ['pending' => 'bg-amber-100 text-amber-700', 'assigned' => 'bg-blue-100 text-blue-700', 'accepted' => 'bg-emerald-100 text-emerald-700', 'rejected' => 'bg-red-100 text-red-700'];
+                $colors = ['pending' => 'bg-amber-100 text-amber-700', 'assigned' => 'bg-blue-100 text-blue-700', 'awaiting_payment' => 'bg-violet-100 text-violet-700', 'accepted' => 'bg-emerald-100 text-emerald-700', 'rejected' => 'bg-red-100 text-red-700', 'expired' => 'bg-red-100 text-red-700'];
                 echo $colors[$consultation->getStatus()->getValue()] ?? 'bg-slate-100 text-slate-600';
             ?>"><?= ucfirst($consultation->getStatus()->getValue()) ?></span>
         </div>
@@ -78,6 +78,14 @@ $images = $images ?? [];
             <a href="<?= BASE_URL ?>/expert/consultations/chat?id=<?= $consultation->getId() ?>" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
                 <i class="fa-regular fa-comment-dots"></i> Start Chat with Farmer
             </a>
+        </div>
+        <?php elseif ($consultation->getStatus()->getValue() === 'awaiting_payment'): ?>
+        <div class="px-6 py-5 bg-violet-50 border-t border-violet-100">
+            <p class="text-xs text-violet-700"><strong>Awaiting Payment</strong> &mdash; The farmer needs to complete payment before the consultation period starts.</p>
+        </div>
+        <?php elseif ($consultation->getStatus()->getValue() === 'expired'): ?>
+        <div class="px-6 py-5 bg-red-50 border-t border-red-100">
+            <p class="text-xs text-red-700"><strong>Expired</strong> &mdash; The consultation period has ended. The farmer may renew to continue.</p>
         </div>
         <?php elseif ($consultation->getStatus()->getValue() === 'rejected' && $consultation->getRejectionNote()): ?>
         <div class="px-6 py-5 bg-red-50 border-t border-red-100">

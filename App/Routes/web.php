@@ -88,6 +88,7 @@ $router->post('/admin/roles/permissions/update', [PermissionAssignmentController
 $router->get('/admin/consultations', [AdminConsultationController::class, 'index'])->role('admin')->can('consultations.view');
 $router->get('/admin/consultations/view', [AdminConsultationController::class, 'view'])->role('admin')->can('consultations.view');
 $router->post('/admin/consultations/assign', [AdminConsultationController::class, 'assignExpert'])->role('admin')->can('consultations.assign');
+$router->get('/admin/payments', [AdminConsultationController::class, 'payments'])->role('admin')->can('consultations.view');
 
 /* ================= EXPERT: ARTICLES ================= */
 
@@ -117,6 +118,11 @@ $router->post('/consultation/store', [ConsultationController::class, 'store'])->
 $router->post('/consultation/store-ajax', [ConsultationController::class, 'storeAjax'])->role('farmer');
 $router->get('/consultation/my-consultations', [ConsultationController::class, 'myConsultations'])->role('farmer');
 $router->get('/consultations', [ConsultationController::class, 'frontendHistory'])->role('farmer');
+
+/* ================= PAYMENT (farmer) ================= */
+
+$router->get('/payment/consultation', [\App\Presentation\Controllers\Payment\ConsultationPaymentController::class, 'showPayment'])->role('farmer');
+$router->post('/payment/consultation/process', [\App\Presentation\Controllers\Payment\ConsultationPaymentController::class, 'processPayment'])->role('farmer');
 
 /* ================= CONSULTATION CHAT (farmer + expert) ================= */
 

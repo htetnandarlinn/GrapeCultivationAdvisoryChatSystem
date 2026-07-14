@@ -14,11 +14,15 @@ $conn->exec("
         status VARCHAR(50) NOT NULL DEFAULT 'pending',
         expert_id INT DEFAULT NULL,
         rejection_note TEXT DEFAULT NULL,
+        paid_at DATETIME DEFAULT NULL,
+        expires_at DATETIME DEFAULT NULL,
+        idempotency_key VARCHAR(64) DEFAULT NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT NULL,
         INDEX idx_farmer_id (farmer_id),
         INDEX idx_expert_id (expert_id),
-        INDEX idx_status (status)
+        INDEX idx_status (status),
+        UNIQUE KEY uk_idempotency_key (idempotency_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
 

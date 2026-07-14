@@ -3,6 +3,7 @@
 namespace App\Routes;
 
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
+use App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentHandler;
 use App\Application\Messaging\GetConversationHistory\GetConversationHistoryHandler;
 use App\Application\Messaging\SendMessage\SendMessageHandler;
 use App\Infrastructure\Persistence\Repositories\MessageRepository;
@@ -42,6 +43,7 @@ use App\Presentation\Controllers\Auth\VerifyEmailController;
 use App\Presentation\Controllers\Chat\ChatController;
 use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
+use App\Presentation\Controllers\Payment\ConsultationPaymentController;
 use App\Presentation\Attributes\Permission as PermissionAttribute;
 
 use App\Presentation\Controllers\Expert\ArticleController;
@@ -151,6 +153,20 @@ class Router
             ExpertConsultationController::class => $this->createExpertConsultationController(),
 
             ChatController::class => $this->createChatController(),
+
+            ConsultationPaymentController::class =>
+                new ConsultationPaymentController(
+                    new ConsultationRepository($this->db()),
+                    new UserRepository($this->db()),
+                    new \App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentHandler(
+                        new ConsultationRepository($this->db()),
+                        $this->db()
+                    ),
+                    new NotificationService(
+                        new NotificationRepository($this->db()),
+                        $this->db()
+                    )
+                ),
 
             DashboardController::class =>
                 new DashboardController(
