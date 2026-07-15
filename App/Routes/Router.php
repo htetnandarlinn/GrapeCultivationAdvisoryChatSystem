@@ -179,7 +179,8 @@ class Router
                     new NotificationService(
                         new NotificationRepository($this->db()),
                         $this->db()
-                    )
+                    ),
+                    $this->db()
                 ),
 
             ArticleController::class =>

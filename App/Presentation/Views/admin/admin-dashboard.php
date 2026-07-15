@@ -63,64 +63,102 @@ $username = $_SESSION['user']['username'] ?? 'User';
 .wave-hand { display: inline-block; animation: wave 1.5s ease-in-out infinite; transform-origin: 70% 70%; }
 </style>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Farmers</p>
-                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $farmerCount ?></p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 <?= $userRole === 'expert' ? 'lg:grid-cols-4' : 'lg:grid-cols-5' ?> gap-5 mb-8">
+        <a href="<?= BASE_URL . ($userRole === 'expert' ? '/expert/farmers' : '/admin/users?tab=farmers') ?>" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400"><?= $userRole === 'expert' ? 'Consulting Farmers' : 'Farmers' ?></p>
+                    <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $farmerCount ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 group-hover:bg-rose-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 group-hover:bg-rose-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View <?= $userRole === 'expert' ? 'consulting farmers' : 'all farmers' ?></span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
+        </a>
 <?php if ($userRole === 'expert'): ?>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uploaded Images</p>
-                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $expertArticleImages ?? 0 ?></p>
+        <a href="<?= BASE_URL ?>/expert/article-images" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uploaded Images</p>
+                    <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $expertArticleImages ?? 0 ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-500 group-hover:bg-purple-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View all images</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
+        </a>
 <?php else: ?>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Experts</p>
-                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $expertCount ?></p>
+        <a href="<?= BASE_URL ?>/admin/users?tab=experts" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Experts</p>
+                    <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $expertCount ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View all experts</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
+        </a>
 <?php endif; ?>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Consultations</p>
-                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $totalConsultations ?></p>
+        <a href="<?= BASE_URL . ($userRole === 'expert' ? '/expert/consultations/hub' : '/admin/consultations') ?>" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Consultations</p>
+                    <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $totalConsultations ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View all consultations</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Articles</p>
-                <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $totalArticles ?></p>
+        </a>
+        <a href="<?= BASE_URL ?>/expert/articles" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Articles</p>
+                    <p class="text-3xl font-black text-slate-900 mt-1.5"><?= $totalArticles ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 group-hover:bg-sky-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 group-hover:bg-sky-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View all articles</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Total Revenue</p>
-                <p class="text-3xl font-black text-emerald-600 mt-1.5">$<?= number_format($adminTotalRevenue ?? 0, 2) ?></p>
+        </a>
+        <?php if ($userRole !== 'expert'): ?>
+        <a href="<?= BASE_URL ?>/admin/payments" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Total Revenue</p>
+                    <p class="text-3xl font-black text-emerald-600 mt-1.5">$<?= number_format($adminTotalRevenue ?? 0, 2) ?></p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mt-3 flex items-center gap-1 text-[10px] font-semibold text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>View payments</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </div>
-        </div>
+        </a>
+        <?php endif; ?>
     </div>
 
     <?php if ($userRole === 'expert'): ?>

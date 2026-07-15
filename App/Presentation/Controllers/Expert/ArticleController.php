@@ -333,6 +333,19 @@ final class ArticleController
         redirect('/expert/articles');
     }
 
+    #[Permission('articles.view', 'View Article Images')]
+    public function images(): void
+    {
+        $authorId = (string) ($_SESSION['user']['id'] ?? 0);
+        $articles = $this->articleRepository->findAll((int) $authorId);
+        $images = array_filter($articles, fn($a) => $a->getImage() !== null);
+
+        View::render('expert/article-images', [
+            'activePage' => 'articles',
+            'images' => $images,
+        ]);
+    }
+
     private function handleImageUpload(array $file): ?string
     {
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

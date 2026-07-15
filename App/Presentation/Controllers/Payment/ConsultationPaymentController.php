@@ -27,7 +27,7 @@ class ConsultationPaymentController
         }
     }
 
-    public function showPayment(): void
+    public function showPayment(): void 
     {
         
         $id = (int) ($_GET['id'] ?? 0);

@@ -48,8 +48,8 @@
                 <p class="text-2xl font-black text-slate-900 mt-1"><?= count($consultations) ?></p>
                 <p class="text-[10px] text-slate-400 mt-0.5">With payment records</p>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-slate-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-regular fa-receipt text-lg"></i>
+            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
             </div>
         </div>
     </div>

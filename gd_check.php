@@ -1,0 +1,1 @@
+<?php echo extension_loaded('gd') ? 'GD_OK' : 'GD_FAIL';

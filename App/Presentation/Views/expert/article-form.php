@@ -14,12 +14,10 @@ $previewSource = $currentImage ? (BASE_URL . $currentImage) : '';
 $message = $_SESSION['article_message'] ?? '';
 unset($_SESSION['article_message']);
 ?>
-<div class="max-w-3xl mx-auto">
+<div class="max-w-2xl mx-auto">
     <div class="flex items-center gap-3 mb-6">
-        <a href="<?= BASE_URL ?>/expert/articles" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+        <a href="<?= BASE_URL ?>/expert/articles" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
         <div>
             <h1 class="text-2xl font-extrabold text-[#0F172A] tracking-tight"><?= $mode === 'edit' ? 'Edit Article' : 'New Article' ?></h1>
@@ -34,7 +32,7 @@ unset($_SESSION['article_message']);
     <?php endif; ?>
 
     <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
-        <form method="POST" action="<?= BASE_URL . htmlspecialchars($formAction) ?>" enctype="multipart/form-data" class="p-6 sm:p-8 space-y-6">
+        <form method="POST" action="<?= BASE_URL . htmlspecialchars($formAction) ?>" enctype="multipart/form-data" class="p-4 sm:p-5 space-y-4">
             <?php if ($mode === 'edit' && $article): ?>
                 <input type="hidden" name="id" value="<?= $article->getId() ?>">
             <?php endif; ?>
@@ -46,7 +44,7 @@ unset($_SESSION['article_message']);
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Content</label>
-                <textarea name="content" rows="12" class="w-full bg-slate-50/60 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 placeholder-slate-300 outline-none focus:border-[#15803D]/30 focus:bg-white focus:ring-4 focus:ring-[#15803D]/5 transition-all resize-none" placeholder="Write your article content here..." required><?= htmlspecialchars($defaultValues['content']) ?></textarea>
+                <textarea name="content" rows="6" class="w-full bg-slate-50/60 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 placeholder-slate-300 outline-none focus:border-[#15803D]/30 focus:bg-white focus:ring-4 focus:ring-[#15803D]/5 transition-all resize-none" placeholder="Write your article content here..." required><?= htmlspecialchars($defaultValues['content']) ?></textarea>
             </div>
 
             <div>
@@ -84,7 +82,7 @@ unset($_SESSION['article_message']);
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="inline-flex items-center gap-2 bg-[#15803D] hover:bg-[#116631] text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-emerald-900/10">
+                <button type="submit" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-emerald-900/10">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>

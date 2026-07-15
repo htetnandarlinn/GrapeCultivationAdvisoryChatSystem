@@ -30,7 +30,9 @@ $componentErrors = $errors;
             <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Edit Profile</h2>
             <p class="text-sm text-slate-500 mt-1">Update your account details.</p>
         </div>
-        <a href="<?= BASE_URL ?>/profile" class="text-slate-400 hover:text-slate-600 transition text-sm font-semibold">&larr; Back to Profile</a>
+        <a href="<?= BASE_URL ?>/profile" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition inline-flex">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+</a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

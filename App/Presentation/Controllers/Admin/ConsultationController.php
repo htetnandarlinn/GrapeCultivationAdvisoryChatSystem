@@ -35,6 +35,11 @@ class ConsultationController
                 $stmt->execute([':cid' => $c->getId()]);
                 $image = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                $stmtAmt = $this->connection->prepare('SELECT amount FROM payments WHERE consultation_id = :cid ORDER BY id DESC LIMIT 1');
+                $stmtAmt->execute([':cid' => $c->getId()]);
+                $amtRow = $stmtAmt->fetch(PDO::FETCH_ASSOC);
+                $amount = $amtRow ? (float) $amtRow['amount'] : 0.0;
+
                 $payments[] = [
                     'id' => $c->getId(),
                     'title' => $c->getTitle(),
@@ -43,6 +48,7 @@ class ConsultationController
                     'expert' => $expert,
                     'farmer_name' => $farmer ? $farmer->getUsername() : 'Unknown',
                     'expert_name' => $expert ? $expert->getUsername() : null,
+                    'amount' => $amount,
                     'paid_at' => $c->getPaidAt(),
                     'expires_at' => $c->getExpiresAt(),
                     'created_at' => $c->getCreatedAt(),
@@ -69,14 +75,14 @@ class ConsultationController
             $s = $p['status'];
             if (in_array($s, ['accepted', 'chat_started', 'completed'], true)) {
                 $paymentCount++;
-                $totalRevenue += 29.99;
+                $totalRevenue += $p['amount'] ?? 0.0;
             } elseif ($s === 'payment_submitted') {
                 $pendingReviewCount++;
             } elseif ($s === 'awaiting_payment') {
                 $awaitingCount++;
             } elseif ($s === 'expired') {
                 $expiredCount++;
-                if ($p['paid_at']) $totalRevenue += 29.99;
+                if ($p['paid_at']) $totalRevenue += $p['amount'] ?? 0.0;
             }
         }
 

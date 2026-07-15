@@ -24,8 +24,8 @@ $paypalEmail = 'payments@grapecultivate.com';
     <div class="w-full max-w-5xl">
         <!-- Header -->
         <div class="flex items-center justify-between mb-5">
-            <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 hover:text-slate-600 transition-colors">
-                <i class="fa-solid fa-arrow-left text-[9px]"></i> Back to Consultations
+            <a href="<?= BASE_URL ?>/consultations" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition inline-flex">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             </a>
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow shadow-emerald-200">
