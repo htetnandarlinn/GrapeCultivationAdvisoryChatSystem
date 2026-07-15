@@ -210,6 +210,35 @@ class ConsultationController
     }
 
     #[Permission('consultations.answer', 'Answer Consultations')]
+    public function farmers(): void
+    {
+        $expertId = (int) ($_SESSION['user']['id'] ?? 0);
+        $consultations = $this->consultationRepository->findByExpert($expertId);
+
+        $farmerIds = [];
+        foreach ($consultations as $c) {
+            $fid = $c->getFarmerId();
+            if (!in_array($fid, $farmerIds)) {
+                $farmerIds[] = $fid;
+            }
+        }
+
+        $farmers = [];
+        foreach ($farmerIds as $fid) {
+            $user = $this->userRepository->findById($fid);
+            if ($user) {
+                $farmers[] = $user;
+            }
+        }
+
+        View::render('expert/farmers', [
+            'activePage' => 'expert-consultations',
+            'farmers' => $farmers,
+            'consultations' => $consultations,
+        ]);
+    }
+
+    #[Permission('consultations.answer', 'Answer Consultations')]
     public function hub(): void
     {
         $expertId = (int) ($_SESSION['user']['id'] ?? 0);

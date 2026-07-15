@@ -1,170 +1,186 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<style>
+    .inv-page { max-width: 700px; margin: 0 auto; }
+    .inv-back { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #94a3b8; text-decoration: none; transition: color 0.15s; }
+    .inv-back:hover { color: #475569; }
+    .inv-dl { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; border-radius: 8px; text-decoration: none; transition: background 0.15s; }
+    .inv-dl:hover { background: #047857; }
+    .inv-card { border: 1.5px solid #cbd5e1; }
+    .inv-inner { padding: 28px 32px 20px 32px; }
+    .inv-logo-cell { text-align: left; }
+    .inv-logo-img { max-width: 44px; max-height: 44px; }
+    .inv-cname { font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 1px 0; }
+    .inv-ctag { font-size: 8px; color: #94a3b8; margin: 0; }
+    .inv-cinfo { font-size: 7.5px; color: #94a3b8; margin: 4px 0 0 0; line-height: 1.7; }
+    .inv-title { font-size: 20px; font-weight: 900; color: #1e293b; letter-spacing: 2px; margin: 0; }
+    .inv-no-lbl { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+    .inv-no-val { font-size: 10px; font-weight: 700; color: #1e293b; }
+    .inv-sep { border: none; border-top: 1.5px solid #e2e8f0; margin: 14px 0; }
+    .inv-label { font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 1px; }
+    .inv-value { font-size: 10px; font-weight: 600; color: #1e293b; }
+    .inv-value-mono { font-size: 7px; font-weight: 600; color: #1e293b; font-family: 'Courier New', monospace; word-wrap: break-word; }
+    .inv-badge { display: inline-block; padding: 1px 10px; font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    .inv-badge-paid { background: #d1fae5; color: #065f46; }
+    .inv-badge-pending { background: #fef3c7; color: #92400e; }
+    .inv-badge-refunded { background: #fce7f3; color: #9d174d; }
+    .inv-badge-rejected { background: #fee2e2; color: #991b1b; }
+    .inv-th { font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; padding: 5px 8px; border-bottom: 1.5px solid #cbd5e1; text-align: left; }
+    .inv-th-ar { text-align: right; }
+    .inv-th-ac { text-align: center; }
+    .inv-td { padding: 6px 8px; font-size: 9.5px; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .inv-td-ar { text-align: right; font-weight: 600; }
+    .inv-td-ac { text-align: center; }
+    .inv-tbl-end tr:last-child td { border-bottom: 1.5px solid #cbd5e1; }
+    .inv-tot-lbl { text-align: right; color: #64748b; padding: 2px 8px; font-size: 9.5px; }
+    .inv-tot-val { text-align: right; font-weight: 600; color: #334155; padding: 2px 8px; font-size: 9.5px; }
+    .inv-tot-gt-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; color: #1e293b; }
+    .inv-tot-gt-val { font-size: 14px; font-weight: 900; color: #1e293b; }
+    .inv-tot-line { border-top: 2px solid #1e293b; margin: 2px 8px 2px auto; width: 20%; }
+    .inv-footer { text-align: center; padding: 14px 0 4px 0; }
+    .inv-footer .thanks { font-size: 11px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; }
+    .inv-footer .sub { font-size: 9px; color: #94a3b8; margin: 0; line-height: 1.6; }
+    .inv-footer .small { font-size: 8px; color: #cbd5e1; margin: 6px 0 0 0; }
+    .inv-bar { text-align: center; padding: 8px 32px; border-top: 1.5px solid #e2e8f0; background: #f8fafc; font-size: 7px; color: #94a3b8; }
+</style>
 
-    <div class="flex items-center justify-between mb-5">
+<section class="inv-page">
+    <div class="d-flex align-items-center justify-content-between mb-3" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <?php $backUrl = ($_SESSION['user_role'] ?? '') === 'admin' ? '/admin/payments' : '/payment/history'; ?>
-        <a href="<?= BASE_URL . $backUrl ?>" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">
-            <i class="fa-solid fa-arrow-left"></i> Back
+        <a href="<?= BASE_URL . $backUrl ?>" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition inline-flex">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
-        <a href="<?= BASE_URL ?>/invoice/download?consultation_id=<?= $consultationId ?>"
-           class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
-            <i class="fa-regular fa-file-pdf"></i> Download PDF
-        </a>
+        <a href="<?= BASE_URL ?>/invoice/download?consultation_id=<?= $consultationId ?>" class="inv-dl"><i class="fa-regular fa-file-pdf"></i> Download PDF</a>
     </div>
 
     <?php if (!empty($error)): ?>
-    <div class="mb-5 p-3.5 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2">
-        <i class="fa-solid fa-circle-exclamation text-red-500"></i> <?= htmlspecialchars($error) ?>
+    <div class="mb-3" style="margin-bottom:12px;padding:10px 14px;border-radius:6px;background:#fef2f2;border:1px solid #fecaca;font-size:11px;font-weight:600;color:#dc2626;display:flex;align-items:center;gap:6px;">
+        <i class="fa-solid fa-circle-exclamation" style="color:#ef4444;"></i> <?= htmlspecialchars($error) ?>
     </div>
     <?php endif; ?>
 
     <?php if (!empty($invoice)): ?>
-    <!-- Invoice Document -->
-    <div class="bg-white rounded-lg border border-slate-300 shadow-sm">
-
-        <!-- Header with Logo -->
-        <div class="px-9 pt-9 pb-5">
-            <div class="flex items-start justify-between">
-                <div class="flex items-center gap-4">
-                    <img src="<?= BASE_URL ?>/assets/images/logo.png" alt="Logo" class="w-12 h-12 object-contain" />
-                    <div>
-                        <h2 class="text-base font-bold text-slate-800">Grape Cultivation Advisory Chat System</h2>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Consultation Services</p>
-                        <div class="mt-2.5 text-[9px] text-slate-400 leading-relaxed">
-                            <p>support@grapeadvisory.com &bull; +95 9 123456789</p>
-                            <p>Dept of Information Technology, Your University, Myanmar</p>
+    <?php
+        $statusClass = 'inv-badge-' . strtolower($invoice['status']);
+        $genDate = date('d M Y');
+    ?>
+    <div class="inv-card" style="background:#fff;">
+        <div class="inv-inner">
+            <!-- Header with Logo -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td class="inv-logo-cell" width="65%" style="vertical-align:top;">
+                        <table cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="padding-right:10px;vertical-align:middle;">
+                                    <img class="inv-logo-img" src="<?= BASE_URL ?>/assets/images/logo.png" alt="" />
+                                </td>
+                                <td style="vertical-align:middle;">
+                                    <p class="inv-cname">Grape Cultivation Advisory Chat System</p>
+                                    <p class="inv-ctag">Consultation Services</p>
+                                    <p class="inv-cinfo">support@grapeadvisory.com &bull; +95 9 123456789</p>
+                                    <p class="inv-cinfo">Dept of Information Technology, Your University, Myanmar</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td width="35%" style="text-align:right;vertical-align:top;">
+                        <p class="inv-title">INVOICE</p>
+                        <div style="margin-top:3px;">
+                            <span class="inv-no-lbl">Invoice No: </span>
+                            <span class="inv-no-val"><?= htmlspecialchars($invoice['invoiceNo']) ?></span>
                         </div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-xl font-black text-slate-800 tracking-[2px]">INVOICE</p>
-                    <div class="mt-1.5 flex items-baseline justify-end gap-2 text-[11px]">
-                        <span class="text-[9px] font-semibold text-slate-400 uppercase">Invoice No:</span>
-                        <span class="font-bold text-slate-700"><?= htmlspecialchars($invoice['invoiceNo']) ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </td>
+                </tr>
+            </table>
 
-        <hr class="border-slate-200 mx-9">
+            <hr class="inv-sep" />
 
-        <!-- Info Grid -->
-        <div class="px-9 py-5">
-            <div class="grid grid-cols-4 gap-5 gap-y-3 text-xs">
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultation No.</p>
-                    <p class="font-bold text-slate-800">#<?= $invoice['consultationId'] ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Farmer</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['farmerName']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Expert</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['expertName']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultation Topic</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['consultationTitle']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payment Method</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['paymentMethod']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Transaction Reference</p>
-                    <p class="font-semibold text-slate-800 font-mono text-[7px] break-all leading-relaxed"><?= htmlspecialchars($invoice['transactionRef']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payment Date</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['paymentDate']) ?></p>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
-                    <?php
-                        $scMap = [
-                            'Paid' => 'bg-emerald-100 text-emerald-700',
-                            'Pending' => 'bg-amber-100 text-amber-700',
-                            'Refunded' => 'bg-pink-100 text-pink-700',
-                            'Rejected' => 'bg-red-100 text-red-700',
-                        ];
-                        $sc = $scMap[$invoice['status']] ?? 'bg-slate-100 text-slate-600';
-                    ?>
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase <?= $sc ?>"><?= htmlspecialchars($invoice['status']) ?></span>
-                </div>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Generated By</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['generatedBy']) ?></p>
-                </div>
-                <?php if (!empty($invoice['refundStatus']) && $invoice['refundStatus'] === 'REFUNDED'): ?>
-                <div class="col-span-1">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Refund Date</p>
-                    <p class="font-semibold text-slate-800"><?= htmlspecialchars($invoice['refundDate'] ?? '') ?></p>
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
+            <!-- Info Grid (3 columns) -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td width="33%" style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Consultation No.</div><div class="inv-value">#<?= htmlspecialchars($invoice['consultationId']) ?></div></td>
+                    <td width="33%" style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Farmer</div><div class="inv-value"><?= htmlspecialchars($invoice['farmerName']) ?></div></td>
+                    <td width="33%" style="vertical-align:top;padding:4px 0;"><div class="inv-label">Expert</div><div class="inv-value"><?= htmlspecialchars($invoice['expertName']) ?></div></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Consultation Topic</div><div class="inv-value"><?= htmlspecialchars($invoice['consultationTitle']) ?></div></td>
+                    <td style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Payment Method</div><div class="inv-value"><?= htmlspecialchars($invoice['paymentMethod']) ?></div></td>
+                    <td style="vertical-align:top;padding:4px 0;"><div class="inv-label">Transaction Reference</div><div class="inv-value-mono"><?= htmlspecialchars($invoice['transactionRef']) ?></div></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Payment Date</div><div class="inv-value"><?= htmlspecialchars($invoice['paymentDate']) ?></div></td>
+                    <td style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Status</div><div class="inv-value"><span class="inv-badge <?= $statusClass ?>"><?= htmlspecialchars($invoice['status']) ?></span></div></td>
+                    <td style="vertical-align:top;padding:4px 0;"><div class="inv-label">Generated By</div><div class="inv-value"><?= htmlspecialchars($invoice['generatedBy']) ?></div></td>
+                </tr>
+                <tr>
+                    <?php if (!empty($invoice['refundStatus']) && $invoice['refundStatus'] === 'REFUNDED'): ?>
+                    <td style="vertical-align:top;padding:4px 16px 4px 0;"><div class="inv-label">Refund Date</div><div class="inv-value"><?= htmlspecialchars($invoice['refundDate'] ?? '') ?></div></td>
+                    <td></td>
+                    <?php else: ?>
+                    <td></td>
+                    <td></td>
+                    <?php endif; ?>
+                    <td></td>
+                </tr>
+            </table>
 
-        <hr class="border-slate-200 mx-9">
+            <hr class="inv-sep" />
 
-        <!-- Items -->
-        <div class="px-9 py-5">
-            <table class="w-full text-[11px]">
+            <!-- Items Table -->
+            <table width="100%" cellpadding="0" cellspacing="0" class="inv-tbl-end">
                 <thead>
-                    <tr class="border-b border-slate-300">
-                        <th class="text-left pb-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[60%]">Description</th>
-                        <th class="text-left pb-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[20%]">Type</th>
-                        <th class="text-center pb-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[10%]">Qty</th>
-                        <th class="text-right pb-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[10%]">Amount</th>
+                    <tr>
+                        <th width="55%" class="inv-th">Description</th>
+                        <th width="20%" class="inv-th inv-th-ac">Type</th>
+                        <th width="10%" class="inv-th inv-th-ac">Qty</th>
+                        <th width="15%" class="inv-th inv-th-ar">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="py-3 text-slate-700">Consultation Service — <?= htmlspecialchars($invoice['consultationTitle'])?></td>
-                        <td class="py-3 text-slate-500">Advisory</td>
-                        <td class="py-3 text-center text-slate-700 font-semibold">1</td>
-                        <td class="py-3 text-right font-semibold text-slate-700">$<?= htmlspecialchars($invoice['formattedAmount']) ?></td>
+                        <td class="inv-td">Consultation Service &mdash; <?= htmlspecialchars($invoice['consultationTitle']) ?></td>
+                        <td class="inv-td inv-td-ac">Advisory</td>
+                        <td class="inv-td inv-td-ac">1</td>
+                        <td class="inv-td inv-td-ar">$ <?= htmlspecialchars($invoice['formattedAmount']) ?></td>
                     </tr>
                     <tr>
-                        <td class="py-3 text-slate-700 border-t border-slate-100">Platform fee &amp; expert matching</td>
-                        <td class="py-3 text-slate-500 border-t border-slate-100">Service</td>
-                        <td class="py-3 text-center text-slate-700 font-semibold border-t border-slate-100">1</td>
-                        <td class="py-3 text-right font-semibold text-slate-700 border-t border-slate-100">$0.00</td>
+                        <td class="inv-td">Platform fee &amp; expert matching</td>
+                        <td class="inv-td inv-td-ac">Service</td>
+                        <td class="inv-td inv-td-ac">1</td>
+                        <td class="inv-td inv-td-ar">$0.00</td>
                     </tr>
                 </tbody>
             </table>
-        </div>
 
-        <!-- Totals -->
-        <div class="px-9 pb-5">
-            <div class="ml-auto w-56">
-                <div class="flex justify-between py-1 text-[11px] text-slate-500">
-                    <span>Subtotal</span>
-                    <span class="font-semibold text-slate-700">$<?= htmlspecialchars($invoice['formattedAmount']) ?></span>
-                </div>
-                <div class="flex justify-between py-1 text-[11px] text-slate-500">
-                    <span>Tax (0%)</span>
-                    <span class="font-semibold text-slate-700">$0.00</span>
-                </div>
-                <div class="border-t border-slate-300 my-1.5"></div>
-                <div class="flex justify-between pt-1">
-                    <span class="text-xs font-bold text-slate-800">Total</span>
-                    <span class="text-sm font-bold text-slate-800">$<?= htmlspecialchars($invoice['formattedAmount']) ?></span>
-                </div>
+            <!-- Totals -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td class="inv-tot-lbl" style="width:80%;">Subtotal</td>
+                    <td class="inv-tot-val" style="width:20%;">$ <?= htmlspecialchars($invoice['formattedAmount']) ?></td>
+                </tr>
+                <tr>
+                    <td class="inv-tot-lbl">Tax (0%)</td>
+                    <td class="inv-tot-val">$0.00</td>
+                </tr>
+                <tr><td colspan="2"><div class="inv-tot-line"></div></td></tr>
+                <tr>
+                    <td class="inv-tot-lbl inv-tot-gt-lbl">Total</td>
+                    <td class="inv-tot-val inv-tot-gt-val">$ <?= htmlspecialchars($invoice['formattedAmount']) ?></td>
+                </tr>
+            </table>
+
+            <hr class="inv-sep" />
+
+            <!-- Footer Message -->
+            <div class="inv-footer">
+                <p class="thanks">Thank you for using the<br/>Grape Cultivation Advisory Chat System.</p>
+                <p class="sub">This invoice serves as official proof of payment<br/>for your consultation service.</p>
+                <p class="small">Generated electronically. No signature is required.</p>
             </div>
         </div>
 
-        <hr class="border-slate-200 mx-9">
-
-        <!-- Footer Message -->
-        <div class="px-9 py-6 text-center">
-            <p class="text-xs font-semibold text-slate-700">Thank you for using the<br/>Grape Cultivation Advisory Chat System.</p>
-            <p class="text-[10px] text-slate-400 mt-2 leading-relaxed">This invoice serves as official proof of payment<br/>for your consultation service.</p>
-            <p class="text-[9px] text-slate-300 mt-3">Generated electronically. No signature is required.</p>
-        </div>
-
-        <div class="bg-slate-50 border-t border-slate-200 px-9 py-3 text-center text-[9px] text-slate-400">
-            <?= htmlspecialchars($invoice['invoiceNo']) ?> &bull; Generated <?= htmlspecialchars($invoice['generatedDate']) ?>
+        <div class="inv-bar">
+            <?= htmlspecialchars($invoice['invoiceNo']) ?> &bull; Generated <?= $genDate ?>
         </div>
     </div>
     <?php endif; ?>

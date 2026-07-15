@@ -19,6 +19,7 @@ class DashboardController
         private ?ArticleRepositoryInterface $articleRepository = null,
         private ?NotificationRepositoryInterface $notificationRepository = null,
         private ?NotificationService $notificationService = null,
+        private ?\PDO $connection = null,
     ) {}
 
     public function home(): void
@@ -144,13 +145,24 @@ class DashboardController
                 $expiredCount = 0;
                 $totalRevenue = 0;
                 $refundedCount = 0;
+
+                $paymentAmounts = [];
+                if ($this->connection) {
+                    $amtRows = $this->connection->query("SELECT consultation_id, amount FROM payments WHERE payment_status = 'PAID'")->fetchAll(\PDO::FETCH_ASSOC);
+                    foreach ($amtRows as $ar) {
+                        $paymentAmounts[(int) $ar['consultation_id']] = (float) $ar['amount'];
+                    }
+                }
+
                 foreach ($allConsultations as $c) {
                     $s = $c->getStatus()->getValue();
                     if ($s === 'awaiting_payment') $awaitingPayment++;
                     if ($s === 'payment_submitted') $pendingReview++;
                     if ($s === 'expired') $expiredCount++;
                     if ($c->getRefundStatus() === 'refunded') $refundedCount++;
-                    if (in_array($s, ['accepted', 'chat_started', 'completed'], true) || ($s === 'expired' && $c->getPaidAt())) $totalRevenue += 29.99;
+                    if (isset($paymentAmounts[$c->getId()])) {
+                        $totalRevenue += $paymentAmounts[$c->getId()];
+                    }
                 }
                 $data['adminAwaitingPayment'] = $awaitingPayment;
                 $data['adminPendingReview'] = $pendingReview;
@@ -162,9 +174,8 @@ class DashboardController
                 $expertIncome = [];
                 foreach ($allConsultations as $c) {
                     $eid = $c->getExpertId();
-                    $s = $c->getStatus()->getValue();
-                    if ($eid && in_array($s, ['accepted', 'chat_started', 'completed'], true)) {
-                        $expertIncome[$eid] = ($expertIncome[$eid] ?? 0) + 29.99;
+                    if ($eid && isset($paymentAmounts[$c->getId()])) {
+                        $expertIncome[$eid] = ($expertIncome[$eid] ?? 0) + $paymentAmounts[$c->getId()];
                     }
                 }
                 arsort($expertIncome);

@@ -2,10 +2,15 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header with filter tabs -->
     <div class="mb-8">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <div>
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Consultation Management</h2>
-                <p class="text-xs text-slate-500 mt-1">Manage and assign farmer consultations to experts.</p>
+        <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <a href="<?= BASE_URL ?>/dashboard" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Consultation Management</h2>
+                    <p class="text-xs text-slate-500 mt-1">Manage and assign farmer consultations to experts.</p>
+                </div>
             </div>
             <a href="<?= BASE_URL ?>/admin/payments" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
                 <i class="fa-solid fa-credit-card text-[10px]"></i> View Payments
@@ -32,7 +37,7 @@
         </div>
     <?php else: ?>
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div class="max-h-[550px] overflow-y-auto">
+            <div class="max-h-[470px] overflow-y-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">

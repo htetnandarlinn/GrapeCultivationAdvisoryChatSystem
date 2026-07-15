@@ -131,14 +131,14 @@ class ProfileController
         $userRole = $_SESSION['user_role'] ?? '';
         $username = $_SESSION['user']['username'] ?? 'A user';
         if ($userRole === 'farmer') {
-            $this->notificationService->notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update');
-            $this->notificationService->notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update', '/notifications');
+            $this->notificationService->notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update', '/notifications');
         } elseif ($userRole === 'expert') {
-            $this->notificationService->notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update');
-            $this->notificationService->notifyAllByRole('farmer', "Expert {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
+            $this->notificationService->notifyAllByRole('farmer', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
         } elseif ($userRole === 'admin') {
-            $this->notificationService->notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update');
-            $this->notificationService->notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update');
+            $this->notificationService->notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update', '/notifications');
+            $this->notificationService->notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update', '/notifications');
         }
 
         $updatedUser = $this->repository->findById($_SESSION['user_id']);

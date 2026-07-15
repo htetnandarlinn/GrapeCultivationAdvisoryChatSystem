@@ -105,6 +105,7 @@ $router->post('/expert/articles/delete', [ArticleController::class, 'delete'])->
 $router->get('/expert/articles/view', [ArticleController::class, 'view'])->role(['expert', 'admin'])->can('articles.view');
 $router->post('/expert/articles/accept', [ArticleController::class, 'accept'])->role(['expert', 'admin'])->can('articles.edit');
 $router->post('/expert/articles/reject', [ArticleController::class, 'reject'])->role(['expert', 'admin'])->can('articles.edit');
+$router->get('/expert/article-images', [ArticleController::class, 'images'])->role('expert')->can('articles.view');
 
 /* ================= EXPERT: CONSULTATIONS ================= */
 
@@ -114,6 +115,7 @@ $router->post('/expert/consultations/accept', [ExpertConsultationController::cla
 $router->post('/expert/consultations/reject', [ExpertConsultationController::class, 'reject'])->role('expert')->can('consultations.answer');
 $router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat'])->role('expert')->can('consultations.answer');
 $router->get('/expert/consultations/hub', [ExpertConsultationController::class, 'hub'])->role('expert')->can('consultations.answer');
+$router->get('/expert/farmers', [ExpertConsultationController::class, 'farmers'])->role('expert')->can('consultations.answer');
 
 /* ================= FARMER: CONSULTATIONS ================= */
 

@@ -18,7 +18,7 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-12">Status</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-24">Status</th>
                         <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Message</th>
                         <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-28">Date</th>
                     </tr>
@@ -29,8 +29,8 @@
                     <tbody>
                         <?php foreach ($notifications as $notif): ?>
                         <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors <?= !$notif->isRead() ? 'bg-emerald-50/30' : '' ?>">
-                            <td class="px-4 py-3 w-12">
-                                <span class="w-2.5 h-2.5 rounded-full block <?= !$notif->isRead() ? 'bg-emerald-500' : 'bg-slate-200' ?>"></span>
+                            <td class="px-4 py-3 w-24">
+                                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase <?= !$notif->isRead() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' ?>"><?= !$notif->isRead() ? 'Unread' : 'Read' ?></span>
                             </td>
                             <td class="px-4 py-3">
                                 <a href="<?= $notif->getLink() ? BASE_URL . $notif->getLink() : '#' ?>" class="flex items-center gap-3 group">

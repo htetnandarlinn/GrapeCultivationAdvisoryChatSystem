@@ -128,7 +128,7 @@ class InvoiceController
             };
         }
 
-        $amount = 29.99;
+        $amount = $payment && !empty($payment['amount']) ? (float) $payment['amount'] : 29.99;
 
         $refundStatus = null;
         $refundDate = null;

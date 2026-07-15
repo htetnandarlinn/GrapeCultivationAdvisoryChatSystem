@@ -160,7 +160,7 @@ function fetchNotifList() {
             }
             markAllBtn.classList.remove('hidden');
             notifList.innerHTML = notifs.map(n => `
-                <a href="${BASE}${n.link || '#'}" data-id="${n.id}" class="notif-item flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition border-b border-slate-50 last:border-0 ${n.is_read ? '' : 'bg-emerald-50/40'}">
+                <a href="${BASE}${n.link || '/notifications'}" data-id="${n.id}" class="notif-item flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition border-b border-slate-50 last:border-0 ${n.is_read ? '' : 'bg-emerald-50/40'}">
                     <div class="w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.is_read ? 'bg-slate-200' : 'bg-emerald-500'}"></div>
                     <div class="min-w-0 flex-1">
                         <p class="text-xs text-slate-700 leading-relaxed ${n.is_read ? 'font-normal' : 'font-semibold'}">${escapeHtml(n.message)}</p>

@@ -2,9 +2,14 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
-        <div>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Payment Management</h2>
-            <p class="text-xs text-slate-500 mt-1">Manage consultation payments, review receipts, and process transactions.</p>
+        <div class="flex items-center gap-3">
+            <a href="<?= BASE_URL ?>/dashboard" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            </a>
+            <div>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Payment Management</h2>
+                <p class="text-xs text-slate-500 mt-1">Manage consultation payments, review receipts, and process transactions.</p>
+            </div>
         </div>
         <div class="flex items-center gap-3 text-xs text-slate-400">
             <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live</span>
@@ -27,54 +32,6 @@
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Revenue</p>
-                <p class="text-2xl font-black text-emerald-600 mt-1">$<?= isset($totalRevenue) && is_numeric($totalRevenue) ? number_format($totalRevenue, 2) : '0.00' ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-dollar-sign text-lg"></i>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Paid</p>
-                <p class="text-2xl font-black text-slate-900 mt-1"><?= isset($paymentCount) && is_numeric($paymentCount) ? number_format($paymentCount) : '0' ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-circle-check text-lg"></i>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending Review</p>
-                <p class="text-2xl font-black text-amber-600 mt-1"><?= isset($pendingReviewCount) && is_numeric($pendingReviewCount) ? number_format($pendingReviewCount) : '0' ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-hourglass-half text-lg"></i>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Awaiting Payment</p>
-                <p class="text-2xl font-black text-violet-600 mt-1"><?= isset($awaitingCount) && is_numeric($awaitingCount) ? number_format($awaitingCount) : '0' ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-500 group-hover:bg-violet-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-clock text-lg"></i>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Expired</p>
-                <p class="text-2xl font-black text-red-600 mt-1"><?= isset($expiredCount) && is_numeric($expiredCount) ? number_format($expiredCount) : '0' ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-red-50 text-red-500 group-hover:bg-red-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-clock text-lg"></i>
-            </div>
-        </div>
-    </div>
 
     <!-- Filters -->
     <div class="flex items-center gap-3 mb-4">
@@ -96,7 +53,7 @@
         </div>
     <?php else: ?>
         <div class="bg-white rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="max-h-[470px] overflow-y-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
@@ -181,7 +138,7 @@
                                 <?php endif; ?>
                             </td>
                             <td class="px-5 py-4 text-right">
-                                <span class="text-sm font-bold text-slate-900">$29.99</span>
+                                <span class="text-sm font-bold text-slate-900">$<?= number_format($p['amount'] ?? 0, 2) ?></span>
                             </td>
                             <td class="px-5 py-4 text-xs text-slate-500">
                                 <?php if ($p['paid_at']): ?>
@@ -213,7 +170,7 @@
                             </td>
                             <td class="px-5 py-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <a href="<?= BASE_URL ?>/admin/consultations/view?id=<?= $p['id'] ?>" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Details">
+                                    <a href="<?= BASE_URL ?>/admin/consultations/view?id=<?= $p['id'] ?>&from=payments" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Details">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     </a>
                                     <?php if ($p['status'] === 'awaiting_payment' && $p['transaction_image']): ?>
@@ -241,7 +198,7 @@
                                         <div class="space-y-1.5 text-[10px] text-slate-500 mb-3">
                                             <p><span class="font-semibold text-slate-700">Farmer:</span> <?= htmlspecialchars($p['farmer_name']) ?></p>
                                             <p><span class="font-semibold text-slate-700">Method:</span> <?= ucfirst($p['payment_method'] ?? '—') ?></p>
-                                            <p><span class="font-semibold text-slate-700">Amount:</span> $29.99</p>
+                                            <p><span class="font-semibold text-slate-700">Amount:</span> $<?= number_format($p['amount'] ?? 0, 2) ?></p>
                                             <p><span class="font-semibold text-slate-700">Submitted:</span> <?= $p['created_at']->format('M d, Y g:i A') ?></p>
                                         </div>
                                         <?php if (in_array($p['status'], ['payment_submitted', 'awaiting_payment'])): ?>

@@ -60,7 +60,12 @@ foreach ($consultations as $c) {
         <aside class="w-full md:w-[360px] border-r border-slate-100 flex flex-col shrink-0 bg-white">
             <div class="p-4 border-b border-slate-100/80">
                 <div class="flex items-center justify-between gap-3 mb-4">
-                    <h2 class="text-lg font-black text-slate-800 tracking-tight">Farmer Consultations</h2>
+                    <div class="flex items-center gap-2">
+                        <a href="<?= BASE_URL ?>/dashboard" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        </a>
+                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Farmer Consultations</h2>
+                    </div>
                 </div>
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>

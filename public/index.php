@@ -141,6 +141,7 @@ if ($baseUrl && str_starts_with($requestUri, $baseUrl)) {
 // Remove query string
 $requestUri = parse_url($requestUri, PHP_URL_PATH);
 
+
 /*
 |--------------------------------------------------------------------------
 | ROUTER
