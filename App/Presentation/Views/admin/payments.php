@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Payments</h2>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Payment Management</h2>
             <p class="text-xs text-slate-500 mt-1">Manage consultation payments, review receipts, and process transactions.</p>
         </div>
         <div class="flex items-center gap-3 text-xs text-slate-400">
             <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live</span>
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-database text-slate-300"></i> <?= count($payments) ?> records</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-database text-slate-300"></i> <?= isset($payments) ? count($payments) : 0 ?> records</span>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending Review</p>
-                <p class="text-2xl font-black text-amber-600 mt-1"><?= $pendingReviewCount ?></p>
+                <p class="text-2xl font-black text-amber-600 mt-1"><?= isset($pendingReviewCount) && is_numeric($pendingReviewCount) ? number_format($pendingReviewCount) : '0' ?></p>
             </div>
             <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
                 <i class="fa-solid fa-hourglass-half text-lg"></i>
@@ -59,7 +59,7 @@
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Awaiting Payment</p>
-                <p class="text-2xl font-black text-violet-600 mt-1"><?= $awaitingCount ?></p>
+                <p class="text-2xl font-black text-violet-600 mt-1"><?= isset($awaitingCount) && is_numeric($awaitingCount) ? number_format($awaitingCount) : '0' ?></p>
             </div>
             <div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-500 group-hover:bg-violet-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
                 <i class="fa-solid fa-clock text-lg"></i>
@@ -68,7 +68,7 @@
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Expired</p>
-                <p class="text-2xl font-black text-red-600 mt-1"><?= $expiredCount ?></p>
+                <p class="text-2xl font-black text-red-600 mt-1"><?= isset($expiredCount) && is_numeric($expiredCount) ? number_format($expiredCount) : '0' ?></p>
             </div>
             <div class="w-11 h-11 rounded-xl bg-red-50 text-red-500 group-hover:bg-red-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
                 <i class="fa-solid fa-clock text-lg"></i>
@@ -343,6 +343,15 @@ document.getElementById('receipt-modal')?.addEventListener('click', function(e) 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
 });
+
+// Refund
+function openRefund(id) {
+    const row = document.getElementById('receipt-row-' + id);
+    const allRows = document.querySelectorAll('.receipt-row');
+    allRows.forEach(r => { if (r.id !== 'receipt-row-' + id) r.classList.add('hidden'); });
+    row.classList.remove('hidden');
+    setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+}
 
 // Filter
 document.querySelectorAll('.filter-btn').forEach(btn => {

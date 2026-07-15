@@ -9,10 +9,9 @@ $options->set('defaultFont', 'DejaVu Sans');
 
 $dompdf = new Dompdf($options);
 
-$gdEnabled = extension_loaded('gd');
 $logoPath = __DIR__ . '/../../../../public/assets/images/logo.png';
 $logoBase64 = '';
-if ($gdEnabled && file_exists($logoPath)) {
+if (file_exists($logoPath)) {
     $imageData = base64_encode(file_get_contents($logoPath));
     $logoBase64 = 'data:image/png;base64,' . $imageData;
 }
@@ -238,7 +237,7 @@ $html = <<<HTML
                     <tr>
                         <td style="padding-right: 10px; vertical-align: middle;">
 HTML;
-if ($gdEnabled && $logoBase64):
+if ($logoBase64):
 $html .= <<<HTML
                             <img class="logo-img" src="{$logoBase64}" alt="" />
 HTML;

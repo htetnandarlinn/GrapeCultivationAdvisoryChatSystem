@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Asia/Yangon');
+
 if (!defined('BASE_URL')) {
     $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
     define('BASE_URL', rtrim($scriptDir, '/') === '/' ? '' : rtrim($scriptDir, '/'));

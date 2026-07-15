@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+date_default_timezone_set('Asia/Yangon');
+
 use App\Infrastructure\WebSocket\ChatServer;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;

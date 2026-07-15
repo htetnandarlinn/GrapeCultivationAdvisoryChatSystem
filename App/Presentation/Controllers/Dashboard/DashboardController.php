@@ -81,7 +81,7 @@ class DashboardController
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
-        }
+        } 
 
         $role = $_SESSION['user_role'] ?? '';
         $userId = (int) ($_SESSION['user']['id'] ?? 0);
@@ -90,7 +90,12 @@ class DashboardController
             redirect('/login');
             return;
         }
+        $userdata  = $this->userRepository->findById($userId);
 
+       if($userdata->getType()->getValue() == "farmer"){
+
+          redirect('/');
+       }
         $data = ['activePage' => 'dashboard'];
 
         if ($this->userRepository) {
