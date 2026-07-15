@@ -63,7 +63,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
 .wave-hand { display: inline-block; animation: wave 1.5s ease-in-out infinite; transform-origin: 70% 70%; }
 </style>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Farmers</p>
@@ -112,63 +112,16 @@ $username = $_SESSION['user']['username'] ?? 'User';
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
             </div>
         </div>
-    </div>
-
-    <?php if ($userRole === 'admin'): ?>
-    <!-- Payment Stats Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Revenue</p>
-                <p class="text-2xl font-black text-emerald-600 mt-1">$<?= number_format($adminTotalRevenue ?? 0, 2) ?></p>
+                <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Total Revenue</p>
+                <p class="text-3xl font-black text-emerald-600 mt-1.5">$<?= number_format($adminTotalRevenue ?? 0, 2) ?></p>
             </div>
             <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending Review</p>
-                <p class="text-2xl font-black text-amber-600 mt-1"><?= $adminPendingReview ?? 0 ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-hourglass-half text-lg"></i>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Awaiting Payment</p>
-                <p class="text-2xl font-black text-violet-600 mt-1"><?= $adminAwaitingPayment ?? 0 ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-500 group-hover:bg-violet-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
-            </div>
-        </div>
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Refunded</p>
-                <p class="text-2xl font-black text-rose-600 mt-1"><?= $adminRefundedPayments ?? 0 ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 group-hover:bg-rose-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-rotate-left text-lg"></i>
-            </div>
-        </div>
     </div>
-    <!-- Top Expert Row -->
-    <?php if (($adminTopExpertIncome ?? 0) > 0): ?>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div class="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Top Expert Income</p>
-                <p class="text-2xl font-black text-slate-900 mt-1">$<?= number_format($adminTopExpertIncome, 2) ?></p>
-            </div>
-            <div class="w-11 h-11 rounded-xl bg-yellow-50 text-yellow-500 group-hover:bg-yellow-100 group-hover:scale-105 transition-all duration-200 flex items-center justify-center">
-                <i class="fa-solid fa-trophy text-lg"></i>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-    <?php endif; ?>
 
     <?php if ($userRole === 'expert'): ?>
 

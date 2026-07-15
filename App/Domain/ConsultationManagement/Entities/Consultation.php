@@ -186,6 +186,11 @@ final class Consultation
         return $this->updatedAt;
     }
 
+    public function isExpired(): bool
+    {
+        return $this->expiresAt !== null && $this->expiresAt <= new \DateTimeImmutable();
+    }
+
     public function assignExpert(int $expertId): void
     {
         $this->expertId = $expertId;

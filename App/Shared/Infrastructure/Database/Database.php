@@ -37,6 +37,9 @@ final class Database
                     ]
                 );
 
+                date_default_timezone_set('Asia/Yangon');
+                $this->connection->exec("SET time_zone = '+06:30'");
+
             } catch (PDOException $exception) {
 
                 throw new PDOException(

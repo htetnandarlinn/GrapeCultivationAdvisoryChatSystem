@@ -7,7 +7,6 @@ use App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentHandler;
 use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
-use App\Presentation\Attributes\Permission;
 use App\Presentation\Views\View;
 use App\Shared\Exceptions\PaymentException;
 
@@ -30,6 +29,7 @@ class ConsultationPaymentController
 
     public function showPayment(): void
     {
+        
         $id = (int) ($_GET['id'] ?? 0);
         $consultation = $this->consultationRepository->findById($id);
 
@@ -62,10 +62,12 @@ class ConsultationPaymentController
 
     public function processPayment(): void
     {
+        
         $id = (int) ($_POST['consultation_id'] ?? 0);
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
         $idempotencyKey = trim($_POST['idempotency_key'] ?? '');
         $paymentMethod = trim($_POST['payment_method'] ?? '');
+        
 
         if (!$id || !$idempotencyKey) {
             $_SESSION['error'] = 'Invalid payment request.';

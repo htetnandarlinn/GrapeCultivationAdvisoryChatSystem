@@ -6,6 +6,8 @@ require BASE_PATH . '/vendor/autoload.php';
 
 session_start();
 
+date_default_timezone_set('Asia/Yangon');
+
 /*
 |--------------------------------------------------------------------------
 | RELOAD PERMISSIONS (so assigned permissions take effect immediately)

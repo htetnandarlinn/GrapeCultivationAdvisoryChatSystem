@@ -114,7 +114,10 @@ class InvoiceController
         }
 
         $paymentStatus = 'Pending';
-        if ($payment) {
+        $consultationStatus = $consultation->getStatus()->getValue();
+        if (in_array($consultationStatus, ['accepted', 'chat_started', 'completed'], true)) {
+            $paymentStatus = 'Paid';
+        } elseif ($payment) {
             $ps = $payment['payment_status'] ?? '';
             $paymentStatus = match ($ps) {
                 'PAID', 'SUBMITTED' => 'Paid',
@@ -127,10 +130,20 @@ class InvoiceController
 
         $amount = 29.99;
 
-        $refundStatus = $payment['refund_status'] ?? null;
+        $refundStatus = null;
         $refundDate = null;
-        if ($refundStatus && !empty($payment['refund_date'])) {
-            $refundDate = (new \DateTimeImmutable($payment['refund_date']))->format('d M Y');
+        if ($payment && !empty($payment['refund_status'])) {
+            $refundStatus = $payment['refund_status'];
+            if (!empty($payment['refund_date'])) {
+                $refundDate = (new \DateTimeImmutable($payment['refund_date']))->format('d M Y');
+            }
+        }
+        if (!$refundStatus) {
+            $refundStatus = $consultation->getRefundStatus();
+            $refundDt = $consultation->getRefundDate();
+            if ($refundStatus && $refundDt) {
+                $refundDate = $refundDt->format('d M Y');
+            }
         }
 
         $adminName = 'System';
