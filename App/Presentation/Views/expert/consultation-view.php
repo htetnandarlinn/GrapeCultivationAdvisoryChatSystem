@@ -51,7 +51,7 @@ $images = $images ?? [];
             <div class="flex gap-2">
                 <form action="<?= BASE_URL ?>/expert/consultations/accept" method="POST" class="inline">
                     <input type="hidden" name="consultation_id" value="<?= $consultation->getId() ?>">
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                    <button type="submit" class="px-5 py-2.5 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                         Accept Consultation
                     </button>
                 </form>
@@ -78,7 +78,7 @@ $images = $images ?? [];
         </div>
         <?php elseif (in_array($status, ['accepted', 'chat_started'])): ?>
         <div class="px-6 py-5 bg-emerald-50 border-t border-emerald-100">
-            <a href="<?= BASE_URL ?>/expert/consultations/chat?id=<?= $consultation->getId() ?>" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+            <a href="<?= BASE_URL ?>/expert/consultations/chat?id=<?= $consultation->getId() ?>" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                 <i class="fa-regular fa-comment-dots"></i> Chat with Farmer
             </a>
         </div>

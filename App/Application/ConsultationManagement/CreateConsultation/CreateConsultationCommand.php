@@ -8,5 +8,6 @@ final class CreateConsultationCommand
         public readonly int $farmerId,
         public readonly string $title,
         public readonly string $description,
+        public readonly float $consultationFee = 0.0,
     ) {}
 }

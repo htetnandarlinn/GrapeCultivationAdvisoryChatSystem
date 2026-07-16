@@ -6,6 +6,7 @@ $farmerCount = $farmerCount ?? 0;
 $expertCount = $expertCount ?? 0;
 $totalConsultations = $totalConsultations ?? 0;
 $totalArticles = $totalArticles ?? 0;
+$adminUnreadNotifications = $adminUnreadNotifications ?? 0;
 
 $userRole = $_SESSION['user_role'] ?? '';
 
@@ -328,7 +329,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
                     <textarea name="description" rows="4" required placeholder="Describe your issue in detail..."
                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-y"></textarea>
                 </div>
-                <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                <button type="submit" class="px-5 py-2.5 bg-[#15803D] text-white text-sm font-bold rounded-xl hover:bg-green-800 transition-colors">
                     Submit Consultation
                 </button>
             </form>

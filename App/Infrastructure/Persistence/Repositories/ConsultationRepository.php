@@ -14,8 +14,8 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
     public function save(Consultation $consultation): void
     {
         $sql = '
-            INSERT INTO consultations (farmer_id, title, description, status, expert_id, rejection_note, paid_at, expires_at, idempotency_key, payment_method, transaction_image, verified_by, verified_at, refund_status, refund_date, refund_amount, admin_notes, created_at, updated_at)
-            VALUES (:farmer_id, :title, :description, :status, :expert_id, :rejection_note, :paid_at, :expires_at, :idempotency_key, :payment_method, :transaction_image, :verified_by, :verified_at, :refund_status, :refund_date, :refund_amount, :admin_notes, NOW(), NOW())
+            INSERT INTO consultations (farmer_id, title, description, status, expert_id, rejection_note, paid_at, expires_at, idempotency_key, payment_method, transaction_image, verified_by, verified_at, refund_status, refund_date, refund_amount, admin_notes, consultation_fee, created_at, updated_at)
+            VALUES (:farmer_id, :title, :description, :status, :expert_id, :rejection_note, :paid_at, :expires_at, :idempotency_key, :payment_method, :transaction_image, :verified_by, :verified_at, :refund_status, :refund_date, :refund_amount, :admin_notes, :consultation_fee, NOW(), NOW())
         ';
 
         $stmt = $this->connection->prepare($sql);
@@ -37,6 +37,7 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             ':refund_date' => $this->formatDateTime($consultation->getRefundDate()),
             ':refund_amount' => $consultation->getRefundAmount(),
             ':admin_notes' => $consultation->getAdminNotes(),
+            ':consultation_fee' => $consultation->getConsultationFee(),
         ]);
 
         $consultation->setId((int) $this->connection->lastInsertId());
@@ -148,6 +149,7 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
                 refund_date = :refund_date,
                 refund_amount = :refund_amount,
                 admin_notes = :admin_notes,
+                consultation_fee = :consultation_fee,
                 updated_at = NOW()
             WHERE id = :id
         ';
@@ -168,6 +170,7 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             ':refund_date' => $this->formatDateTime($consultation->getRefundDate()),
             ':refund_amount' => $consultation->getRefundAmount(),
             ':admin_notes' => $consultation->getAdminNotes(),
+            ':consultation_fee' => $consultation->getConsultationFee(),
             ':id' => $consultation->getId(),
         ]);
     }
@@ -193,6 +196,7 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
             refundDate: !empty($row['refund_date']) ? new \DateTimeImmutable($row['refund_date']) : null,
             refundAmount: isset($row['refund_amount']) ? (float) $row['refund_amount'] : null,
             adminNotes: $row['admin_notes'] ?? null,
+            consultationFee: isset($row['consultation_fee']) ? (float) $row['consultation_fee'] : null,
             createdAt: new \DateTimeImmutable($row['created_at']),
             updatedAt: !empty($row['updated_at']) ? new \DateTimeImmutable($row['updated_at']) : null,
         );

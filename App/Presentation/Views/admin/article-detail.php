@@ -74,7 +74,7 @@ $label = $stLabels[$st] ?? ucfirst($st);
                 <div class="flex items-center gap-4">
                     <form action="<?= BASE_URL ?>/expert/articles/accept" method="POST">
                         <input type="hidden" name="id" value="<?= $article->getId() ?>">
-                        <button type="submit" class="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition shadow-sm">Accept Article</button>
+                        <button type="submit" class="bg-[#15803D] text-white px-8 py-3 rounded-2xl font-bold hover:bg-green-800 transition shadow-sm">Accept Article</button>
                     </form>
                     <button type="button" onclick="document.getElementById('rejectForm').classList.toggle('hidden')" class="bg-rose-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-rose-700 transition shadow-sm">Reject</button>
                 </div>

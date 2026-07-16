@@ -12,7 +12,7 @@
                     <p class="text-xs text-slate-500 mt-1">Manage and assign farmer consultations to experts.</p>
                 </div>
             </div>
-            <a href="<?= BASE_URL ?>/admin/payments" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+            <a href="<?= BASE_URL ?>/admin/payments" class="inline-flex items-center gap-2 px-4 py-2 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                 <i class="fa-solid fa-credit-card text-[10px]"></i> View Payments
             </a>
         </div>

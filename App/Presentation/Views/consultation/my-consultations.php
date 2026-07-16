@@ -13,7 +13,7 @@
             <a href="<?= BASE_URL ?>/consultations" class="px-4 py-2 text-emerald-600 text-xs font-bold hover:text-emerald-700 transition-colors">
                 <i class="fa-regular fa-comment-dots mr-1"></i> Chat View
             </a>
-            <a href="<?= BASE_URL ?>/consultation/create" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+            <a href="<?= BASE_URL ?>/consultation/create" class="px-4 py-2 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                 + New Consultation
             </a>
         </div>
@@ -79,7 +79,7 @@
                         <div class="flex flex-col items-end gap-2 shrink-0">
                             <span class="px-3 py-1 rounded-full text-[10px] font-bold <?= $color ?>"><?= $statusLabel ?></span>
                             <?php if ($status === 'awaiting_payment'): ?>
-                                <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-colors">
+                                <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#15803D] text-white text-[10px] font-bold rounded-lg hover:bg-green-800 transition-colors">
                                     <i class="fa-solid fa-lock text-[8px]"></i> Pay $<?= number_format($consultationFee, 2) ?>
                                 </a>
                             <?php elseif ($status === 'payment_submitted'): ?>
@@ -110,7 +110,7 @@
                     <?php endif; ?>
                     <?php if (in_array($status, ['accepted', 'chat_started'])): ?>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
-                            <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                            <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                                 <i class="fa-regular fa-comment-dots"></i> Open Chat
                             </a>
                             <?php if ($c->getExpiresAt() && !$c->isExpired()): ?>

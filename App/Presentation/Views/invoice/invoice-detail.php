@@ -3,8 +3,8 @@
     .inv-page { max-width: 700px; margin: 0 auto; }
     .inv-back { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #94a3b8; text-decoration: none; transition: color 0.15s; }
     .inv-back:hover { color: #475569; }
-    .inv-dl { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; border-radius: 8px; text-decoration: none; transition: background 0.15s; }
-    .inv-dl:hover { background: #047857; }
+    .inv-dl { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: #15803D; color: #fff; font-size: 11px; font-weight: 700; border-radius: 8px; text-decoration: none; transition: background 0.15s; }
+    .inv-dl:hover { background: #166534; }
     .inv-card { border: 1.5px solid #cbd5e1; }
     .inv-inner { padding: 28px 32px 20px 32px; }
     .inv-logo-cell { text-align: left; }

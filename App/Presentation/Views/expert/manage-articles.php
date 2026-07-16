@@ -11,7 +11,7 @@
             </div>
         </div>
         <?php if (can('articles.create')): ?>
-        <a href="<?= BASE_URL ?>/expert/articles/create" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm">
+        <a href="<?= BASE_URL ?>/expert/articles/create" class="inline-flex items-center gap-2 bg-[#15803D] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-green-800 transition shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
             Add New Article
         </a>

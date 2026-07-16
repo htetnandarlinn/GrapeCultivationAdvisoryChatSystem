@@ -140,7 +140,7 @@
                                       placeholder="Tell us more about your inquiry..."></textarea>
                         </div>
                         <button type="submit" id="contact-submit-btn"
-                                class="w-full sm:w-auto px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5">
+                                class="w-full sm:w-auto px-5 py-2 bg-[#15803D] hover:bg-green-800 text-white text-xs font-bold rounded-lg transition-all hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5">
                             <span id="contact-btn-text">Send Message</span>
                             <svg id="contact-btn-icon" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
                             <svg id="contact-btn-spinner" class="w-3 h-3 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>

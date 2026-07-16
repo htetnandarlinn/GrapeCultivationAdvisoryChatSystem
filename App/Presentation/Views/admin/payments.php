@@ -81,10 +81,10 @@
                             ];
                             $b = $badgeMap[$p['status']] ?? ['bg'=>'bg-slate-100 text-slate-600', 'dot'=>'bg-slate-400', 'label'=>ucfirst($p['status'])];
                             $methodIcon = [
-                                'kpay' => 'K',
-                                'wavepay' => 'W',
-                                'paypal' => 'P',
-                                'manual' => 'M',
+                                'kpay' => '',
+                                'wavepay' => '',
+                                'paypal' => '',
+                                'manual' => '',
                             ];
                             $methodColor = [
                                 'kpay' => 'bg-emerald-100 text-emerald-700',
@@ -206,7 +206,7 @@
                                             <?php if ($p['transaction_image']): ?>
                                             <form method="POST" action="<?= BASE_URL ?>/admin/payments/approve" class="inline" onsubmit="return confirm('Approve this payment? Consultation will be activated.');">
                                                 <input type="hidden" name="consultation_id" value="<?= $p['id'] ?>">
-                                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors shadow-sm">
+                                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#15803D] hover:bg-green-800 text-white text-[10px] font-bold rounded-lg transition-colors shadow-sm">
                                                     <i class="fa-solid fa-check"></i> Approve Payment
                                                 </button>
                                             </form>

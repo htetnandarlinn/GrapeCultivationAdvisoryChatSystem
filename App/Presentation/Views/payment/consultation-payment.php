@@ -5,7 +5,7 @@ if (! $consultation) {
        . '<div class="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center">'
        . '<h1 class="text-2xl font-bold text-slate-900 mb-3">Unable to load consultation</h1>'
        . '<p class="text-sm text-slate-500 mb-6">Please return to your consultations and try again.</p>'
-       . '<a href="' . BASE_URL . '/consultations" class="inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-semibold">Back to Consultations</a>'
+        . '<a href="' . BASE_URL . '/consultations" class="inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-[#15803D] text-white text-sm font-semibold">Back to Consultations</a>'
        . '</div></div>';
     return;
 }

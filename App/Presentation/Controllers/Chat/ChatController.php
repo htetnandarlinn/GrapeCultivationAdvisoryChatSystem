@@ -124,7 +124,7 @@ class ChatController
                     'expert',
                     "$senderName sent a message in consultation #$consultationId",
                     'message_received',
-                    '/expert/consultations/hub'
+                    '/expert/consultations/chat?id=' . $consultationId
                 );
             } elseif ($senderRole !== 'farmer') {
                 $this->notificationService->notify(
@@ -132,7 +132,7 @@ class ChatController
                     'farmer',
                     "$senderName sent a message in your consultation",
                     'message_received',
-                    '/consultations'
+                    '/consultations?id=' . $consultationId
                 );
             }
         }
