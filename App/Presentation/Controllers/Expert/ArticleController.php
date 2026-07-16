@@ -177,6 +177,19 @@ final class ArticleController
 
         $this->articleRepository->save($article);
 
+        $authorName = $_SESSION['user']['username'] ?? 'An expert';
+        $this->notificationService->notifyAllByRole(
+            'expert',
+            "$authorName updated the article: " . $title,
+            'article_updated',
+            '/expert/articles/view?id=' . $id
+        );
+        $this->notificationService->notifyAllAdmins(
+            "$authorName updated the article: " . $title,
+            'article_updated',
+            '/expert/articles/view?id=' . $id
+        );
+
         $_SESSION['article_message'] = 'Article updated successfully.';
         redirect('/expert/articles');
     }

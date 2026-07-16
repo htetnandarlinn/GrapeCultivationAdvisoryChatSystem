@@ -109,7 +109,7 @@ $images = $images ?? [];
                     <button type="button" id="image-btn" class="h-11 w-11 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-emerald-600 transition-colors" title="Send image">
                         <i class="fa-regular fa-image text-sm"></i>
                     </button>
-                    <button type="submit" id="send-btn" class="h-11 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center space-x-1.5 transition-colors disabled:opacity-50">
+                    <button type="submit" id="send-btn" class="h-11 px-5 rounded-xl bg-[#15803D] hover:bg-green-800 text-white font-semibold flex items-center space-x-1.5 transition-colors disabled:opacity-50">
                         <span class="text-sm hidden sm:inline">Send</span>
                         <i class="fa-regular fa-paper-plane text-xs"></i>
                     </button>

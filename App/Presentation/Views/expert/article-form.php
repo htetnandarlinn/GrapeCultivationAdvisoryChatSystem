@@ -82,7 +82,7 @@ unset($_SESSION['article_message']);
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-emerald-900/10">
+                <button type="submit" class="inline-flex items-center gap-2 bg-[#15803D] hover:bg-green-800 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-emerald-900/10">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>

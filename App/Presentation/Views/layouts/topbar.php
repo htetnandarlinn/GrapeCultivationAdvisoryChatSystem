@@ -9,13 +9,19 @@ $currentUser = $_SESSION['user'] ?? [
 ?>
 <header class="fixed top-0 right-0 left-0 md:left-72 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 shadow-sm z-40">
     <div class="flex items-center gap-4">
-        <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-50 transition active:scale-95">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </button>
-        <div class="hidden sm:block">
-            
+        <!-- Left Section -->
+        <div class="flex items-center gap-2 sm:gap-3">
+
+            <!-- Sidebar Toggle Icon (mobile only) -->
+            <button id="mobileSidebarToggle"
+                class="md:hidden p-2 rounded-xl text-[#15803D] hover:bg-[#15803D]/10 hover:text-[#15803D] transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#15803D]/30"
+                aria-label="Toggle sidebar" aria-expanded="false" aria-controls="app-sidebar">
+                <span class="text-xl leading-none">☰</span>
+            </button>
+
+            <h2 class="text-sm sm:text-base lg:text-lg font-black text-[#0b1325] tracking-tight leading-none whitespace-nowrap">
+                 Dashboard
+            </h2>
         </div>
     </div>
 

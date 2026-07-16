@@ -184,7 +184,7 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors">
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#15803D] hover:bg-green-800 text-white text-xs font-bold rounded-xl transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Assign & Send
                         </button>
@@ -242,7 +242,7 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors">
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#15803D] hover:bg-green-800 text-white text-xs font-bold rounded-xl transition-colors">
                             Reassign
                         </button>
                     </form>

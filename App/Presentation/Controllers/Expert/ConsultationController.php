@@ -136,6 +136,15 @@ class ConsultationController
                 '/admin/consultations/view?id=' . $consultation->getId()
             );
 
+            // Notify the accepting expert
+            $this->notificationService->notify(
+                $expertId,
+                'expert',
+                'You accepted the consultation "' . $consultation->getTitle() . '". Payment is now requested from the farmer.',
+                'consultation_expert_accepted',
+                '/expert/consultations/view?id=' . $consultation->getId()
+            );
+
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true]);

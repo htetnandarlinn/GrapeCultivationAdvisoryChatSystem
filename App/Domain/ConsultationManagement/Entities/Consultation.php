@@ -24,6 +24,7 @@ final class Consultation
     private ?\DateTimeImmutable $refundDate;
     private ?float $refundAmount;
     private ?string $adminNotes;
+    private ?float $consultationFee;
     private \DateTimeImmutable $createdAt;
     private ?\DateTimeImmutable $updatedAt;
 
@@ -46,6 +47,7 @@ final class Consultation
         ?\DateTimeImmutable $refundDate = null,
         ?float $refundAmount = null,
         ?string $adminNotes = null,
+        ?float $consultationFee = null,
         ?\DateTimeImmutable $createdAt = null,
         ?\DateTimeImmutable $updatedAt = null,
     ) {
@@ -67,6 +69,7 @@ final class Consultation
         $this->refundDate = $refundDate;
         $this->refundAmount = $refundAmount;
         $this->adminNotes = $adminNotes;
+        $this->consultationFee = $consultationFee;
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
         $this->updatedAt = $updatedAt;
     }
@@ -109,6 +112,11 @@ final class Consultation
     public function getAdminNotes(): ?string
     {
         return $this->adminNotes;
+    }
+
+    public function getConsultationFee(): ?float
+    {
+        return $this->consultationFee;
     }
 
     public function getFarmerId(): int

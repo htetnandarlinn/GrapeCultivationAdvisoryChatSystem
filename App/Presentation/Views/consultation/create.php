@@ -32,7 +32,7 @@
         </div>
 
         <div class="flex items-center gap-3 pt-2">
-            <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+            <button type="submit" class="px-6 py-2.5 bg-[#15803D] text-white text-sm font-bold rounded-xl hover:bg-green-800 transition-colors">
                 Submit Consultation
             </button>
             <a href="<?= BASE_URL ?>/" class="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">

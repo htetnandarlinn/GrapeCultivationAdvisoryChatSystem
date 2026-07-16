@@ -18,6 +18,7 @@ final class CreateConsultationHandler
             farmerId: $command->farmerId,
             title: $command->title,
             description: $command->description,
+            consultationFee: $command->consultationFee,
         );
 
         $this->consultationRepository->save($consultation);

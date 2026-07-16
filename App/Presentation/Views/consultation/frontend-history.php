@@ -53,7 +53,7 @@ foreach ($consultations as $c) {
             <div class="p-4 border-b border-slate-100/80">
                 <div class="flex items-center justify-between gap-3 mb-4">
                     <h2 class="text-lg font-black text-slate-800 tracking-tight">Consultations</h2>
-                    <button onclick="showCreateForm()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all shadow-sm shadow-emerald-600/10">
+                    <button onclick="showCreateForm()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#15803D] text-white hover:bg-green-800 active:scale-95 transition-all shadow-sm shadow-emerald-600/10">
                         <i class="fa-solid fa-plus text-xs"></i>
                     </button>
                 </div>
@@ -69,7 +69,7 @@ foreach ($consultations as $c) {
                 <div class="p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-300"><i class="fa-regular fa-comment-dots text-lg"></i></div>
                     <p class="text-xs text-slate-400 font-medium mb-3">No consultations yet</p>
-                    <button onclick="showCreateForm()" class="inline-block px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-colors">Start Consultation</button>
+                    <button onclick="showCreateForm()" class="inline-block px-4 py-2 bg-[#15803D] text-white text-[10px] font-bold rounded-lg hover:bg-green-800 transition-colors">Start Consultation</button>
                 </div>
                 <?php else: ?>
                 <div id="sidebar-list" class="space-y-1">
@@ -87,8 +87,8 @@ foreach ($consultations as $c) {
                             'expert_accepted' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Accepted'],
                             'awaiting_payment' => ['bg' => 'bg-violet-500', 'dot' => 'bg-violet-500', 'badge' => 'text-violet-600 bg-violet-50', 'label' => 'Awaiting Payment'],
                             'payment_submitted' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-500', 'badge' => 'text-amber-600 bg-amber-50', 'label' => 'Pending Review'],
-                            'accepted' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
-                            'chat_started' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
+ 'accepted' => ['bg' => 'bg-[#15803D]', 'dot' => 'bg-[#15803D]', 'badge' => 'text-[#15803D] bg-emerald-50', 'label' => 'Active'],
+ 'chat_started' => ['bg' => 'bg-[#15803D]', 'dot' => 'bg-[#15803D]', 'badge' => 'text-[#15803D] bg-emerald-50', 'label' => 'Active'],
                             'completed' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Completed'],
                             'closed' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
                             'rejected' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
@@ -200,7 +200,7 @@ foreach ($consultations as $c) {
                         <input type="text" id="right-msg-input" placeholder="Type your message..." autofocus
                                class="flex-1 h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm placeholder-slate-400">
                         <input type="file" id="right-img-input" accept="image/*" class="hidden">
-                        <button type="submit" class="h-11 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center space-x-1.5 transition-colors">
+                        <button type="submit" class="h-11 px-5 rounded-xl bg-[#15803D] hover:bg-green-800 text-white font-semibold flex items-center space-x-1.5 transition-colors">
                             <span class="text-sm hidden sm:inline">Send</span>
                             <i class="fa-regular fa-paper-plane text-xs"></i>
                         </button>
@@ -267,7 +267,7 @@ foreach ($consultations as $c) {
                             <p class="text-[10px] text-slate-400 mt-1">Upload images of your grape issue for better diagnosis.</p>
                         </div>
                         <div class="flex items-center gap-3 pt-2">
-                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                            <button type="submit" class="px-6 py-2.5 bg-[#15803D] text-white text-sm font-bold rounded-xl hover:bg-green-800 transition-colors">
                                 Submit Consultation
                             </button>
                             <button type="button" onclick="cancelCreateForm()" class="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
@@ -329,8 +329,8 @@ const themeMap = {
     expert_accepted: { bg: 'bg-blue-500', dot: 'bg-blue-500', label: 'Accepted', badge: 'text-blue-600 bg-blue-50' },
     awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
     payment_submitted: { bg: 'bg-amber-500', dot: 'bg-amber-500', label: 'Pending Review', badge: 'text-amber-600 bg-amber-50' },
-    accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
-    chat_started: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active', badge: 'text-emerald-600 bg-emerald-50' },
+accepted: { bg: 'bg-[#15803D]',dot: 'bg-[#15803D]',label: 'Active',   badge: 'text-[#15803D] bg-emerald-50' },
+chat_started: { bg: 'bg-[#15803D]',dot: 'bg-[#15803D]',label: 'Active', badge: 'text-[#15803D] bg-emerald-50' },
     completed: { bg: 'bg-blue-500',  dot: 'bg-blue-500',   label: 'Completed', badge: 'text-blue-600 bg-blue-50' },
     closed: { bg: 'bg-slate-400',    dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
     rejected: { bg: 'bg-slate-400',  dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
@@ -430,7 +430,7 @@ function selectConsultation(id) {
     }
 
     document.getElementById('header-title').textContent = displayName;
-    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ${hasExpert ? 'Expert - ' : ''}${theme.label} Consultation`;
+    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#15803D] animate-pulse"></span> ${hasExpert ? 'Expert - ' : ''}${theme.label} Consultation`;
 
     const badge = document.getElementById('header-badge');
     badge.className = 'text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md ' + theme.badge;
@@ -470,7 +470,7 @@ function selectConsultation(id) {
             title.textContent = 'Payment Required';
             text.textContent = 'An expert has been assigned to your consultation. Complete your payment to unlock 30 days of expert guidance.';
             btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay $' + consultationFee.toFixed(2) + ' Now';
-            btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300';
+            btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-[#15803D] to-emerald-600 hover:from-green-900 hover:to-[#15803D] shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300';
         }
         btn.href = baseUrl + '/payment/consultation?id=' + id;
     } else {
@@ -563,7 +563,7 @@ function appendMessage(text, senderName, isMine, timestamp, container, replyInfo
     const replyBtn = msgId ? `<button class="reply-btn text-[9px] text-slate-400 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100" data-msg-id="${msgId}" data-sender="${escapeHtml(senderName)}"><i class="fa-solid fa-reply"></i></button>` : '';
     if (isMine) {
         div.className = 'flex justify-end mb-4';
-        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-emerald-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-sm text-sm w-fit max-w-full break-words ml-auto"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
+        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-[#15803D] text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-sm text-sm w-fit max-w-full break-words ml-auto"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
     } else {
         div.className = 'flex justify-start mb-4';
         div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-white text-slate-800 px-4 py-2.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm w-fit max-w-full break-words"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
@@ -581,7 +581,7 @@ function appendImage(src, senderName, isMine, timestamp, container, replyInfo, m
     const div = document.createElement('div');
     if (isMine) {
         div.className = 'flex justify-end mb-4';
-        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-emerald-600 px-2 pt-2 pb-1 rounded-2xl rounded-tr-none shadow-sm w-fit max-w-full ml-auto chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
+        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-[#15803D] px-2 pt-2 pb-1 rounded-2xl rounded-tr-none shadow-sm w-fit max-w-full ml-auto chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
     } else {
         div.className = 'flex justify-start mb-4';
         div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-white px-2 pt-2 pb-1 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 w-fit max-w-full chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;

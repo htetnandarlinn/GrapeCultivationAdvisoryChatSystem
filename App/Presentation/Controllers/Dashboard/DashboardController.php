@@ -104,10 +104,6 @@ class DashboardController
             return;
         }
 
-        if ($role === 'expert') {
-            redirect('/expert/consultations/hub');
-            return;
-        }
         $data = ['activePage' => 'dashboard'];
 
         if ($this->userRepository) {

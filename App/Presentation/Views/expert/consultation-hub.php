@@ -94,7 +94,7 @@ foreach ($consultations as $c) {
                             'pending' => ['bg' => 'bg-amber-500', 'dot' => 'bg-amber-400', 'badge' => 'text-amber-500 bg-amber-50', 'label' => 'Pending'],
                             'assigned' => ['bg' => 'bg-blue-500', 'dot' => 'bg-blue-500', 'badge' => 'text-blue-600 bg-blue-50', 'label' => 'Assigned'],
                             'awaiting_payment' => ['bg' => 'bg-violet-500', 'dot' => 'bg-violet-500', 'badge' => 'text-violet-600 bg-violet-50', 'label' => 'Awaiting Payment'],
-                            'accepted' => ['bg' => 'bg-emerald-500', 'dot' => 'bg-emerald-500', 'badge' => 'text-emerald-600 bg-emerald-50', 'label' => 'Active'],
+                            'accepted' => ['bg' => 'bg-[#15803D]', 'dot' => 'bg-[#15803D]', 'badge' => 'text-[#15803D] bg-emerald-50', 'label' => 'Active'],
                             'rejected' => ['bg' => 'bg-slate-400', 'dot' => 'bg-slate-400', 'badge' => 'text-slate-500 bg-slate-50', 'label' => 'Closed'],
                             'expired' => ['bg' => 'bg-red-500', 'dot' => 'bg-red-500', 'badge' => 'text-red-600 bg-red-50', 'label' => 'Expired'],
                         ];
@@ -208,7 +208,7 @@ foreach ($consultations as $c) {
                         <input type="text" id="right-msg-input" placeholder="Type your message..." autofocus
                                class="flex-1 h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm placeholder-slate-400">
                         <input type="file" id="right-img-input" accept="image/*" class="hidden">
-                        <button type="submit" class="h-11 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center space-x-1.5 transition-colors">
+                        <button type="submit" class="h-11 px-5 rounded-xl bg-[#15803D] hover:bg-green-800 text-white font-semibold flex items-center space-x-1.5 transition-colors">
                             <span class="text-sm hidden sm:inline">Send</span>
                             <i class="fa-regular fa-paper-plane text-xs"></i>
                         </button>
@@ -266,7 +266,7 @@ const themeMap = {
     expert_accepted: { bg: 'bg-blue-500', dot: 'bg-blue-500', label: 'Accepted', badge: 'text-blue-600 bg-blue-50' },
     awaiting_payment: { bg: 'bg-violet-500', dot: 'bg-violet-500', label: 'Awaiting Payment', badge: 'text-violet-600 bg-violet-50' },
     payment_submitted: { bg: 'bg-amber-500', dot: 'bg-amber-500', label: 'Pending Review', badge: 'text-amber-600 bg-amber-50' },
-    accepted: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active',   badge: 'text-emerald-600 bg-emerald-50' },
+    accepted: { bg: 'bg-[#15803D]',dot: 'bg-[#15803D]',label: 'Active',   badge: 'text-[#15803D] bg-emerald-50' },
     chat_started: { bg: 'bg-emerald-500',dot: 'bg-emerald-500',label: 'Active', badge: 'text-emerald-600 bg-emerald-50' },
     completed: { bg: 'bg-blue-500',  dot: 'bg-blue-500',   label: 'Completed', badge: 'text-blue-600 bg-blue-50' },
     closed: { bg: 'bg-slate-400',    dot: 'bg-slate-400',  label: 'Closed',   badge: 'text-slate-500 bg-slate-50' },
@@ -339,7 +339,7 @@ function selectConsultation(id) {
     }
 
     document.getElementById('header-title').textContent = displayName;
-    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ${hasFarmer ? 'Farmer - ' : ''}${theme.label} Consultation`;
+    document.getElementById('header-subtitle').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#15803D] animate-pulse"></span> ${hasFarmer ? 'Farmer - ' : ''}${theme.label} Consultation`;
 
     const badge = document.getElementById('header-badge');
     badge.className = 'text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md ' + theme.badge;
@@ -403,7 +403,7 @@ function renderConsultationDetails(data) {
                 <div class="px-6 py-5 bg-slate-50 space-y-3">
                     <p class="text-xs font-semibold text-slate-600">Do you want to accept this consultation?</p>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="acceptConsultation(this, ${data.id})" class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+                        <button onclick="acceptConsultation(this, ${data.id})" class="px-5 py-2.5 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors">
                             Accept Consultation
                         </button>
                         <button type="button" onclick="toggleRejectForm()" class="px-5 py-2.5 bg-red-50 text-red-600 text-xs font-bold rounded-xl hover:bg-red-100 transition-colors">
@@ -600,7 +600,7 @@ function appendMessage(text, senderName, isMine, timestamp, container, replyInfo
     const replyBtn = msgId ? `<button class="reply-btn text-[9px] text-slate-400 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100" data-msg-id="${msgId}" data-sender="${escapeHtml(senderName)}"><i class="fa-solid fa-reply"></i></button>` : '';
     if (isMine) {
         div.className = 'flex justify-end mb-4';
-        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-emerald-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-sm text-sm w-fit max-w-full break-words ml-auto"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
+        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-[#15803D] text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-sm text-sm w-fit max-w-full break-words ml-auto"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
     } else {
         div.className = 'flex justify-start mb-4';
         div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-white text-slate-800 px-4 py-2.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm w-fit max-w-full break-words"><p class="leading-relaxed">${escapeHtml(text)}</p></div><div class="flex gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
@@ -618,7 +618,7 @@ function appendImage(src, senderName, isMine, timestamp, container, replyInfo, m
     const div = document.createElement('div');
     if (isMine) {
         div.className = 'flex justify-end mb-4';
-        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-emerald-600 px-2 pt-2 pb-1 rounded-2xl rounded-tr-none shadow-sm w-fit max-w-full ml-auto chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
+        div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-[#15803D] px-2 pt-2 pb-1 rounded-2xl rounded-tr-none shadow-sm w-fit max-w-full ml-auto chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex justify-end gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;
     } else {
         div.className = 'flex justify-start mb-4';
         div.innerHTML = `<div class="max-w-[75%] group">${replyHtml}<div class="bg-white px-2 pt-2 pb-1 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 w-fit max-w-full chat-image"><img src="${imgUrl}" alt="Sent image" class="max-w-[260px] max-h-[300px] rounded-xl object-cover block">${captionHtml}</div><div class="flex gap-2 mt-0.5">${replyBtn}<span class="text-[9px] text-slate-400">${time}</span></div></div>`;

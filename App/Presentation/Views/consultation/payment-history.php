@@ -5,7 +5,7 @@
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Payment History</h2>
             <p class="text-xs text-slate-500 mt-1">Record of all your consultation payments.</p>
         </div>
-        <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-200">
+        <a href="<?= BASE_URL ?>/consultations" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#15803D] text-white text-xs font-bold rounded-xl hover:bg-green-800 transition-colors shadow-sm shadow-emerald-200">
             <i class="fa-regular fa-comment-dots"></i> Chat View
         </a>
     </div>
@@ -65,8 +65,9 @@
         </div>
     <?php else: ?>
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+            <div class="max-h-[470px] overflow-y-auto">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
                             <th class="text-left px-4 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Consultation</th>
@@ -193,6 +194,7 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     <?php endif; ?>

@@ -66,6 +66,7 @@ class ConsultationController
             farmerId: $farmerId,
             title: $title,
             description: $description,
+            consultationFee: $this->pricingService->getConsultationFee(),
         );
 
         $consultation = $this->createHandler->handle($command);
@@ -96,7 +97,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Consultation submitted successfully. An expert will review it soon.';
-        redirect('/');
+        redirect('/consultations');
     }
 
     public function storeAjax(): void
@@ -128,6 +129,7 @@ class ConsultationController
             farmerId: $farmerId,
             title: $title,
             description: $description,
+            consultationFee: $this->pricingService->getConsultationFee(),
         );
 
         try {
