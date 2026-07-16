@@ -4,13 +4,13 @@ namespace App\Application\NotificationManagement;
 
 use App\Domain\NotificationManagement\Entities\Notification;
 use App\Domain\NotificationManagement\Repositories\NotificationRepositoryInterface;
-use PDO;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 
 final class NotificationService
 {
     public function __construct(
         private NotificationRepositoryInterface $notificationRepo,
-        private PDO $connection,
+        private UserRepositoryInterface $userRepository,
     ) {}
 
     public function notify(
@@ -37,16 +37,8 @@ final class NotificationService
         string $type,
         ?string $link = null,
     ): void {
-        $stmt = $this->connection->prepare("
-            SELECT u.user_id FROM users u
-            JOIN master_data md ON md.id = u.user_type_id
-            WHERE LOWER(md.code) = 'admin' AND md.category = 'USER_TYPE'
-        ");
-        $stmt->execute();
-        $adminIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($adminIds as $adminId) {
-            $this->notify((int) $adminId, 'admin', $message, $type, $link);
+        foreach ($this->userRepository->findByType('admin') as $admin) {
+            $this->notify($admin->getId(), 'admin', $message, $type, $link);
         }
     }
 
@@ -56,16 +48,8 @@ final class NotificationService
         string $type,
         ?string $link = null,
     ): void {
-        $stmt = $this->connection->prepare("
-            SELECT u.user_id FROM users u
-            JOIN master_data md ON md.id = u.user_type_id
-            WHERE LOWER(md.code) = :role AND md.category = 'USER_TYPE'
-        ");
-        $stmt->execute([':role' => $role]);
-        $userIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($userIds as $userId) {
-            $this->notify((int) $userId, $role, $message, $type, $link);
+        foreach ($this->userRepository->findByType($role) as $user) {
+            $this->notify($user->getId(), $role, $message, $type, $link);
         }
     }
 }

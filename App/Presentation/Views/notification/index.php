@@ -33,7 +33,18 @@
                                 <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase <?= !$notif->isRead() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' ?>"><?= !$notif->isRead() ? 'Unread' : 'Read' ?></span>
                             </td>
                             <td class="px-4 py-3">
-                                <a href="<?= $notif->getLink() ? BASE_URL . $notif->getLink() : '#' ?>" class="flex items-center gap-3 group">
+                                <?php
+                                $notifHref = '#';
+                                if ($notif->getType() === 'profile_update') {
+                                    $viewerRole = $_SESSION['user_role'] ?? '';
+                                    $notifHref = $viewerRole === 'farmer'
+                                        ? BASE_URL . '/my-profile'
+                                        : BASE_URL . '/notifications';
+                                } elseif ($notif->getLink()) {
+                                    $notifHref = BASE_URL . $notif->getLink();
+                                }
+                                ?>
+                                <a href="<?= $notifHref ?>" class="flex items-center gap-3 group">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= !$notif->isRead() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' ?>">
                                         <?php if ($notif->getType() === 'consultation_assigned'): ?>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

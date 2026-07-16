@@ -2,13 +2,15 @@
 
 namespace App\Presentation\Controllers\Admin;
 
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\NotificationManagement\NotificationService;
+use App\Domain\ConsultationManagement\Repositories\ConsultationImageRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\ConsultationManagement\ValueObjects\ConsultationStatus;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Views\View;
-use PDO;
 
 class ConsultationController
 {
@@ -16,13 +18,19 @@ class ConsultationController
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
         private NotificationService $notificationService,
-        private PDO $connection,
+        private PaymentRepositoryInterface $paymentRepository,
+        private PricingService $pricingService,
+        private ConsultationImageRepositoryInterface $consultationImageRepository,
     ) {}
 
     #[Permission('consultations.view', 'View Payments')]
     public function payments(): void
     {
         $allConsultations = $this->consultationRepository->findAll();
+
+        $paymentMap = $this->paymentRepository->findByConsultationIds(
+            array_map(static fn($c) => $c->getId(), $allConsultations)
+        );
 
         $payments = [];
         foreach ($allConsultations as $c) {
@@ -31,14 +39,10 @@ class ConsultationController
                 $farmer = $this->userRepository->findById($c->getFarmerId());
                 $expert = $c->getExpertId() ? $this->userRepository->findById($c->getExpertId()) : null;
 
-                $stmt = $this->connection->prepare('SELECT image_path FROM consultation_images WHERE consultation_id = :cid LIMIT 1');
-                $stmt->execute([':cid' => $c->getId()]);
-                $image = $stmt->fetch(PDO::FETCH_ASSOC);
+                $image = $this->consultationImageRepository->findFirstImagePath($c->getId());
 
-                $stmtAmt = $this->connection->prepare('SELECT amount FROM payments WHERE consultation_id = :cid ORDER BY id DESC LIMIT 1');
-                $stmtAmt->execute([':cid' => $c->getId()]);
-                $amtRow = $stmtAmt->fetch(PDO::FETCH_ASSOC);
-                $amount = $amtRow ? (float) $amtRow['amount'] : 0.0;
+                $payment = $paymentMap[$c->getId()] ?? null;
+                $amount = $payment ? $payment->getAmount() : 0.0;
 
                 $payments[] = [
                     'id' => $c->getId(),
@@ -52,7 +56,7 @@ class ConsultationController
                     'paid_at' => $c->getPaidAt(),
                     'expires_at' => $c->getExpiresAt(),
                     'created_at' => $c->getCreatedAt(),
-                    'image' => $image ? $image['image_path'] : null,
+                    'image' => $image,
                     'payment_method' => $c->getPaymentMethod(),
                     'transaction_image' => $c->getTransactionImage(),
                     'farmer_id' => $c->getFarmerId(),
@@ -104,15 +108,13 @@ class ConsultationController
 
         $images = [];
         foreach ($consultations as $c) {
-            $stmt = $this->connection->prepare('SELECT image_path FROM consultation_images WHERE consultation_id = :cid LIMIT 1');
-            $stmt->execute([':cid' => $c->getId()]);
-            $img = $stmt->fetch(PDO::FETCH_ASSOC);
-            $images[$c->getId()] = $img ? $img['image_path'] : null;
+            $images[$c->getId()] = $this->consultationImageRepository->findFirstImagePath($c->getId());
         }
 
         View::render('admin/consultations', [
             'consultations' => $consultations,
             'consultationImages' => $images,
+            'consultationFee' => $this->pricingService->getConsultationFee(),
             'activePage' => 'admin-consultations',
         ], 'dashboard');
     }
@@ -128,9 +130,7 @@ class ConsultationController
             return;
         }
 
-        $stmt = $this->connection->prepare('SELECT * FROM consultation_images WHERE consultation_id = :cid');
-        $stmt->execute([':cid' => $id]);
-        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $images = $this->consultationImageRepository->findByConsultationId($id);
 
         $experts = $this->userRepository->findExperts();
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
@@ -140,6 +140,7 @@ class ConsultationController
             'images' => $images,
             'experts' => $experts,
             'farmer' => $farmer,
+            'consultationFee' => $this->pricingService->getConsultationFee(),
             'activePage' => 'admin-consultations',
         ], 'dashboard');
     }
@@ -219,22 +220,7 @@ class ConsultationController
         $this->consultationRepository->update($consultation);
 
         // Update the payments table
-        $stmt = $this->connection->prepare('
-            UPDATE payments
-            SET payment_status = :payment_status,
-                payment_date = NOW(),
-                start_date = CURDATE(),
-                expiry_date = DATE_ADD(CURDATE(), INTERVAL 30 DAY),
-                verified_by = :verified_by,
-                verified_at = NOW(),
-                updated_at = NOW()
-            WHERE consultation_id = :consultation_id
-        ');
-        $stmt->execute([
-            ':payment_status' => 'PAID',
-            ':verified_by' => $adminName,
-            ':consultation_id' => $consultation->getId(),
-        ]);
+        $this->paymentRepository->markApproved($consultation->getId(), $adminName);
 
         // Notify farmer
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
@@ -302,18 +288,7 @@ class ConsultationController
         $this->consultationRepository->update($consultation);
 
         // Update payment record
-        $stmt = $this->connection->prepare('
-            UPDATE payments
-            SET payment_status = :payment_status,
-                transaction_image = NULL,
-                payment_method = NULL,
-                updated_at = NOW()
-            WHERE consultation_id = :consultation_id
-        ');
-        $stmt->execute([
-            ':payment_status' => 'REJECTED',
-            ':consultation_id' => $consultation->getId(),
-        ]);
+        $this->paymentRepository->markRejected($consultation->getId());
 
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
         if ($farmer) {
@@ -353,26 +328,8 @@ class ConsultationController
         }
 
         // Calculate refund amount based on rules
-        $refundAmount = 0.0;
-        $refundNote = '';
-
-        if ($status === 'rejected') {
-            // Expert rejected assignment → full refund
-            $refundAmount = 29.99;
-            $refundNote = 'Full refund - expert rejected assignment';
-        } elseif ($status === 'assigned' || $status === 'expert_accepted') {
-            // Farmer cancels before expert starts → 80% refund
-            $refundAmount = 23.99; // 80% of 29.99
-            $refundNote = '80% refund - farmer cancelled before expert started';
-        } elseif (in_array($status, ['accepted', 'chat_started'])) {
-            // Admin cancelled → full refund
-            $refundAmount = 29.99;
-            $refundNote = 'Full refund - admin cancelled';
-        } elseif (in_array($status, ['payment_submitted', 'awaiting_payment'])) {
-            // Payment not yet approved, just reset
-            $refundAmount = 0.0;
-            $refundNote = 'Payment receipt rejected, no charge made';
-        }
+        $refundAmount = $this->pricingService->calculateRefundAmount($status);
+        $refundNote = $this->pricingService->getRefundNote($status);
 
         // Remove transaction image file
         $imagePath = $consultation->getTransactionImage();
@@ -395,24 +352,7 @@ class ConsultationController
         $this->consultationRepository->update($consultation);
 
         // Update payment record
-        $stmt = $this->connection->prepare('
-            UPDATE payments
-            SET payment_status = :payment_status,
-                refund_status = :refund_status,
-                refund_date = NOW(),
-                refund_amount = :refund_amount,
-                verified_by = :verified_by,
-                verified_at = NOW(),
-                updated_at = NOW()
-            WHERE consultation_id = :consultation_id
-        ');
-        $stmt->execute([
-            ':payment_status' => 'REFUNDED',
-            ':refund_status' => 'refunded',
-            ':refund_amount' => $refundAmount,
-            ':verified_by' => $adminName,
-            ':consultation_id' => $consultation->getId(),
-        ]);
+        $this->paymentRepository->markRefunded($consultation->getId(), $refundAmount, $adminName);
 
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
         if ($farmer) {

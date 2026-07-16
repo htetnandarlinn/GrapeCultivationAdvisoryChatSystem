@@ -17,7 +17,7 @@ class View
         }
 
         if (!empty($data)) {
-            extract($data);
+            extract($data, EXTR_SKIP);
         }
 
         $basePath = dirname(__DIR__, 3);
@@ -25,10 +25,8 @@ class View
         $viewFile = $basePath . "/App/Presentation/Views/{$view}.php";
 
         if (!file_exists($viewFile)) {
-            die(
-                "<strong>View not found!</strong><br>" .
-                "Looking for:<br>" .
-                htmlspecialchars($viewFile)
+            throw new \RuntimeException(
+                'View not found: ' . $viewFile
             );
         }
 

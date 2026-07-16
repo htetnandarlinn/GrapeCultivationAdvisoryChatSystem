@@ -4,12 +4,14 @@ namespace App\Presentation\Controllers\Consultation;
 
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationCommand;
 use App\Application\ConsultationManagement\CreateConsultation\CreateConsultationHandler;
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\NotificationManagement\NotificationService;
+use App\Domain\ConsultationManagement\Repositories\ConsultationImageRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\Messaging\Repositories\MessageRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
-use PDO;
 
 class ConsultationController
 {
@@ -19,7 +21,9 @@ class ConsultationController
         private MessageRepositoryInterface $messageRepository,
         private UserRepositoryInterface $userRepository,
         private NotificationService $notificationService,
-        private PDO $connection,
+        private PaymentRepositoryInterface $paymentRepository,
+        private PricingService $pricingService,
+        private ConsultationImageRepositoryInterface $consultationImageRepository,
     ) {}
 
     public function create(): void
@@ -87,8 +91,7 @@ class ConsultationController
                 $ext = pathinfo($_FILES['images']['name'][$key], PATHINFO_EXTENSION);
                 $filename = $consultationId . '_' . uniqid() . '.' . $ext;
                 move_uploaded_file($tmpName, $uploadDir . $filename);
-                $stmt = $this->connection->prepare('INSERT INTO consultation_images (consultation_id, image_path, created_at) VALUES (:cid, :path, NOW())');
-                $stmt->execute([':cid' => $consultationId, ':path' => 'uploads/consultations/' . $filename]);
+                $this->consultationImageRepository->create($consultationId, 'uploads/consultations/' . $filename);
             }
         }
 
@@ -149,14 +152,13 @@ class ConsultationController
                 foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                     if ($_FILES['images']['error'][$key] !== UPLOAD_ERR_OK) continue;
                     $ext = pathinfo($_FILES['images']['name'][$key], PATHINFO_EXTENSION);
-                    $filename = $consultationId . '_' . uniqid() . '.' . $ext;
-                    move_uploaded_file($tmpName, $uploadDir . $filename);
-                    $stmt = $this->connection->prepare('INSERT INTO consultation_images (consultation_id, image_path, created_at) VALUES (:cid, :path, NOW())');
-                    $stmt->execute([':cid' => $consultationId, ':path' => 'uploads/consultations/' . $filename]);
-                }
+                $filename = $consultationId . '_' . uniqid() . '.' . $ext;
+                move_uploaded_file($tmpName, $uploadDir . $filename);
+                $this->consultationImageRepository->create($consultationId, 'uploads/consultations/' . $filename);
             }
+        }
 
-            echo json_encode(['success' => true]);
+        echo json_encode(['success' => true]);
         } catch (\Throwable $e) {
             http_response_code(500);
             error_log('Consultation create failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
@@ -178,20 +180,14 @@ class ConsultationController
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
         $consultations = $this->consultationRepository->findByFarmer($farmerId);
 
-        $images = [];
-        if (!empty($consultations)) {
-            $ids = array_map(fn($c) => $c->getId(), $consultations);
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $stmt = $this->connection->prepare("SELECT * FROM consultation_images WHERE consultation_id IN ($placeholders)");
-            $stmt->execute($ids);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                $images[$row['consultation_id']][] = $row;
-            }
-        }
+        $images = $this->consultationImageRepository->findByConsultationIds(
+            array_map(fn($c) => $c->getId(), $consultations)
+        );
 
         View::render('consultation/my-consultations', [
             'consultations' => $consultations,
             'images' => $images,
+            'consultationFee' => $this->pricingService->getConsultationFee(),
         ], 'dashboard');
     }
 
@@ -216,16 +212,9 @@ class ConsultationController
         ));
 
         // Get payment data for each consultation
-        $paymentRecords = [];
-        if (!empty($consultations)) {
-            $ids = array_map(fn($c) => $c->getId(), $consultations);
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $stmt = $this->connection->prepare("SELECT * FROM payments WHERE consultation_id IN ($placeholders)");
-            $stmt->execute(array_values($ids));
-            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                $paymentRecords[(int) $row['consultation_id']] = $row;
-            }
-        }
+        $paymentRecords = $this->paymentRepository->findByConsultationIds(
+            array_map(fn($c) => $c->getId(), $consultations)
+        );
 
         View::render('consultation/payment-history', [
             'consultations' => $consultations,
@@ -252,20 +241,14 @@ class ConsultationController
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
         $consultations = $this->consultationRepository->findByFarmer($farmerId);
 
-        $images = [];
+        $images = $this->consultationImageRepository->findByConsultationIds(
+            array_map(fn($c) => $c->getId(), $consultations)
+        );
         $lastMessages = [];
         $expertNames = [];
         $expertAvatars = [];
         if (!empty($consultations)) {
             $ids = array_map(fn($c) => $c->getId(), $consultations);
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
-            // Fetch images
-            $stmt = $this->connection->prepare("SELECT * FROM consultation_images WHERE consultation_id IN ($placeholders)");
-            $stmt->execute($ids);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                $images[$row['consultation_id']][] = $row;
-            }
 
             $lastMessages = $this->messageRepository->findLastMessageByConsultationIds($ids);
 
@@ -285,6 +268,7 @@ class ConsultationController
             'lastMessages' => $lastMessages,
             'expertNames' => $expertNames,
             'expertAvatars' => $expertAvatars,
+            'consultationFee' => $this->pricingService->getConsultationFee(),
         ], 'app');
     }
 }

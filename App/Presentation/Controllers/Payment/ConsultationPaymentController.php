@@ -2,10 +2,12 @@
 
 namespace App\Presentation\Controllers\Payment;
 
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentCommand;
 use App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentHandler;
 use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
 use App\Shared\Exceptions\PaymentException;
@@ -19,6 +21,8 @@ class ConsultationPaymentController
         private UserRepositoryInterface $userRepository,
         private ProcessPaymentHandler $paymentHandler,
         private NotificationService $notificationService,
+        private PaymentRepositoryInterface $paymentRepository,
+        private PricingService $pricingService,
     ) {
         $base = defined('BASE_URL') ? dirname($_SERVER['DOCUMENT_ROOT'] . BASE_URL) : $_SERVER['DOCUMENT_ROOT'];
         $this->uploadDir = $base . '/public/uploads/payments';
@@ -54,9 +58,13 @@ class ConsultationPaymentController
             ? $this->userRepository->findById($consultation->getExpertId())
             : null;
 
+        $payment = $this->paymentRepository->findLatestByConsultationId($id);
+        $price = $payment ? $payment->getAmount() : $this->pricingService->getConsultationFee();
+
         View::render('payment/consultation-payment', [
             'consultation' => $consultation,
             'expert' => $expert,
+            'price' => $price,
         ], 'app');
     }
 

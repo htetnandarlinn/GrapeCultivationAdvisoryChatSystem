@@ -20,12 +20,15 @@ use App\Infrastructure\Persistence\Repositories\PermissionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
 use App\Infrastructure\Persistence\Repositories\UserRepository;
 use App\Domain\UserManagement\Services\UserAuthenticationService;
-use App\Infrastructure\Persistence\Repositories\AuthRepository;
 use App\Infrastructure\Persistence\Repositories\PasswordResetRepository;
 use App\Infrastructure\Persistence\Repositories\EmailVerificationRepository;
 use App\Infrastructure\Persistence\Repositories\ActivityRepository;
 use App\Infrastructure\Persistence\Repositories\ArticleRepository;
 use App\Infrastructure\Persistence\Repositories\NotificationRepository;
+use App\Infrastructure\Persistence\Repositories\PaymentRepository;
+use App\Infrastructure\Persistence\Repositories\ConsultationImageRepository;
+use App\Infrastructure\Persistence\TransactionManager;
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\NotificationManagement\NotificationService;
 use App\Presentation\Controllers\NotificationController;
 use App\Presentation\Controllers\Payment\InvoiceController;
@@ -145,28 +148,31 @@ class Router
                     new ConsultationRepository($this->db()),
                     new UserRepository($this->db()),
                     new NotificationService(
-                        new NotificationRepository($this->db()),
-                        $this->db()
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     ),
-                    $this->db()
+                    new PaymentRepository($this->db()),
+                    new PricingService(),
+                    new ConsultationImageRepository($this->db())
                 ),
 
             ExpertConsultationController::class => $this->createExpertConsultationController(),
 
             ChatController::class => $this->createChatController(),
-
             ConsultationPaymentController::class =>
                 new ConsultationPaymentController(
                     new ConsultationRepository($this->db()),
                     new UserRepository($this->db()),
                     new \App\Application\ConsultationManagement\ProcessPayment\ProcessPaymentHandler(
                         new ConsultationRepository($this->db()),
-                        $this->db()
+                        new PaymentRepository($this->db()),
+                        new TransactionManager($this->db())
                     ),
                     new NotificationService(
                         new NotificationRepository($this->db()),
-                        $this->db()
-                    )
+                        new UserRepository($this->db())
+                    ),
+                    new PaymentRepository($this->db()),
+                    new PricingService()
                 ),
 
             DashboardController::class =>
@@ -177,18 +183,16 @@ class Router
                     new ArticleRepository($this->db()),
                     new NotificationRepository($this->db()),
                     new NotificationService(
-                        new NotificationRepository($this->db()),
-                        $this->db()
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     ),
-                    $this->db()
+                    new PaymentRepository($this->db())
                 ),
 
             ArticleController::class =>
                 new ArticleController(
                     new \App\Infrastructure\Persistence\Repositories\ArticleRepository($this->db()),
                     new NotificationService(
-                        new NotificationRepository($this->db()),
-                        $this->db()
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     )
                 ),
 
@@ -243,8 +247,7 @@ class Router
                         new UserRepository($this->db())
                     ),
                     new NotificationService(
-                        new NotificationRepository($this->db()),
-                        $this->db()
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     )
                 ),
 
@@ -257,7 +260,8 @@ class Router
                 new InvoiceController(
                     new ConsultationRepository($this->db()),
                     new UserRepository($this->db()),
-                    $this->db()
+                    new PaymentRepository($this->db()),
+                    new PricingService()
                 ),
 
             default => new $controller()
@@ -276,7 +280,7 @@ class Router
                 new ActivityRepository($this->db())
             ),
             new LoginUserHandler(
-                new AuthRepository($userRepo),
+                $userRepo,
                 new UserAuthenticationService()
             ),
             new RegisterRequestValidator(),
@@ -317,8 +321,7 @@ class Router
     {
         $messageRepo = new MessageRepository($this->db());
         $notificationService = new NotificationService(
-            new NotificationRepository($this->db()),
-            $this->db()
+            new NotificationRepository($this->db()), new UserRepository($this->db())
         );
 
         return new ChatController(
@@ -335,8 +338,7 @@ class Router
         $userRepo = new UserRepository($this->db());
         $messageRepo = new MessageRepository($this->db());
         $notificationService = new NotificationService(
-            new NotificationRepository($this->db()),
-            $this->db()
+            new NotificationRepository($this->db()), new UserRepository($this->db())
         );
 
         return new ConsultationController(
@@ -347,7 +349,9 @@ class Router
             $messageRepo,
             $userRepo,
             $notificationService,
-            $this->db()
+            new PaymentRepository($this->db()),
+            new PricingService(),
+            new ConsultationImageRepository($this->db())
         );
     }
 
@@ -356,8 +360,7 @@ class Router
         $userRepo = new UserRepository($this->db());
         $messageRepo = new MessageRepository($this->db());
         $notificationService = new NotificationService(
-            new NotificationRepository($this->db()),
-            $this->db()
+            new NotificationRepository($this->db()), new UserRepository($this->db())
         );
 
         return new ExpertConsultationController(
@@ -365,7 +368,9 @@ class Router
             $userRepo,
             $messageRepo,
             $notificationService,
-            $this->db()
+            new PaymentRepository($this->db()),
+            new PricingService(),
+            new ConsultationImageRepository($this->db())
         );
     }
 

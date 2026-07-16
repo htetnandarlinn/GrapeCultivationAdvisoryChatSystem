@@ -3,7 +3,7 @@
 namespace App\Application\UserManagement\LoginUser;
 
 use App\Domain\UserManagement\Entities\User;
-use App\Domain\UserManagement\Repositories\AuthRepositoryInterface;
+use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\Services\UserAuthenticationService;
 use App\Shared\Exceptions\ValidationException;
 use App\Shared\Helpers\ValidationHelper;
@@ -11,7 +11,7 @@ use App\Shared\Helpers\ValidationHelper;
 final class LoginUserHandler
 {
     public function __construct(
-        private AuthRepositoryInterface $authRepository,
+        private UserRepositoryInterface $userRepository,
         private UserAuthenticationService $authenticationService,
     ) {
     }
@@ -40,7 +40,7 @@ final class LoginUserHandler
         |--------------------------------------------------------------------------
         */
 
-        $user = $this->authRepository->findByIdentifier(
+        $user = $this->userRepository->findByIdentifier(
             $command->email
         );
 
@@ -58,7 +58,7 @@ final class LoginUserHandler
         */
 
         if (
-            !$this->authRepository->verifyCredentials(
+            !$this->userRepository->verifyCredentials(
                 $command->email,
                 $command->password
             )

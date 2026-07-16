@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="GrapeCultivationAdvisory">
+    <description>PSR-12 coding standard for the Grape Cultivation Advisory Chat System.</description>
+
+    <arg name="colors"/>
+    <arg value="p"/>
+    <arg name="extensions" value="php"/>
+
+    <file>App</file>
+
+    <exclude-pattern>*/App/Presentation/Views/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <rule ref="PSR12"/>
+</ruleset>

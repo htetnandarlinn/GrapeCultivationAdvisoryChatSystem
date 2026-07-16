@@ -11,7 +11,6 @@ final class PasswordResetRepository implements PasswordResetRepositoryInterface
     public function __construct(private PDO $connection)
     {
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
     }
 
     public function save(PasswordReset $reset): void

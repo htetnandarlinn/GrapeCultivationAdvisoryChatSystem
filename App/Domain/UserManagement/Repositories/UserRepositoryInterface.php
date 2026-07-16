@@ -33,9 +33,16 @@ interface UserRepositoryInterface
 
     public function countExperts(): int;
 
+    /** @return User[] */
+    public function findByType(string $type): array;
+
     public function deleteById(int $id): void;
 
     public function emailExists(string $email): bool;
+
+    public function findByIdentifier(string $identifier): ?User;
+
+    public function verifyCredentials(string $identifier, string $password): bool;
 
     // updatestatue
     public function updateStatus(

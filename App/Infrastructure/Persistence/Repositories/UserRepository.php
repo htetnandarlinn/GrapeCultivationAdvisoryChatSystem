@@ -14,7 +14,6 @@ class UserRepository implements UserRepositoryInterface
     public function __construct(private PDO $connection)
     {
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
     }
 
     public function save(User $user): void
@@ -266,7 +265,7 @@ WHERE user_id = :id
         $sql = '
             SELECT *
             FROM users
-            WHERE (username = :identifier OR email = :identifier)
+            WHERE (username = :username OR email = :email)
               AND deleted_at IS NULL
             LIMIT 1
         ';
@@ -274,7 +273,8 @@ WHERE user_id = :id
         $stmt = $this->connection->prepare($sql);
 
         $stmt->execute([
-            ':identifier' => $identifier
+            ':username' => $identifier,
+            ':email' => $identifier,
         ]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -348,6 +348,24 @@ WHERE user_id = :id
         return (int) $stmt->fetchColumn();
     }
 
+    public function findByType(string $type): array
+    {
+        $typeId = $this->mapUserTypeToId($type);
+        $sql = '
+            SELECT *
+            FROM users
+            WHERE user_type_id = :type_id
+              AND deleted_at IS NULL
+            ORDER BY created_at DESC
+        ';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':type_id' => $typeId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
     public function deleteById(int $id): void
     {
         $sql = "
@@ -375,6 +393,22 @@ WHERE user_id = :id
         $stmt->execute([':email' => $email]);
 
         return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function findByIdentifier(string $identifier): ?User
+    {
+        return $this->findByUsernameOrEmail($identifier);
+    }
+
+    public function verifyCredentials(string $identifier, string $password): bool
+    {
+        $user = $this->findByUsernameOrEmail($identifier);
+
+        if ($user === null) {
+            return false;
+        }
+
+        return password_verify($password, $user->getPasswordHash());
     }
 
     private function mapToEntity(array $row): User

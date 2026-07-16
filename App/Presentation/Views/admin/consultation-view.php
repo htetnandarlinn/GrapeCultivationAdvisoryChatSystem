@@ -108,7 +108,7 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                 <div class="px-5 py-4 space-y-3">
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Amount</span>
-                        <span class="font-bold text-slate-800">$29.99</span>
+                        <span class="font-bold text-slate-800">$<?= number_format($consultationFee ?? 29.99, 2) ?></span>
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Status</span>

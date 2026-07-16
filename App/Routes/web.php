@@ -152,22 +152,6 @@ $router->post('/notifications/mark-all-read', [NotificationController::class, 'm
 
 $router->get('/access-denied', [\App\Presentation\Controllers\AccessDeniedController::class, 'index']);
 
-/* ================= DEBUG (authenticated, remove in production) ================= */
-
-$router->get('/debug-permissions', function () {
-    if (session_status() === PHP_SESSION_NONE) { session_start(); }
-    echo '<h2>Session Debug</h2>';
-    echo '<h3>user_role:</h3>'; var_dump($_SESSION['user_role'] ?? 'NOT SET');
-    echo '<h3>user_permissions:</h3>';
-    $perms = $_SESSION['user_permissions'] ?? [];
-    if (empty($perms)) { echo '(empty array)'; } else { print_r($perms); }
-    echo '<h3>Has users.view:</h3>'; var_dump(in_array('users.view', $perms, true));
-    echo '<h3>Has roles.view:</h3>'; var_dump(in_array('roles.view', $perms, true));
-    echo '<h3>session_id:</h3>'; echo session_id();
-    echo '<h3>user session key:</h3>'; var_dump(isset($_SESSION['user']));
-    exit;
-})->auth();
-
 /* ================= PROFILE (authenticated) ================= */
 
 $router->get('/profile', [ProfileController::class, 'profile'])->can('profile.view');

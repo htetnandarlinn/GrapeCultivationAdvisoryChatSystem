@@ -64,12 +64,20 @@ class NotificationController
         }
 
         $notifications = $this->notificationRepo->findByRecipientId($userId, 10);
+        $viewerRole = $_SESSION['user_role'] ?? '';
+
+        $resolveLink = static function ($n) use ($viewerRole) {
+            if ($n->getType() === 'profile_update') {
+                return $viewerRole === 'farmer' ? '/my-profile' : '/notifications';
+            }
+            return $n->getLink() ?? '/notifications';
+        };
 
         $data = array_map(fn($n) => [
             'id' => $n->getId(),
             'message' => $n->getMessage(),
             'type' => $n->getType(),
-            'link' => $n->getLink(),
+            'link' => $resolveLink($n),
             'is_read' => $n->isRead(),
             'time_ago' => $n->getTimeAgo(),
         ], $notifications);
