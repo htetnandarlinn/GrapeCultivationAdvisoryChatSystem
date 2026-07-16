@@ -80,7 +80,7 @@ final class PHPMailerService implements MailServiceInterface
                 'verificationLink' => $verificationLink,
             ];
 
-            extract($data);
+            extract($data, EXTR_SKIP);
 
             ob_start();
             require $template;
@@ -150,7 +150,7 @@ final class PHPMailerService implements MailServiceInterface
                 'resetLink' => $resetLink,
             ];
 
-            extract($data);
+            extract($data, EXTR_SKIP);
 
             ob_start();
             require $template;

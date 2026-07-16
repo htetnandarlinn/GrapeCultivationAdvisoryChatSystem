@@ -2,17 +2,19 @@
 
 namespace App\Presentation\Controllers\Payment;
 
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Views\View;
-use PDO;
 
 class InvoiceController
 {
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
         private UserRepositoryInterface $userRepository,
-        private PDO $connection,
+        private PaymentRepositoryInterface $paymentRepository,
+        private PricingService $pricingService,
     ) {}
 
     public function view(): void
@@ -87,9 +89,7 @@ class InvoiceController
             return ['error' => 'Access denied'];
         }
 
-        $stmt = $this->connection->prepare('SELECT * FROM payments WHERE consultation_id = :cid ORDER BY id DESC LIMIT 1');
-        $stmt->execute([':cid' => $consultationId]);
-        $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+        $payment = $this->paymentRepository->findLatestByConsultationId($consultationId);
 
         $farmer = $this->userRepository->findById($farmerId);
         $expert = $expertId ? $this->userRepository->findById($expertId) : null;
@@ -98,16 +98,16 @@ class InvoiceController
         $paidAt = $consultation->getVerifiedAt();
         if ($paidAt) {
             $paymentDate = $paidAt;
-        } elseif ($payment && !empty($payment['payment_date'])) {
-            $paymentDate = new \DateTimeImmutable($payment['payment_date']);
+        } elseif ($payment && $payment->getPaymentDate()) {
+            $paymentDate = $payment->getPaymentDate();
         }
 
         $invoiceDate = $paymentDate ? $paymentDate->format('Ymd') : date('Ymd');
         $invoiceNo = sprintf('INV-%s-%05d', $invoiceDate, $consultationId);
 
         $transactionRef = null;
-        if ($payment && !empty($payment['transaction_reference'])) {
-            $transactionRef = $payment['transaction_reference'];
+        if ($payment && $payment->getTransactionReference()) {
+            $transactionRef = $payment->getTransactionReference();
         }
         if (!$transactionRef) {
             $transactionRef = $consultation->getIdempotencyKey();
@@ -118,7 +118,7 @@ class InvoiceController
         if (in_array($consultationStatus, ['accepted', 'chat_started', 'completed'], true)) {
             $paymentStatus = 'Paid';
         } elseif ($payment) {
-            $ps = $payment['payment_status'] ?? '';
+            $ps = $payment->getStatus()->getValue();
             $paymentStatus = match ($ps) {
                 'PAID', 'SUBMITTED' => 'Paid',
                 'PENDING' => 'Pending',
@@ -128,14 +128,14 @@ class InvoiceController
             };
         }
 
-        $amount = $payment && !empty($payment['amount']) ? (float) $payment['amount'] : 29.99;
+        $amount = $payment ? (float) $payment->getAmount() : $this->pricingService->getConsultationFee();
 
         $refundStatus = null;
         $refundDate = null;
-        if ($payment && !empty($payment['refund_status'])) {
-            $refundStatus = $payment['refund_status'];
-            if (!empty($payment['refund_date'])) {
-                $refundDate = (new \DateTimeImmutable($payment['refund_date']))->format('d M Y');
+        if ($payment && $payment->getRefundStatus()) {
+            $refundStatus = $payment->getRefundStatus();
+            if ($payment->getRefundDate()) {
+                $refundDate = $payment->getRefundDate()->format('d M Y');
             }
         }
         if (!$refundStatus) {
@@ -147,8 +147,8 @@ class InvoiceController
         }
 
         $adminName = 'System';
-        if ($payment && !empty($payment['verified_by'])) {
-            $admin = $this->userRepository->findById((int) $payment['verified_by']);
+        if ($payment && $payment->getVerifiedBy()) {
+            $admin = $this->userRepository->findById((int) $payment->getVerifiedBy());
             if ($admin) {
                 $adminName = $admin->getUsername();
             }

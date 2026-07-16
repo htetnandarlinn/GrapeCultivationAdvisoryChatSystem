@@ -13,7 +13,7 @@ $expert = $expert ?? null;
 $status = $consultation->getStatus()->getValue();
 $isRenewal = $status === 'expired';
 $idempotencyKey = bin2hex(random_bytes(32));
-$price = 29.99;
+$price = $price ?? 29.99;
 $payeePhone = '09-777-888-999';
 $kpayPhone = '09-777-888-999';
 $wavepayPhone = '09-777-888-999';

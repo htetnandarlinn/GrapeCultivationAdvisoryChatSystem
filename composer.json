@@ -7,12 +7,32 @@
       "App\\": "App/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": ">=8.1",
     "phpmailer/phpmailer": "^7.1",
     "cboden/ratchet": "^0.4.4",
     "dompdf/dompdf": "^3.1"
   },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "squizlabs/php_codesniffer": "^3.11",
+    "phpunit/phpunit": "^11.5"
+  },
+  "scripts": {
+    "analyse": "phpstan analyse",
+    "lint": "phpcs",
+    "test": "phpunit"
+  },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
 }

@@ -65,8 +65,8 @@
                             $paymentLabels = [
                                 'pending' => ['text' => '—', 'class' => 'text-slate-300'],
                                 'assigned' => ['text' => '—', 'class' => 'text-slate-300'],
-                                'awaiting_payment' => ['text' => 'Pending $29.99', 'class' => 'text-violet-600 font-semibold'],
-                                'accepted' => ['text' => 'Paid $29.99', 'class' => 'text-emerald-600 font-semibold'],
+                                'awaiting_payment' => ['text' => 'Pending $' . number_format($consultationFee ?? 29.99, 2), 'class' => 'text-violet-600 font-semibold'],
+                                'accepted' => ['text' => 'Paid $' . number_format($consultationFee ?? 29.99, 2), 'class' => 'text-emerald-600 font-semibold'],
                                 'rejected' => ['text' => '—', 'class' => 'text-slate-300'],
                                 'expired' => ['text' => 'Expired', 'class' => 'text-red-600 font-semibold'],
                             ];

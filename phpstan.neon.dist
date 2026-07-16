@@ -1,0 +1,7 @@
+parameters:
+    level: 5
+    paths:
+        - App
+    excludePaths:
+        - App/Presentation/Views/*
+    treatPhpDocTypesAsCertain: false

@@ -28,7 +28,8 @@
         foreach ($consultations as $c) {
             $s = $c->getStatus()->getValue();
             if (in_array($s, ['accepted', 'chat_started', 'completed', 'closed'], true) || ($s === 'expired' && $c->getPaidAt())) {
-                $totalSpent += 29.99;
+                $pay = $paymentRecords[$c->getId()] ?? null;
+                $totalSpent += $pay ? (float) $pay->getAmount() : 0.0;
             }
         }
     ?>
@@ -136,7 +137,7 @@
                                 <span class="text-xs font-medium text-slate-700"><?= $methodName ?></span>
                             </td>
                             <td class="px-4 py-4">
-                                <span class="text-xs font-bold text-slate-800">$29.99</span>
+                                <span class="text-xs font-bold text-slate-800">$<?= $pay ? number_format($pay->getAmount(), 2) : '—' ?></span>
                             </td>
                             <td class="px-4 py-4 text-xs text-slate-500">
                                 <?php if ($c->getVerifiedAt()): ?>

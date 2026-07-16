@@ -3,26 +3,26 @@
 namespace App\Application\ConsultationManagement\ProcessPayment;
 
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
+use App\Domain\Shared\TransactionManagerInterface;
 use App\Shared\Exceptions\PaymentException;
-use PDO;
 
 final class ProcessPaymentHandler
 {
-    private const CONSULTATION_FEE = 29.99;
-
     public function __construct(
         private ConsultationRepositoryInterface $consultationRepository,
-        private PDO $connection,
+        private PaymentRepositoryInterface $paymentRepository,
+        private TransactionManagerInterface $transactionManager,
     ) {}
 
     public function handle(ProcessPaymentCommand $command): void
     {
-        $this->connection->beginTransaction();
+        $this->transactionManager->begin();
 
         try {
             $existing = $this->consultationRepository->findByIdempotencyKey($command->idempotencyKey);
             if ($existing !== null) {
-                $this->connection->commit();
+                $this->transactionManager->commit();
                 return;
             }
 
@@ -51,27 +51,16 @@ final class ProcessPaymentHandler
             $this->consultationRepository->update($consultation);
 
             // Update the existing payment record with submission details
-            $stmt = $this->connection->prepare('
-                UPDATE payments
-                SET payment_status = :payment_status,
-                    payment_method = :payment_method,
-                    transaction_image = :transaction_image,
-                    transaction_reference = :transaction_reference,
-                    payment_date = NOW(),
-                    updated_at = NOW()
-                WHERE consultation_id = :consultation_id
-            ');
-            $stmt->execute([
-                ':payment_status' => 'SUBMITTED',
-                ':payment_method' => $command->paymentMethod,
-                ':transaction_image' => $command->transactionImage,
-                ':transaction_reference' => $command->idempotencyKey,
-                ':consultation_id' => $consultation->getId(),
-            ]);
+            $this->paymentRepository->markSubmitted(
+                $command->consultationId,
+                $command->paymentMethod,
+                $command->transactionImage,
+                $command->idempotencyKey
+            );
 
-            $this->connection->commit();
+            $this->transactionManager->commit();
         } catch (\Throwable $e) {
-            $this->connection->rollBack();
+            $this->transactionManager->rollBack();
             throw $e;
         }
     }

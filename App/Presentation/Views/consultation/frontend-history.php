@@ -318,6 +318,7 @@ foreach ($consultations as $c) {
 <script>
 const consultationsData = <?= json_encode($consultationsData) ?>;
 const baseUrl = '<?= BASE_URL ?>';
+const consultationFee = <?= (float) ($consultationFee ?? 29.99) ?>;
 const userId = <?= $userId ?>;
 const userName = '<?= htmlspecialchars($username, ENT_QUOTES) ?>';
 const role = 'farmer';
@@ -459,7 +460,7 @@ function selectConsultation(id) {
             svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5"/>';
             title.textContent = 'Consultation Expired';
             text.textContent = 'Your 30-day consultation period has ended. Renew your subscription to continue messaging with your expert.';
-            btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Renew Payment — $29.99';
+            btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Renew Payment — $' + consultationFee.toFixed(2);
             btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 shadow-amber-200 hover:shadow-xl hover:shadow-amber-300';
         } else {
             iconContainer.className = 'w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center relative bg-violet-50';
@@ -468,7 +469,7 @@ function selectConsultation(id) {
             svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>';
             title.textContent = 'Payment Required';
             text.textContent = 'An expert has been assigned to your consultation. Complete your payment to unlock 30 days of expert guidance.';
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay $29.99 Now';
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay $' + consultationFee.toFixed(2) + ' Now';
             btn.className = 'inline-flex items-center justify-center gap-2 w-full py-3.5 px-8 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg active:scale-[0.98] text-sm bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300';
         }
         btn.href = baseUrl + '/payment/consultation?id=' + id;

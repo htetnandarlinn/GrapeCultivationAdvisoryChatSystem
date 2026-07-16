@@ -2,13 +2,17 @@
 
 namespace App\Presentation\Controllers\Expert;
 
+use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\NotificationManagement\NotificationService;
+use App\Domain\ConsultationManagement\Entities\Payment;
+use App\Domain\ConsultationManagement\Repositories\ConsultationImageRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
+use App\Domain\ConsultationManagement\ValueObjects\PaymentStatus;
 use App\Domain\Messaging\Repositories\MessageRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Presentation\Attributes\Permission;
 use App\Presentation\Views\View;
-use PDO;
 
 class ConsultationController
 {
@@ -17,7 +21,9 @@ class ConsultationController
         private UserRepositoryInterface $userRepository,
         private MessageRepositoryInterface $messageRepository,
         private NotificationService $notificationService,
-        private PDO $connection,
+        private PaymentRepositoryInterface $paymentRepository,
+        private PricingService $pricingService,
+        private ConsultationImageRepositoryInterface $consultationImageRepository,
     ) {}
 
     #[Permission('consultations.answer', 'Answer Consultations')]
@@ -51,9 +57,7 @@ class ConsultationController
 
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
 
-        $stmt = $this->connection->prepare('SELECT * FROM consultation_images WHERE consultation_id = :cid');
-        $stmt->execute([':cid' => $id]);
-        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $images = $this->consultationImageRepository->findByConsultationId($id);
 
         View::render('expert/consultation-view', [
             'consultation' => $consultation,
@@ -103,18 +107,15 @@ class ConsultationController
             $this->consultationRepository->update($consultation);
 
             // Insert payment record
-            $stmt = $this->connection->prepare('
-                INSERT INTO payments (consultation_id, farmer_id, amount, payment_date, start_date, expiry_date, payment_status, transaction_reference, payment_method, created_at, updated_at)
-                VALUES (:consultation_id, :farmer_id, :amount, NOW(), CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), :payment_status, :transaction_reference, :payment_method, NOW(), NOW())
-            ');
-            $stmt->execute([
-                ':consultation_id' => $consultation->getId(),
-                ':farmer_id' => $consultation->getFarmerId(),
-                ':amount' => 29.99,
-                ':payment_status' => 'PENDING',
-                ':transaction_reference' => $idempotencyKey,
-                ':payment_method' => null,
-            ]);
+            $this->paymentRepository->create(new Payment(
+                id: null,
+                consultationId: $consultation->getId(),
+                farmerId: $consultation->getFarmerId(),
+                amount: $this->pricingService->getConsultationFee(),
+                status: PaymentStatus::pending(),
+                transactionReference: $idempotencyKey,
+                paymentMethod: null,
+            ));
 
             // Notify farmer that payment is now needed
             $farmer = $this->userRepository->findById($consultation->getFarmerId());
@@ -122,11 +123,18 @@ class ConsultationController
                 $this->notificationService->notify(
                     $farmer->getId(),
                     'farmer',
-                    'Expert has accepted your consultation "' . $consultation->getTitle() . '". Please complete payment of $29.99 to start.',
+                    'Expert has accepted your consultation "' . $consultation->getTitle() . '". Please complete payment of $' . number_format($this->pricingService->getConsultationFee(), 2) . ' to start.',
                     'consultation_awaiting_payment',
                     '/payment/consultation?id=' . $consultation->getId()
                 );
             }
+
+            // Notify admins (delivered live via the topbar poll)
+            $this->notificationService->notifyAllAdmins(
+                'Expert has accepted consultation "' . $consultation->getTitle() . '". Payment requested from the farmer.',
+                'consultation_expert_accepted',
+                '/admin/consultations/view?id=' . $consultation->getId()
+            );
 
             if ($isAjax) {
                 header('Content-Type: application/json');
@@ -251,13 +259,8 @@ class ConsultationController
 
         if (!empty($consultations)) {
             $ids = array_map(fn($c) => $c->getId(), $consultations);
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-            $stmt = $this->connection->prepare("SELECT * FROM consultation_images WHERE consultation_id IN ($placeholders)");
-            $stmt->execute($ids);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                $images[$row['consultation_id']][] = $row;
-            }
+            $images = $this->consultationImageRepository->findByConsultationIds($ids);
 
             $lastMessages = $this->messageRepository->findLastMessageByConsultationIds($ids);
 

@@ -5,6 +5,7 @@ namespace App\Presentation\Controllers\Dashboard;
 use App\Application\NotificationManagement\NotificationService;
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\KnowledgeBase\Repositories\ArticleRepositoryInterface;
 use App\Domain\NotificationManagement\Repositories\NotificationRepositoryInterface;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
@@ -19,7 +20,7 @@ class DashboardController
         private ?ArticleRepositoryInterface $articleRepository = null,
         private ?NotificationRepositoryInterface $notificationRepository = null,
         private ?NotificationService $notificationService = null,
-        private ?\PDO $connection = null,
+        private ?PaymentRepositoryInterface $paymentRepository = null,
     ) {}
 
     public function home(): void
@@ -93,10 +94,20 @@ class DashboardController
         }
         $userdata  = $this->userRepository->findById($userId);
 
-       if($userdata->getType()->getValue() == "farmer"){
+        if ($userdata === null) {
+            redirect('/login');
+            return;
+        }
 
-          redirect('/');
-       }
+        if ($role === 'farmer') {
+            redirect('/');
+            return;
+        }
+
+        if ($role === 'expert') {
+            redirect('/expert/consultations/hub');
+            return;
+        }
         $data = ['activePage' => 'dashboard'];
 
         if ($this->userRepository) {
@@ -147,11 +158,10 @@ class DashboardController
                 $refundedCount = 0;
 
                 $paymentAmounts = [];
-                if ($this->connection) {
-                    $amtRows = $this->connection->query("SELECT consultation_id, amount FROM payments WHERE payment_status = 'PAID'")->fetchAll(\PDO::FETCH_ASSOC);
-                    foreach ($amtRows as $ar) {
-                        $paymentAmounts[(int) $ar['consultation_id']] = (float) $ar['amount'];
-                    }
+                if ($this->paymentRepository) {
+                    $paymentAmounts = $this->paymentRepository->findByConsultationIds(
+                        array_map(static fn($c) => $c->getId(), $allConsultations)
+                    );
                 }
 
                 foreach ($allConsultations as $c) {
@@ -160,8 +170,9 @@ class DashboardController
                     if ($s === 'payment_submitted') $pendingReview++;
                     if ($s === 'expired') $expiredCount++;
                     if ($c->getRefundStatus() === 'refunded') $refundedCount++;
-                    if (isset($paymentAmounts[$c->getId()])) {
-                        $totalRevenue += $paymentAmounts[$c->getId()];
+                    $payment = $paymentAmounts[$c->getId()] ?? null;
+                    if ($payment && $payment->getStatus()->isPaid()) {
+                        $totalRevenue += $payment->getAmount();
                     }
                 }
                 $data['adminAwaitingPayment'] = $awaitingPayment;
@@ -174,8 +185,9 @@ class DashboardController
                 $expertIncome = [];
                 foreach ($allConsultations as $c) {
                     $eid = $c->getExpertId();
-                    if ($eid && isset($paymentAmounts[$c->getId()])) {
-                        $expertIncome[$eid] = ($expertIncome[$eid] ?? 0) + $paymentAmounts[$c->getId()];
+                    $payment = $paymentAmounts[$c->getId()] ?? null;
+                    if ($eid && $payment && $payment->getStatus()->isPaid()) {
+                        $expertIncome[$eid] = ($expertIncome[$eid] ?? 0) + $payment->getAmount();
                     }
                 }
                 arsort($expertIncome);

@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<?php $consultationFee = $consultationFee ?? 29.99; ?>
 <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <div>
@@ -79,7 +80,7 @@
                             <span class="px-3 py-1 rounded-full text-[10px] font-bold <?= $color ?>"><?= $statusLabel ?></span>
                             <?php if ($status === 'awaiting_payment'): ?>
                                 <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-colors">
-                                    <i class="fa-solid fa-lock text-[8px]"></i> Pay $29.99
+                                    <i class="fa-solid fa-lock text-[8px]"></i> Pay $<?= number_format($consultationFee, 2) ?>
                                 </a>
                             <?php elseif ($status === 'payment_submitted'): ?>
                                 <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg">
@@ -87,7 +88,7 @@
                                 </span>
                             <?php elseif ($status === 'expired'): ?>
                                 <a href="<?= BASE_URL ?>/payment/consultation?id=<?= $c->getId() ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-colors">
-                                    <i class="fa-solid fa-arrows-rotate text-[8px]"></i> Renew $29.99
+                                    <i class="fa-solid fa-arrows-rotate text-[8px]"></i> Renew $<?= number_format($consultationFee, 2) ?>
                                 </a>
                             <?php endif; ?>
                         </div>
