@@ -6,6 +6,7 @@ use App\Application\UserManagement\LoginUser\LoginUserHandler;
 use App\Application\UserManagement\RegisterUser\RegisterUserHandler;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
 use App\Domain\UserManagement\Entities\User;
+use App\Application\NotificationManagement\NotificationService;
 use App\Infrastructure\Persistence\Repositories\PermissionRepository;
 use App\Infrastructure\Persistence\Repositories\RoleRepository;
 use App\Domain\Activity\Repositories\ActivityRepositoryInterface;
@@ -25,6 +26,7 @@ final class AuthController
         private ActivityRepositoryInterface $activityRepository,
         private RoleRepository $roleRepo,
         private PermissionRepository $permRepo,
+        private ?NotificationService $notificationService = null,
     ) {}
 
     public function showRegister()
@@ -45,6 +47,15 @@ final class AuthController
             $command = $this->registerValidator->validate($payload);
 
             $this->registerHandler->handle($command);
+
+            $username = trim($payload['username'] ?? '');
+            if ($this->notificationService) {
+                $this->notificationService->notifyAllAdmins(
+                    'New user "' . $username . '" has registered and is awaiting email verification.',
+                    'user_registered',
+                    '/notifications'
+                );
+            }
 
             $_SESSION['success'] = 'Please check your email for a verification link before logging in.';
             redirect('/login');
@@ -95,6 +106,17 @@ final class AuthController
                 strtoupper($user->getType()->getValue())
             );
 
+            if ($this->notificationService) {
+                $this->notificationService->notifyAllAdmins(
+                    ucfirst($user->getType()->getValue())
+                        . ' "'
+                        . $user->getUsername()
+                        . '" logged into the system.',
+                    'user_login',
+                    '/notifications'
+                );
+            }
+
             $this->redirectByRole($user);
             exit;
         } catch (ValidationException $e) {
@@ -119,6 +141,14 @@ final class AuthController
                     (int) $_SESSION['user_id'],
                     $role
                 );
+
+                if ($this->notificationService) {
+                    $this->notificationService->notifyAllAdmins(
+                        ucfirst($role) . ' "' . $username . '" logged out of the system.',
+                        'user_logout',
+                        '/notifications'
+                    );
+                }
 
                 $user->setLogin(false);
                 $user->setUpdatedAt($this->nowInMyanmarTime());
@@ -161,9 +191,7 @@ final class AuthController
         }
 
         if ($user->isVerified()) {
-            View::render('auth/verification_failed', [
-                'message' => 'Email already verified.'
-            ], '_standalone_');
+            View::render('auth/verification_success', [], '_standalone_');
             return;
         }
 

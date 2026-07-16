@@ -307,11 +307,12 @@ $username = $_SESSION['user']['username'] ?? 'User';
                         <p class="text-xs font-medium text-slate-600 flex-grow"><?= htmlspecialchars($act['activity']) ?></p>
                         <span class="text-[10px] text-slate-400 font-mono"><?= date('h:i A', strtotime($act['created_at'])) ?></span>
                     </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
     <?php elseif ($userRole === 'farmer'): ?>
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">

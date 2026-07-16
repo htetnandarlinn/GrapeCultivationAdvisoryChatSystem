@@ -72,7 +72,7 @@ class DashboardController
             $this->notificationService->notifyAllAdmins(
                 "New contact message from $name ($email): $subject",
                 'system',
-                null
+                '/notifications'
             );
         }
 

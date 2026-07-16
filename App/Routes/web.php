@@ -15,6 +15,7 @@ use App\Presentation\Controllers\Consultation\ConsultationController;
 use App\Presentation\Controllers\Dashboard\DashboardController;
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
+use App\Presentation\Controllers\Expert\ExpertPayoutController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\NotificationController;
 use App\Presentation\Controllers\Payment\InvoiceController;
@@ -93,6 +94,7 @@ $router->get('/admin/payments', [AdminConsultationController::class, 'payments']
 $router->post('/admin/payments/approve', [AdminConsultationController::class, 'approvePayment'])->role('admin')->can('consultations.view');
 $router->post('/admin/payments/reject', [AdminConsultationController::class, 'rejectPayment'])->role('admin')->can('consultations.view');
 $router->post('/admin/payments/refund', [AdminConsultationController::class, 'refundPayment'])->role('admin')->can('consultations.view');
+$router->post('/admin/payments/release-payout', [AdminConsultationController::class, 'releasePayout'])->role('admin')->can('consultations.view');
 
 /* ================= EXPERT: ARTICLES ================= */
 
@@ -116,6 +118,7 @@ $router->post('/expert/consultations/reject', [ExpertConsultationController::cla
 $router->get('/expert/consultations/chat', [ExpertConsultationController::class, 'chat'])->role('expert')->can('consultations.answer');
 $router->get('/expert/consultations/hub', [ExpertConsultationController::class, 'hub'])->role('expert')->can('consultations.answer');
 $router->get('/expert/farmers', [ExpertConsultationController::class, 'farmers'])->role('expert')->can('consultations.answer');
+$router->get('/expert/payouts', [ExpertPayoutController::class, 'index'])->role('expert')->can('consultations.answer');
 
 /* ================= FARMER: CONSULTATIONS ================= */
 

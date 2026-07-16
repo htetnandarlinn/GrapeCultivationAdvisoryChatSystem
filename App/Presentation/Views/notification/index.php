@@ -40,7 +40,7 @@
                                     $notifHref = $viewerRole === 'farmer'
                                         ? BASE_URL . '/my-profile'
                                         : BASE_URL . '/notifications';
-                                } elseif ($notif->getLink()) {
+                                } elseif ($notif->getLink() && $notif->getLink() !== '/notifications') {
                                     $notifHref = BASE_URL . $notif->getLink();
                                 }
                                 ?>

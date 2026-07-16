@@ -157,6 +157,21 @@ final class PaymentRepository implements PaymentRepositoryInterface
         ]);
     }
 
+    public function markPayoutReleased(int $consultationId, float $payoutAmount, string $adminName): void
+    {
+        $note = 'Expert payout released: $' . number_format($payoutAmount, 2) . ' by ' . $adminName;
+        $stmt = $this->connection->prepare('
+            UPDATE payments
+            SET admin_notes = :admin_notes,
+                updated_at = NOW()
+            WHERE consultation_id = :consultation_id
+        ');
+        $stmt->execute([
+            ':admin_notes' => $note,
+            ':consultation_id' => $consultationId,
+        ]);
+    }
+
     private function toEntity(array $row): Payment
     {
         return new Payment(

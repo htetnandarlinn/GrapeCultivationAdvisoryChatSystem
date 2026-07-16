@@ -76,7 +76,7 @@ class ConsultationController
         $this->notificationService->notifyAllAdmins(
             "$farmerName submitted a new consultation: " . $title,
             'consultation_created',
-            '/admin/consultations/view?id=' . $consultationId
+            '/notifications'
         );
         $this->notificationService->notifyAllByRole(
             'farmer',

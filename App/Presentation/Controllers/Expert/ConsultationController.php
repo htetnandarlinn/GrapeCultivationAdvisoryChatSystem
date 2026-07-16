@@ -133,7 +133,7 @@ class ConsultationController
             $this->notificationService->notifyAllAdmins(
                 'Expert has accepted consultation "' . $consultation->getTitle() . '". Payment requested from the farmer.',
                 'consultation_expert_accepted',
-                '/admin/consultations/view?id=' . $consultation->getId()
+                '/notifications'
             );
 
             // Notify the accepting expert
@@ -208,6 +208,13 @@ class ConsultationController
                 '/consultations'
             );
         }
+
+        // Notify admins of the expert's rejection
+        $this->notificationService->notifyAllAdmins(
+            'Expert rejected consultation "' . $consultation->getTitle() . '". Reason: ' . $note,
+            'consultation_rejected',
+            '/notifications'
+        );
 
         if ($isAjax) {
             header('Content-Type: application/json');

@@ -52,6 +52,7 @@ use App\Presentation\Attributes\Permission as PermissionAttribute;
 
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
+use App\Presentation\Controllers\Expert\ExpertPayoutController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
 use App\Shared\Infrastructure\Database\Database;
@@ -152,10 +153,16 @@ class Router
                     ),
                     new PaymentRepository($this->db()),
                     new PricingService(),
-                    new ConsultationImageRepository($this->db())
+                    new ConsultationImageRepository($this->db()),
+                    new \App\Infrastructure\Persistence\Repositories\ExpertPayoutRepository($this->db())
                 ),
 
             ExpertConsultationController::class => $this->createExpertConsultationController(),
+
+            ExpertPayoutController::class =>
+                new ExpertPayoutController(
+                    new \App\Infrastructure\Persistence\Repositories\ExpertPayoutRepository($this->db())
+                ),
 
             ChatController::class => $this->createChatController(),
             ConsultationPaymentController::class =>
@@ -288,7 +295,11 @@ class Router
             $userRepo,
             new ActivityRepository($this->db()),
             new RoleRepository($this->db()),
-            new PermissionRepository($this->db())
+            new PermissionRepository($this->db()),
+            new NotificationService(
+                new NotificationRepository($this->db()),
+                new UserRepository($this->db())
+            )
         );
     }
 
