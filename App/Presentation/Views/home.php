@@ -434,8 +434,7 @@
   <div class="max-w-7xl mx-auto">
     <div class="text-center max-w-2xl mx-auto mb-10">
       <span class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold tracking-wider uppercase mb-3">What We Offer</span>
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Everything You Need for Smarter Grape Farming</h2>
-      <p class="text-xs text-slate-500 mt-2 max-w-md mx-auto">Expert guidance, real-time advice, and a community of growers helping each other succeed.</p>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Smarter Grape Farming</h2>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="featuresGrid">

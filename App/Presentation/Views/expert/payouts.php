@@ -1,4 +1,19 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <style>
+        @keyframes payStatIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .pay-stat {
+            animation: payStatIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+            transition: transform .35s cubic-bezier(0.16,1,0.3,1), box-shadow .35s cubic-bezier(0.16,1,0.3,1);
+        }
+        .pay-stat:hover { transform: translateY(-4px); box-shadow: 0 22px 50px -26px rgba(21,128,61,0.5); }
+        .pay-stat .bar { transform: scaleX(0); transform-origin: left; animation: barGrow 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s forwards; }
+        @keyframes barGrow { to { transform: scaleX(1); } }
+        .p1 { animation-delay: 0.06s; } .p2 { animation-delay: 0.14s; } .p3 { animation-delay: 0.22s; }
+        @media (prefers-reduced-motion: reduce) { .pay-stat, .pay-stat .bar { animation: none !important; transform: none !important; } }
+    </style>
     <div class="mb-8">
         <h2 class="text-2xl font-black text-slate-900 tracking-tight">My Earnings</h2>
         <p class="text-xs text-slate-500 mt-1">Track the payments you've earned from completed consultations.</p>
@@ -16,15 +31,18 @@
 
     <!-- Summary cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="pay-stat p1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-[#15803D] rounded-full mb-3"></div>
             <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Earned</p>
             <p class="text-2xl font-black text-[#15803D] mt-1">$<?= number_format($totalEarned ?? 0, 2) ?></p>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="pay-stat p2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-amber-400 rounded-full mb-3"></div>
             <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Pending Payout</p>
             <p class="text-2xl font-black text-amber-500 mt-1">$<?= number_format($totalPending ?? 0, 2) ?></p>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="pay-stat p3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-slate-700 rounded-full mb-3"></div>
             <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Released</p>
             <p class="text-2xl font-black text-slate-800 mt-1">$<?= number_format($totalReleased ?? 0, 2) ?></p>
         </div>
