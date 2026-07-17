@@ -214,13 +214,19 @@ class Router
                     new RoleRepository($this->db()),
                     new RoleService(
                         new RoleRepository($this->db())
+                    ),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     )
                 ),
 
             UserManagementController::class =>
                 new UserManagementController(
                     new UserRepository($this->db()),
-                    new RoleRepository($this->db())
+                    new RoleRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
+                    )
                 ),
 
             PermissionAssignmentController::class =>
@@ -232,7 +238,10 @@ class Router
                     new PermissionRegistrar(
                         new PermissionRepository($this->db())
                     ),
-                    new RoleRepository($this->db())
+                    new RoleRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
+                    )
                 ),
 
             AuthController::class => $this->createAuthController(),

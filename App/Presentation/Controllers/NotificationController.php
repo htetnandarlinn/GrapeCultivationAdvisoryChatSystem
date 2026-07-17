@@ -29,10 +29,17 @@ class NotificationController
 
         $notifications = $this->notificationRepo->findByRecipientId($userId, 100);
 
-        View::render('notification/index', [
-            'notifications' => $notifications,
-            'activePage' => 'notifications',
-        ], 'dashboard');
+        $role = $_SESSION['user_role'] ?? '';
+        if ($role === 'farmer') {
+            View::render('notification/farmer', [
+                'notifications' => $notifications,
+            ], 'app');
+        } else {
+            View::render('notification/index', [
+                'notifications' => $notifications,
+                'activePage' => 'notifications',
+            ], 'dashboard');
+        }
     }
 
     public function unreadCount(): void

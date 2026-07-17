@@ -33,6 +33,7 @@ function navClass(string $targetRoute, string $currentRoute): string {
         <?php if ($isLoggedIn && $userRole === 'farmer'): ?>
         <a href="<?= BASE_URL ?>/consultations" class="no-underline text-sm transition-colors <?= navClass('/consultations', $route) ?>">My Consultations</a>
         <a href="<?= BASE_URL ?>/payment/history" class="no-underline text-sm transition-colors <?= str_starts_with($route, '/invoice') ? 'text-grapeGreen font-semibold' : navClass('/payment/history', $route) ?>">Payments</a>
+        <a href="<?= BASE_URL ?>/notifications" class="no-underline text-sm transition-colors <?= navClass('/notifications', $route) ?>">Notifications</a>
         <?php endif; ?>
         <a href="<?= BASE_URL ?>/about" class="no-underline text-sm transition-colors <?= navClass('/about', $route) ?>">About Us</a>
         <a href="<?= BASE_URL ?>/contact" class="no-underline text-sm transition-colors <?= navClass('/contact', $route) ?>">Contact Us</a>
@@ -60,6 +61,9 @@ function navClass(string $targetRoute, string $currentRoute): string {
                     </div>
                     <div id="notifList" class="max-h-80 overflow-y-auto">
                         <div class="px-4 py-6 text-center text-xs text-slate-400">Loading...</div>
+                    </div>
+                    <div class="border-t border-slate-50 px-4 py-2 text-center">
+                        <a href="<?= BASE_URL ?>/notifications" id="viewAllNotif" class="text-[10px] font-semibold text-slate-400 hover:text-slate-600">View all notifications</a>
                     </div>
                 </div>
             </div>
@@ -242,33 +246,24 @@ function fetchNotifList() {
                     </div>
                 </a>
             `).join('');
-            // Mark individual notification as read on click
+            // Mark individual notification as read on click (decrement count only, no navigation)
             notifList.querySelectorAll('.notif-item').forEach(el => {
                 el.addEventListener('click', function(e) {
                     e.preventDefault();
                     const id = this.dataset.id;
-                    const href = this.href;
-                    if (id) {
-                        fetch(BASE + '/notifications/mark-read', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: 'id=' + id,
-                            keepalive: true,
-                        }).finally(() => {
-                            window.location.href = href;
-                        });
+                    if (!id) return;
+                    fetch(BASE + '/notifications/mark-read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'id=' + id,
+                    })
+                    .then(() => fetchNotifCount())
+                    .finally(() => {
                         this.classList.remove('bg-emerald-50/40');
                         this.querySelector('.w-2')?.classList.remove('bg-emerald-500');
                         this.querySelector('.w-2')?.classList.add('bg-slate-200');
                         this.querySelector('p')?.classList.remove('font-semibold');
-                        // Decrement badge
-                        const cur = parseInt(notifBadge.textContent, 10);
-                        if (cur > 1) {
-                            notifBadge.textContent = cur - 1;
-                        } else {
-                            notifBadge.classList.add('hidden');
-                        }
-                    }
+                    });
                 });
             });
         })
@@ -323,6 +318,14 @@ if (notifBell) {
                     });
                     markAllBtn.classList.add('hidden');
                 });
+        });
+    }
+
+    const viewAllBtn = document.getElementById('viewAllNotif');
+    if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', () => {
+            notifDropdown.classList.add('hidden');
+            window.location.href = BASE + '/notifications';
         });
     }
 }

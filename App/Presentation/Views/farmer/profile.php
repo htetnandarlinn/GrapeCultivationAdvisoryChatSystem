@@ -1,7 +1,5 @@
 <?php
 /** @var \App\Domain\UserManagement\Entities\User $user */
-$success = $_SESSION['success'] ?? '';
-unset($_SESSION['success']);
 ?>
 <section class="space-y-6">
     <div class="flex items-center justify-between">
@@ -70,38 +68,3 @@ unset($_SESSION['success']);
         </div>
     </div>
 </section>
-
-<?php if (!empty($success)): ?>
-<div id="profile-toast" class="fixed top-5 right-5 z-[100] flex items-center gap-3 max-w-sm w-full sm:w-auto bg-white rounded-2xl border border-emerald-100 shadow-2xl shadow-emerald-600/10 px-4 py-3.5 translate-x-[120%] opacity-0">
-    <div class="shrink-0 w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-[#15803D]">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-    </div>
-    <div class="min-w-0">
-        <p class="text-xs font-bold text-slate-900">Profile Updated</p>
-        <p class="text-[11px] text-slate-500 truncate"><?= htmlspecialchars($success) ?></p>
-    </div>
-    <button onclick="hideProfileToast()" class="ml-1 shrink-0 text-slate-300 hover:text-slate-500 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-</div>
-
-<script>
-(function () {
-    const toast = document.getElementById('profile-toast');
-    if (!toast) return;
-    requestAnimationFrame(() => {
-        toast.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease';
-        toast.style.transform = 'translateX(0)';
-        toast.style.opacity = '1';
-    });
-    let hideTimer = setTimeout(hideProfileToast, 4500);
-    toast.addEventListener('mouseenter', () => clearTimeout(hideTimer));
-    toast.addEventListener('mouseleave', () => { hideTimer = setTimeout(hideProfileToast, 1500); });
-    window.hideProfileToast = function () {
-        toast.style.transform = 'translateX(120%)';
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 500);
-    };
-})();
-</script>
-<?php endif; ?>

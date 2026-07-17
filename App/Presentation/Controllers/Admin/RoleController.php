@@ -2,6 +2,7 @@
 
 namespace App\Presentation\Controllers\Admin;
 
+use App\Application\NotificationManagement\NotificationService;
 use App\Application\RoleManagement\RoleService;
 use App\Domain\RoleManagement\Repositories\RoleRepositoryInterface;
 use App\Presentation\Attributes\Permission;
@@ -12,7 +13,16 @@ class RoleController
     public function __construct(
         private RoleRepositoryInterface $repository,
         private RoleService $service,
+        private NotificationService $notificationService,
     ) {}
+
+    private function notifySelf(string $message, string $type, ?string $link = null): void
+    {
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+        if ($adminId > 0) {
+            $this->notificationService->notify($adminId, 'admin', $message, $type, $link);
+        }
+    }
 
     #[Permission('roles.view', 'View Roles')]
     public function index(): void
@@ -55,6 +65,7 @@ class RoleController
         try {
             $this->service->create($name);
             $_SESSION['role_message'] = 'Role created successfully.';
+            $this->notifySelf('You created a new role "' . $name . '".', 'admin_action', '/admin/roles');
             redirect('/admin/roles');
         } catch (\RuntimeException $e) {
             $_SESSION['errors'] = ['name' => $e->getMessage()];
@@ -111,6 +122,7 @@ class RoleController
         try {
             $this->service->update($id, $name);
             $_SESSION['role_message'] = 'Role updated successfully.';
+            $this->notifySelf('You updated the role "' . $name . '".', 'admin_action', '/admin/roles');
             redirect('/admin/roles');
         } catch (\RuntimeException $e) {
             $_SESSION['errors'] = ['name' => $e->getMessage()];
@@ -132,6 +144,7 @@ class RoleController
 
         $this->service->delete($id);
         $_SESSION['role_message'] = 'Role deleted successfully.';
+        $this->notifySelf('You deleted a role (#' . $id . ').', 'admin_action', '/admin/roles');
         redirect('/admin/roles');
     }
 }

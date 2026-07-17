@@ -137,8 +137,7 @@ class ProfileController
             $this->notificationService->notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
             $this->notificationService->notifyAllByRole('expert', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
         } elseif ($userRole === 'admin') {
-            $this->notificationService->notifyAllByRole('farmer', "Admin {$username} has updated their profile.", 'profile_update', '/notifications');
-            $this->notificationService->notifyAllByRole('expert', "Admin {$username} has updated their profile.", 'profile_update', '/notifications');
+            $this->notificationService->notify($_SESSION['user_id'] ?? 0, 'admin', "You updated your profile.", 'profile_update', '/notifications');
         }
 
         $updatedUser = $this->repository->findById($_SESSION['user_id']);

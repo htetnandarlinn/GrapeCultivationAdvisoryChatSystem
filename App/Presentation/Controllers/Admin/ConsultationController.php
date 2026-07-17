@@ -25,6 +25,14 @@ class ConsultationController
         private ExpertPayoutRepositoryInterface $expertPayoutRepository,
     ) {}
 
+    private function notifySelf(string $message, string $type, ?string $link = null): void
+    {
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+        if ($adminId > 0) {
+            $this->notificationService->notify($adminId, 'admin', $message, $type, $link);
+        }
+    }
+
     #[Permission('consultations.view', 'View Payments')]
     public function payments(): void
     {
@@ -203,6 +211,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Expert assigned successfully. Waiting for expert to accept.';
+        $this->notifySelf('You assigned ' . ($expert ? $expert->getUsername() : 'an expert') . ' to consultation "' . $consultation->getTitle() . '".', 'admin_action', '/admin/consultations');
         redirect('/admin/consultations');
     }
 
@@ -281,6 +290,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment approved successfully. Consultation is now active.';
+        $this->notifySelf('You approved the payment for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 
@@ -366,6 +376,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Expert payout of $' . number_format($payoutAmount, 2) . ' released successfully.';
+        $this->notifySelf('You released an expert payout of $' . number_format($payoutAmount, 2) . ' for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 
@@ -418,6 +429,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment receipt rejected. Farmer has been notified to re-upload.';
+        $this->notifySelf('You rejected the payment receipt for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 
@@ -482,6 +494,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment refunded successfully ($' . number_format($refundAmount, 2) . ').';
+        $this->notifySelf('You refunded $' . number_format($refundAmount, 2) . ' for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 }
