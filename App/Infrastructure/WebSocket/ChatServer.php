@@ -43,6 +43,7 @@ class ChatServer implements MessageComponentInterface
 
         $this->broadcastToRoom($from->consultationId, [
             'type' => 'message',
+            'message_id' => $data['message_id'] ?? null,
             'message' => $data['message'],
             'message_type' => $data['message_type'] ?? 'text',
             'image_path' => $data['image_path'] ?? null,

@@ -121,9 +121,46 @@ $images = $images ?? [];
     let wsConnected = false;
     let reconnectTimer = null;
     let currentReplyTo = null;
+    let lastMessageId = 0;
+    let pollTimer = null;
+
+    function startPolling() {
+        if (pollTimer) return;
+        pollTimer = setInterval(() => {
+            if (wsConnected) return;
+            fetch(`${baseUrl}/chat/history?consultation_id=${consultationId}`)
+                .then(res => res.json())
+                .then(messages => {
+                    let hasNew = false;
+                    messages.forEach(m => {
+                        if (m.message_id && m.message_id > lastMessageId) {
+                            if (m.message_id > lastMessageId) lastMessageId = m.message_id;
+                            if (parseInt(m.sender_id) === userId) return;
+                            const replyInfo = m.reply_to ? { message: m.reply_to_message, sender: m.reply_to_sender } : null;
+                if (m.message_type === 'system') {
+                    appendSystemMessage(m.message);
+                } else if (m.message_type === 'image') {
+                    appendImage(m.image_path || m.message, m.sender_name, false, m.created_at, null, replyInfo, m.message_id, m.caption);
+                } else {
+                    appendMessage(m.message, m.sender_name, false, m.created_at, null, replyInfo, m.message_id);
+                }
+                hasNew = true;
+                        }
+                    });
+                    if (hasNew) scrollToBottom();
+                })
+                .catch(() => {});
+        }, 3000);
+    }
+
+    function stopPolling() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
 
     function connectWebSocket() {
-        const wsUrl = `ws://localhost:8080?consultation_id=${consultationId}&user_id=${userId}&role=${role}`;
+        stopPolling();
+        const host = window.location.hostname || 'localhost';
+        const wsUrl = `ws://${host}:8080?consultation_id=${consultationId}&user_id=${userId}&role=${role}`;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = function() {
@@ -134,27 +171,30 @@ $images = $images ?? [];
 
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
+            if (data.message_id && data.message_id > lastMessageId) lastMessageId = data.message_id;
             if (data.type === 'system') {
                 appendSystemMessage(data.message);
             } else if (parseInt(data.sender_id) !== userId) {
                 const replyInfo = data.reply_to ? { message: data.reply_to_message, sender: data.reply_to_sender } : null;
                 if (data.message_type === 'image') {
-                    appendImage(data.message, data.sender_name, false, data.created_at, null, replyInfo, data.caption);
+                    appendImage(data.message, data.sender_name, false, data.created_at, null, replyInfo, data.message_id, data.caption);
                 } else {
-                    appendMessage(data.message, data.sender_name, false, data.created_at, null, replyInfo);
+                    appendMessage(data.message, data.sender_name, false, data.created_at, null, replyInfo, data.message_id);
                 }
             }
         };
 
         ws.onclose = function() {
             wsConnected = false;
-            document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-circle text-amber-500 mr-1 text-[6px]"></i> Reconnecting...';
-            if (!reconnectTimer) reconnectTimer = setTimeout(connectWebSocket, 3000);
+            document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-circle text-amber-500 mr-1 text-[6px]"></i> Polling...';
+            if (!reconnectTimer) reconnectTimer = setTimeout(connectWebSocket, 5000);
+            startPolling();
         };
 
         ws.onerror = function() {
             wsConnected = false;
-            document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-circle text-slate-300 mr-1 text-[6px]"></i> Offline (HTTP mode)';
+            document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-circle text-slate-300 mr-1 text-[6px]"></i> Offline (polling)';
+            startPolling();
         };
     }
 
@@ -297,6 +337,22 @@ $images = $images ?? [];
         return d.innerHTML;
     }
 
+    function addReplyBtnToMsg(container, msgId, senderName) {
+        if (!container || !msgId) return;
+        const outer = container.lastElementChild;
+        if (!outer) return;
+        const group = outer.querySelector('.group');
+        if (!group) return;
+        const timeRow = group.children[group.children.length - 1];
+        if (!timeRow || timeRow.querySelector('.reply-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'reply-btn text-[9px] text-slate-400 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100';
+        btn.dataset.msgId = msgId;
+        btn.dataset.sender = senderName;
+        btn.innerHTML = '<i class="fa-solid fa-reply"></i>';
+        timeRow.insertBefore(btn, timeRow.firstChild);
+    }
+
     document.getElementById('image-btn').addEventListener('click', function() {
         document.getElementById('image-input').click();
     });
@@ -310,6 +366,7 @@ $images = $images ?? [];
             messages.forEach(m => {
                 const isMine = parseInt(m.sender_id) === userId;
                 const replyInfo = m.reply_to ? { message: m.reply_to_message, sender: m.reply_to_sender, isMineReply: isMine } : null;
+                if (m.message_id > lastMessageId) lastMessageId = m.message_id;
                 if (m.message_type === 'system') {
                     appendSystemMessage(m.message);
                 } else if (m.message_type === 'image') {
@@ -353,9 +410,10 @@ $images = $images ?? [];
         fetch(`${baseUrl}/chat/send`, { method: 'POST', body: formData })
             .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
             .then(data => {
-                console.log('Message saved, id:', data.id);
+                addReplyBtnToMsg(document.getElementById('messages-container'), data.id, userName);
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
+                        message_id: data.id,
                         message: data.message,
                         message_type: data.message_type || (file ? 'image' : 'text'),
                         image_path: file ? data.message : null,
