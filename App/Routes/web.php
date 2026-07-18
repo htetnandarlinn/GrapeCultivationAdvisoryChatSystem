@@ -142,6 +142,7 @@ $router->get('/invoice/download', [InvoiceController::class, 'downloadPdf'])->au
 $router->get('/consultation/chat', [ConsultationController::class, 'chat'])->role('farmer');
 $router->get('/chat/history', [ChatController::class, 'history'])->auth();
 $router->post('/chat/send', [ChatController::class, 'send'])->auth();
+$router->get('/consultation/status', [ConsultationController::class, 'getStatusJson'])->auth();
 
 /* ================= NOTIFICATIONS (authenticated) ================= */
 

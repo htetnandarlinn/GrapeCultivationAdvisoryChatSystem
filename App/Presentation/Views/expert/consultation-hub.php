@@ -610,6 +610,10 @@ function connectWebSocket(cid) {
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
         const container = document.getElementById('right-messages');
+        if (data.type === 'status_update') {
+            handleStatusUpdate(data.consultation_id, data.status);
+            return;
+        }
         if (data.message_id && data.message_id > lastMessageId) lastMessageId = data.message_id;
         if (data.type === 'system') {
             appendSystemMessage(data.message, container);
@@ -841,6 +845,51 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
 function triggerFileSelector() {
     document.getElementById('right-img-input').click();
 }
+
+// Status polling
+let statusPollTimer = null;
+
+function handleStatusUpdate(id, newStatus) {
+    const item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+    if (!item) return;
+    const currentStatus = item.dataset.status;
+    if (currentStatus === newStatus) return;
+
+    item.setAttribute('data-status', newStatus);
+    const badge = item.querySelector('.status-badge');
+    if (badge) {
+        const labels = { pending: 'Pending', assigned: 'Assigned', expert_accepted: 'Accepted', awaiting_payment: 'Awaiting Payment', payment_submitted: 'Pending Review', accepted: 'Active', chat_started: 'Active', completed: 'Completed', closed: 'Closed', rejected: 'Closed', expired: 'Expired' };
+        badge.textContent = labels[newStatus] || newStatus;
+        const t = themeMap[newStatus] || themeMap.pending;
+        badge.className = 'status-badge text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md ' + t.badge;
+        const dot = item.querySelector('.sidebar-item .rounded-full.border-2');
+        if (dot) dot.className = 'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ' + t.dot;
+    }
+    const cons = consultationsData.find(c => c.id === id);
+    if (cons) cons.status = newStatus;
+    if (selectedId === id) selectConsultation(id);
+}
+
+function startStatusPolling() {
+    if (statusPollTimer) return;
+    statusPollTimer = setInterval(() => {
+        const ids = Array.from(document.querySelectorAll('.sidebar-item')).map(el => el.dataset.id).filter(Boolean);
+        if (ids.length === 0) return;
+        fetch(baseUrl + '/consultation/status?ids=' + ids.join(','))
+            .then(res => res.json())
+            .then(statusMap => {
+                Object.entries(statusMap).forEach(([id, newStatus]) => {
+                    id = parseInt(id);
+                    const item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+                    if (!item || item.dataset.status === newStatus) return;
+                    handleStatusUpdate(id, newStatus);
+                });
+            })
+            .catch(function() {});
+    }, 5000);
+}
+
+startStatusPolling();
 
 document.getElementById('search-input')?.addEventListener('input', function() {
     const q = this.value.toLowerCase();

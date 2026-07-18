@@ -73,7 +73,7 @@
                             $pmt = $paymentLabels[$c->getStatus()->getValue()] ?? ['text' => '—', 'class' => 'text-slate-300'];
                             $imgPath = $consultationImages[$c->getId()] ?? null;
                             ?>
-                            <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                            <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors" data-id="<?= $c->getId() ?>" data-status="<?= $c->getStatus()->getValue() ?>">
                                 <td class="px-4 py-3">
                                     <?php if ($imgPath): ?>
                                         <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
@@ -112,3 +112,56 @@
         </div>
     <?php endif; ?>
 </section>
+
+<?php if (!empty($consultations)): ?>
+<script>
+const baseUrl = '<?= BASE_URL ?>';
+const statusColors = {
+    pending: 'bg-amber-100 text-amber-700', assigned: 'bg-blue-100 text-blue-700',
+    awaiting_payment: 'bg-violet-100 text-violet-700', accepted: 'bg-emerald-100 text-emerald-700',
+    rejected: 'bg-red-100 text-red-700', expired: 'bg-red-100 text-red-700',
+};
+const paymentLabels = {
+    pending: { text: '\u2014' }, assigned: { text: '\u2014' },
+    awaiting_payment: { text: 'Pending $<?= number_format($consultationFee ?? 29.99, 2) ?>' },
+    accepted: { text: 'Paid $<?= number_format($consultationFee ?? 29.99, 2) ?>' },
+    rejected: { text: '\u2014' }, expired: { text: 'Expired' },
+};
+const statusLabels = {
+    pending: 'Pending', assigned: 'Assigned', awaiting_payment: 'Awaiting Payment',
+    accepted: 'Accepted', rejected: 'Rejected', expired: 'Expired',
+};
+
+setInterval(function() {
+    const rows = document.querySelectorAll('tr[data-id]');
+    const ids = Array.from(rows).map(r => r.dataset.id).filter(Boolean);
+    if (ids.length === 0) return;
+    fetch(baseUrl + '/consultation/status?ids=' + ids.join(','))
+        .then(function(r) { return r.json(); })
+        .then(function(statusMap) {
+            rows.forEach(function(row) {
+                var id = parseInt(row.dataset.id);
+                var newStatus = statusMap[id];
+                if (!newStatus || row.dataset.status === newStatus) return;
+                row.dataset.status = newStatus;
+                var cells = row.querySelectorAll('td');
+                var statusCell = cells[3];
+                var paymentCell = cells[4];
+                if (statusCell) {
+                    var badge = statusCell.querySelector('span');
+                    if (badge) {
+                        var color = statusColors[newStatus] || 'bg-slate-100 text-slate-600';
+                        badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold ' + color;
+                        badge.textContent = statusLabels[newStatus] || newStatus.replace(/_/g, ' ');
+                    }
+                }
+                if (paymentCell) {
+                    var pmt = paymentLabels[newStatus] || { text: '\u2014' };
+                    paymentCell.innerHTML = '<span class="text-xs ' + (newStatus === 'awaiting_payment' ? 'text-violet-600 font-semibold' : newStatus === 'accepted' ? 'text-emerald-600 font-semibold' : newStatus === 'expired' ? 'text-red-600 font-semibold' : 'text-slate-300') + '">' + pmt.text + '</span>';
+                }
+            });
+        })
+        .catch(function() {});
+}, 5000);
+</script>
+<?php endif; ?>

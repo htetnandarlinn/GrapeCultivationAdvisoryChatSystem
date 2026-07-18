@@ -41,6 +41,7 @@ use App\Presentation\Controllers\Auth\ForgotPasswordController;
 use App\Presentation\Controllers\Auth\GoogleAuthController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
+use App\Infrastructure\Security\ReCaptchaValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
 
 
@@ -308,7 +309,8 @@ class Router
             new NotificationService(
                 new NotificationRepository($this->db()),
                 new UserRepository($this->db())
-            )
+            ),
+            new ReCaptchaValidator()
         );
     }
 

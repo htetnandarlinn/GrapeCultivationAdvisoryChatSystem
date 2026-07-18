@@ -14,6 +14,7 @@ use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
 use App\Presentation\Views\View;
 use App\Shared\Exceptions\ValidationException;
+use App\Infrastructure\Security\ReCaptchaValidator;
 
 final class AuthController
 {
@@ -27,6 +28,7 @@ final class AuthController
         private RoleRepository $roleRepo,
         private PermissionRepository $permRepo,
         private ?NotificationService $notificationService = null,
+        private ?ReCaptchaValidator $reCaptchaValidator = null,
     ) {}
 
     public function showRegister()
@@ -44,6 +46,13 @@ final class AuthController
         $payload = $_POST;
 
         try {
+            if ($this->reCaptchaValidator && RECAPTCHA_SECRET_KEY !== '') {
+                $recaptchaToken = $payload['g-recaptcha-response'] ?? '';
+                if (!$this->reCaptchaValidator->validate($recaptchaToken)) {
+                    throw new ValidationException(['recaptcha' => 'Please complete the reCAPTCHA verification.']);
+                }
+            }
+
             $command = $this->registerValidator->validate($payload);
 
             $this->registerHandler->handle($command);
@@ -78,6 +87,13 @@ final class AuthController
         $payload = $_POST;
 
         try {
+            if ($this->reCaptchaValidator && RECAPTCHA_SECRET_KEY !== '') {
+                $recaptchaToken = $payload['g-recaptcha-response'] ?? '';
+                if (!$this->reCaptchaValidator->validate($recaptchaToken)) {
+                    throw new ValidationException(['recaptcha' => 'Please complete the reCAPTCHA verification.']);
+                }
+            }
+
             $command = $this->loginValidator->validate($payload);
             $user = $this->loginHandler->handle($command);
 
