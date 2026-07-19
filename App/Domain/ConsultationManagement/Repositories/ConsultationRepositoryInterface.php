@@ -28,5 +28,22 @@ interface ConsultationRepositoryInterface
 
     public function findExpiredActiveConsultations(): array;
 
+    public function findActiveByFarmerAndTitle(int $farmerId, string $title): array;
+
+    /** @return array<int, array{month: string, total: int}> */
+    public function getMonthlyConsultationTrend(int $months = 12): array;
+
+    /** @return array<int, array{status: string, count: int}> */
+    public function getConsultationStatusSummary(): array;
+
+    /** @return array<int, array{expert_id: int, expert_name: string, answered_questions: int, pending_questions: int, avg_response_time_hours: float}> */
+    public function getExpertPerformance(int $limit = 10): array;
+
+    /** @return array<int, array{farmer_id: int, farmer_name: string, questions_submitted: int}> */
+    public function getTopFarmers(int $limit = 10): array;
+
+    /** @return array<int, array{expert_id: int, expert_name: string, questions_answered: int}> */
+    public function getTopExperts(int $limit = 10): array;
+
     public function update(Consultation $consultation): void;
 }

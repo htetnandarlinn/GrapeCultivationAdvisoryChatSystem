@@ -126,7 +126,7 @@ foreach ($consultations as $c) {
                                 <h3 class="text-xs font-bold text-slate-800 truncate leading-tight"><?= htmlspecialchars($displayName) ?></h3>
                                 <?php if ($lastMsgTime): ?><span class="text-[9px] font-semibold text-slate-400 shrink-0 uppercase"><?= $lastMsgTime ?></span><?php endif; ?>
                             </div>
-                            <p class="text-[10px] text-slate-500 font-medium truncate mt-0.5"><?= htmlspecialchars($c->getTitle()) ?></p>
+                            <p class="text-[10px] text-slate-500 font-medium truncate mt-0.5"><?= htmlspecialchars($c->getTitle()) ?> <span class="text-[9px] text-slate-400 font-normal">&middot; <?= $c->getCreatedAt()->format('M d') ?></span></p>
                             <p class="text-[10px] text-slate-400 font-medium truncate mt-1 flex items-center gap-1">
                                 <?php if ($lastMsg && $lastMsg['sender_id'] == $userId): ?><span class="text-emerald-500 font-bold">You:</span><?php endif; ?>
                                 <?= htmlspecialchars(mb_strimwidth($lastMsgText, 0, 45, "...")) ?>
@@ -395,6 +395,13 @@ function cancelReply() {
 
 function selectConsultation(id) {
     selectedId = id;
+
+    // Mark unread notifications for this consultation as read, refresh badge
+    fetch(baseUrl + '/notifications/mark-consultation-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'consultation_id=' + id,
+    }).then(() => { if (typeof fetchNotifCount === 'function') fetchNotifCount(); });
 
     // Update sidebar active state
     document.querySelectorAll('.sidebar-item').forEach(el => {

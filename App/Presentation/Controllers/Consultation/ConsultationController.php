@@ -62,6 +62,14 @@ class ConsultationController
 
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
 
+        // Block duplicate if an active consultation with the same title exists
+        $active = $this->consultationRepository->findActiveByFarmerAndTitle($farmerId, $title);
+        if (!empty($active)) {
+            $_SESSION['error'] = 'You already have an active consultation with the title "' . htmlspecialchars($title) . '". Please complete or close it first.';
+            redirect('/consultation/create');
+            return;
+        }
+
         $command = new CreateConsultationCommand(
             farmerId: $farmerId,
             title: $title,
@@ -124,6 +132,14 @@ class ConsultationController
         }
 
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
+
+        // Block duplicate if an active consultation with the same title exists
+        $active = $this->consultationRepository->findActiveByFarmerAndTitle($farmerId, $title);
+        if (!empty($active)) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'You already have an active consultation with the title "' . htmlspecialchars($title) . '". Please complete or close it first.']);
+            return;
+        }
 
         $command = new CreateConsultationCommand(
             farmerId: $farmerId,

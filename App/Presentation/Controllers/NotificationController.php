@@ -110,6 +110,23 @@ class NotificationController
         echo json_encode(['success' => true]);
     }
 
+    public function markConsultationRead(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $userId = (int) ($_SESSION['user']['id'] ?? 0);
+        $consultationId = (int) ($_POST['consultation_id'] ?? 0);
+
+        if ($userId && $consultationId) {
+            $this->notificationRepo->markConsultationAsRead($userId, $consultationId);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+    }
+
     public function markAllRead(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

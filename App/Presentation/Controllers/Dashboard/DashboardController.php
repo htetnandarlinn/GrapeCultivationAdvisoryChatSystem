@@ -119,6 +119,12 @@ class DashboardController
             if ($this->consultationRepository) {
                 $data['totalConsultations'] = $this->consultationRepository->countAll();
 
+                $data['monthlyTrend'] = $this->consultationRepository->getMonthlyConsultationTrend();
+                $data['statusSummary'] = $this->consultationRepository->getConsultationStatusSummary();
+                $data['expertPerformance'] = $this->consultationRepository->getExpertPerformance();
+                $data['topFarmers'] = $this->consultationRepository->getTopFarmers();
+                $data['topExperts'] = $this->consultationRepository->getTopExperts();
+
                 $allConsultations = $this->consultationRepository->findAll();
                 $data['adminConsultationList'] = array_slice($allConsultations, 0, 5);
 
@@ -202,6 +208,7 @@ class DashboardController
                 $experts = $this->userRepository->findExperts();
                 $data['adminRecentFarmers'] = array_slice($farmers, 0, 3);
                 $data['adminRecentExperts'] = array_slice($experts, 0, 3);
+                $data['monthlyUserRegistrations'] = $this->userRepository->getMonthlyUserRegistrations();
             }
             if ($this->notificationRepository) {
                 $data['adminUnreadNotifications'] = $this->notificationRepository->countUnread($userId);

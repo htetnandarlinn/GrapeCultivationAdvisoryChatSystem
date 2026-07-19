@@ -49,4 +49,7 @@ interface UserRepositoryInterface
         int $userId,
         string $status
     ): void;
+
+    /** @return array<int, array{month: string, farmers: int, experts: int}> */
+    public function getMonthlyUserRegistrations(int $months = 12): array;
 }

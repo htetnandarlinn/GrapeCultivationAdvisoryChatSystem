@@ -80,6 +80,20 @@ final class NotificationRepository implements NotificationRepositoryInterface
         $stmt->execute([':id' => $notificationId, ':recipient_id' => $recipientId]);
     }
 
+    public function markConsultationAsRead(int $recipientId, int $consultationId): void
+    {
+        $stmt = $this->connection->prepare("
+            UPDATE notifications SET is_read = 1
+            WHERE recipient_id = :recipient_id AND is_read = 0
+            AND (link LIKE :pattern1 OR link LIKE :pattern2)
+        ");
+        $stmt->execute([
+            ':recipient_id' => $recipientId,
+            ':pattern1' => '%/consultations?id=' . $consultationId,
+            ':pattern2' => '%/expert/consultations/chat?id=' . $consultationId,
+        ]);
+    }
+
     public function markAllAsRead(int $recipientId): void
     {
         $stmt = $this->connection->prepare("

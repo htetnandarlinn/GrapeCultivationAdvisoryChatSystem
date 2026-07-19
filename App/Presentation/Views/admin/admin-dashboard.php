@@ -7,6 +7,12 @@ $expertCount = $expertCount ?? 0;
 $totalConsultations = $totalConsultations ?? 0;
 $totalArticles = $totalArticles ?? 0;
 $adminUnreadNotifications = $adminUnreadNotifications ?? 0;
+$monthlyTrend = $monthlyTrend ?? [];
+$monthlyUserRegistrations = $monthlyUserRegistrations ?? [];
+$statusSummary = $statusSummary ?? [];
+$expertPerformance = $expertPerformance ?? [];
+$topFarmers = $topFarmers ?? [];
+$topExperts = $topExperts ?? [];
 
 $userRole = $_SESSION['user_role'] ?? '';
 
@@ -29,20 +35,6 @@ $roleDotColors = [
 $username = $_SESSION['user']['username'] ?? 'User';
 
 ?>
-
-
-
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between mb-8">
-        <div class="animate-fadeInDown">
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome back, <?= htmlspecialchars($username) ?>! <span class="wave-hand">👋</span></h2>
-            <p class="text-xs text-slate-500 mt-1">Here is a quick overview of your system.</p>
-        </div>
-        <div class="px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-600 animate-fadeIn">
-            <?= date('M d, Y') ?>
-        </div>
-    </div>
-
 <style>
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-12px); }
@@ -51,6 +43,10 @@ $username = $_SESSION['user']['username'] ?? 'User';
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 @keyframes wave {
     0%, 100% { transform: rotate(0deg); }
@@ -62,7 +58,25 @@ $username = $_SESSION['user']['username'] ?? 'User';
 .animate-fadeInDown { animation: fadeInDown 0.6s ease-out both; }
 .animate-fadeIn { animation: fadeIn 0.8s ease-out 0.2s both; }
 .wave-hand { display: inline-block; animation: wave 1.5s ease-in-out infinite; transform-origin: 70% 70%; }
+
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+.reveal.show { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
 </style>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div class="animate-fadeInDown">
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome back, <?= htmlspecialchars($username) ?>!</h2>
+            <p class="text-xs text-slate-500 mt-1">Here is a quick overview of your system.</p>
+        </div>
+        <div class="px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-600 animate-fadeIn">
+            <?= date('M d, Y') ?>
+        </div>
+    </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 <?= $userRole === 'expert' ? 'lg:grid-cols-4' : 'lg:grid-cols-5' ?> gap-5 mb-8">
         <a href="<?= BASE_URL . ($userRole === 'expert' ? '/expert/farmers' : '/admin/users?tab=farmers') ?>" class="group block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
@@ -165,7 +179,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
     <?php if ($userRole === 'expert'): ?>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                 <h2 class="text-sm font-black text-slate-900">Recent Consultation Requests</h2>
                 <a href="<?= BASE_URL ?>/consultation/my-consultations" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
@@ -203,7 +217,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal reveal-delay-1">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                 <h2 class="text-sm font-black text-slate-900">Recent Articles</h2>
                 <a href="<?= BASE_URL ?>/expert/articles" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
@@ -236,15 +250,15 @@ $username = $_SESSION['user']['username'] ?? 'User';
 
     <?php elseif ($userRole === 'farmer'): ?>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm reveal">
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Consultations</p>
             <p class="text-2xl font-black text-slate-900 mt-0.5"><?= $totalConsultations ?? 0 ?></p>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm reveal reveal-delay-1">
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending</p>
             <p class="text-2xl font-black text-amber-600 mt-0.5"><?= $pendingConsultations ?? 0 ?></p>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm reveal reveal-delay-2">
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Accepted</p>
             <p class="text-2xl font-black text-emerald-600 mt-0.5"><?= $acceptedConsultations ?? 0 ?></p>
         </div>
@@ -253,8 +267,128 @@ $username = $_SESSION['user']['username'] ?? 'User';
 
     <?php if ($userRole === 'admin'): ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <script src="<?= BASE_URL ?>/assets/js/chart.umd.min.js"></script>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <?php if (!empty($monthlyTrend)): ?>
+    <div class="reveal">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-sm font-black text-slate-900">Monthly Consultation Trend</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">Number of consultations created per month (last 12 months)</p>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
+                <span>Consultations</span>
+            </div>
+        </div>
+        <div class="relative" style="height:280px">
+            <canvas id="monthlyTrendChart"></canvas>
+        </div>
+    </div>
+    </div>
+    <?php endif; ?>
+    <?php if (!empty($monthlyUserRegistrations)): ?>
+    <div class="reveal reveal-delay-1">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-sm font-black text-slate-900">Monthly User Registrations</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">New farmer and expert registrations per month</p>
+            </div>
+            <div class="flex items-center gap-3 text-[10px] text-slate-400">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span> Farmers</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-blue-500"></span> Experts</span>
+            </div>
+        </div>
+        <div class="relative" style="height:280px">
+            <canvas id="userRegChart"></canvas>
+        </div>
+    </div>
+    </div>
+    <?php endif; ?>
+    </div>
+    <?php if (!empty($monthlyTrend)): ?>
+    <script>
+    (function() {
+        const data = <?= json_encode($monthlyTrend) ?>;
+        if (!data || !data.length) return;
+        const labels = data.map(d => d.month);
+        const counts = data.map(d => d.total);
+        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Consultations',
+                    data: counts,
+                    borderColor: '#15803D',
+                    backgroundColor: 'rgba(21, 128, 61, 0.08)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#15803D',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.35,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: false }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
+                },
+                interaction: { intersect: false, mode: 'index' },
+            }
+        });
+    })();
+    </script>
+    <?php endif; ?>
+    <?php if (!empty($monthlyUserRegistrations)): ?>
+    <script>
+    (function() {
+        const data = <?= json_encode($monthlyUserRegistrations) ?>;
+        if (!data || !data.length) return;
+        const labels = data.map(d => d.month);
+        const farmers = data.map(d => parseInt(d.farmers));
+        const experts = data.map(d => parseInt(d.experts));
+        const ctx = document.getElementById('userRegChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Farmers', data: farmers, backgroundColor: 'rgba(21, 128, 61, 0.75)', borderRadius: 4, borderSkipped: false },
+                    { label: 'Experts', data: experts, backgroundColor: 'rgba(59, 130, 246, 0.75)', borderRadius: 4, borderSkipped: false },
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: true }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
+                },
+                interaction: { intersect: false, mode: 'index' },
+            }
+        });
+    })();
+    </script>
+    <?php endif; ?>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                 <h2 class="text-sm font-black text-slate-900">Recent Consultations</h2>
                 <a href="<?= BASE_URL ?>/admin/consultations" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
@@ -267,21 +401,7 @@ $username = $_SESSION['user']['username'] ?? 'User';
                             <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($c->getTitle()) ?></p>
                             <p class="text-[10px] text-slate-400 mt-0.5"><?= $c->getCreatedAt()->format('M d, Y') ?></p>
                         </div>
-                        <span class="shrink-0 ml-3 px-2.5 py-1 rounded-full text-[10px] font-bold
-                            <?= match ($c->getStatus()->getValue()) {
-                                'pending' => 'bg-amber-50 text-amber-600',
-                                'assigned' => 'bg-blue-50 text-blue-600',
-                                'awaiting_payment' => 'bg-violet-50 text-violet-600',
-                                'expert_accepted' => 'bg-sky-50 text-sky-600',
-                                'payment_submitted' => 'bg-amber-50 text-amber-600',
-                                'accepted' => 'bg-emerald-50 text-emerald-600',
-                                'chat_started' => 'bg-teal-50 text-teal-600',
-                                'completed' => 'bg-green-50 text-green-600',
-                                'closed' => 'bg-slate-50 text-slate-600',
-                                'rejected' => 'bg-red-50 text-red-600',
-                                'expired' => 'bg-red-50 text-red-600',
-                                default => 'bg-slate-50 text-slate-500',
-                            } ?>">
+                        <span class="shrink-0 ml-3 px-2.5 py-1 rounded-full text-[10px] font-bold <?= match ($c->getStatus()->getValue()) { 'pending' => 'bg-amber-50 text-amber-600', 'assigned' => 'bg-blue-50 text-blue-600', 'awaiting_payment' => 'bg-violet-50 text-violet-600', 'expert_accepted' => 'bg-sky-50 text-sky-600', 'payment_submitted' => 'bg-amber-50 text-amber-600', 'accepted' => 'bg-emerald-50 text-emerald-600', 'chat_started' => 'bg-teal-50 text-teal-600', 'completed' => 'bg-green-50 text-green-600', 'closed' => 'bg-slate-50 text-slate-600', 'rejected' => 'bg-red-50 text-red-600', 'expired' => 'bg-red-50 text-red-600', default => 'bg-slate-50 text-slate-500' } ?>">
                             <?= ucfirst(str_replace('_', ' ', $c->getStatus()->getValue())) ?>
                         </span>
                     </div>
@@ -292,29 +412,151 @@ $username = $_SESSION['user']['username'] ?? 'User';
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
-            <h2 class="text-sm font-black text-slate-900">Recent Activity</h2>
-            <?php if (($adminUnreadNotifications ?? 0) > 0): ?>
-            <span class="px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-bold"><?= $adminUnreadNotifications ?> unread</span>
-            <?php endif; ?>
-        </div>
-        <div class="p-2">
-            <div class="space-y-0.5">
-                <?php foreach ($activities as $act): ?>
-                    <div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
-                        <span class="w-1.5 h-1.5 rounded-full <?= $roleDotColors[strtoupper($act['user_role'] ?? '')] ?? 'bg-slate-300' ?>"></span>
-                        <p class="text-xs font-medium text-slate-600 flex-grow"><?= htmlspecialchars($act['activity']) ?></p>
-                        <span class="text-[10px] text-slate-400 font-mono"><?= date('h:i A', strtotime($act['created_at'])) ?></span>
-                    </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal reveal-delay-1">
+            <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
+                <h2 class="text-sm font-black text-slate-900">Recent Activity</h2>
+                <?php if (($adminUnreadNotifications ?? 0) > 0): ?>
+                <span class="px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-bold"><?= $adminUnreadNotifications ?> unread</span>
+                <?php endif; ?>
+            </div>
+            <div class="p-2">
+                <div class="space-y-0.5">
+                    <?php foreach ($activities as $act): ?>
+                        <div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <span class="w-1.5 h-1.5 rounded-full <?= $roleDotColors[strtoupper($act['user_role'] ?? '')] ?? 'bg-slate-300' ?>"></span>
+                            <p class="text-xs font-medium text-slate-600 flex-grow"><?= htmlspecialchars($act['activity']) ?></p>
+                            <span class="text-[10px] text-slate-400 font-mono"><?= date('h:i A', strtotime($act['created_at'])) ?></span>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>
         </div>
     </div>
 
+    <?php if (!empty($statusSummary)): ?>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 reveal">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-sm font-black text-slate-900">Consultation Status</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Distribution of consultations by status</p>
+                </div>
+            </div>
+            <div class="relative mx-auto" style="height:260px; max-width:320px">
+                <canvas id="statusDoughnutChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 reveal reveal-delay-1">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-sm font-black text-slate-900">Expert Performance</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Questions answered by top experts</p>
+                </div>
+            </div>
+            <div class="relative" style="height:260px">
+                <canvas id="expertPerfChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function() {
+        // Doughnut
+        const ss = <?= json_encode($statusSummary) ?>;
+        if (ss && ss.length) {
+            const statusColors = { pending: '#F59E0B', assigned: '#3B82F6', expert_accepted: '#0EA5E9', awaiting_payment: '#8B5CF6', payment_submitted: '#F59E0B', accepted: '#15803D', chat_started: '#14B8A6', completed: '#22C55E', closed: '#64748B', rejected: '#EF4444', expired: '#EF4444' };
+            const labels = ss.map(d => d.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+            const counts = ss.map(d => parseInt(d.count));
+            const colors = ss.map(d => statusColors[d.status] || '#94a3b8');
+            new Chart(document.getElementById('statusDoughnutChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 9, weight: 'bold' }, color: '#64748b', padding: 12, usePointStyle: true, pointStyle: 'circle' } },
+                        tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, callbacks: { label: function(c) { return ' ' + c.label + ': ' + c.parsed; } } }
+                    }
+                }
+            });
+        }
+        // Horizontal Bar
+        const ep = <?= json_encode($expertPerformance) ?>;
+        if (ep && ep.length) {
+            const names = ep.map(d => d.expert_name);
+            const answered = ep.map(d => parseInt(d.answered_questions));
+            new Chart(document.getElementById('expertPerfChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{ label: 'Answered', data: answered, backgroundColor: 'rgba(21, 128, 61, 0.7)', borderRadius: 4, borderSkipped: false }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 9, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } },
+                        y: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' }, color: '#475569' }, border: { display: false } }
+                    }
+                }
+            });
+        }
+    })();
+    </script>
+    <?php endif; ?>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
+            <div class="px-6 py-4 border-b border-slate-50">
+                <h2 class="text-sm font-black text-slate-900">Top Active Farmers</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">Farmers with the most consultation submissions</p>
+            </div>
+            <div class="p-2">
+                <?php if (!empty($topFarmers)): ?>
+                    <?php $rank = 0; ?>
+                    <?php foreach ($topFarmers as $f): $rank++; ?>
+                    <div class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black <?= $rank <= 3 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' ?>"><?= $rank ?></span>
+                            <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($f['farmer_name']) ?></p>
+                        </div>
+                        <span class="shrink-0 ml-3 text-xs font-bold text-emerald-600"><?= (int) $f['questions_submitted'] ?> questions</span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-xs text-slate-400 text-center py-8">No data yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal reveal-delay-1">
+            <div class="px-6 py-4 border-b border-slate-50">
+                <h2 class="text-sm font-black text-slate-900">Top Active Experts</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">Experts who have answered the most questions</p>
+            </div>
+            <div class="p-2">
+                <?php if (!empty($topExperts)): ?>
+                    <?php $rank = 0; ?>
+                    <?php foreach ($topExperts as $e): $rank++; ?>
+                    <div class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black <?= $rank <= 3 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' ?>"><?= $rank ?></span>
+                            <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($e['expert_name']) ?></p>
+                        </div>
+                        <span class="shrink-0 ml-3 text-xs font-bold text-blue-600"><?= (int) $e['questions_answered'] ?> answered</span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-xs text-slate-400 text-center py-8">No data yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
     <?php elseif ($userRole === 'farmer'): ?>
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
             <h2 class="text-sm font-black text-slate-900">Quick Consultation</h2>
             <a href="<?= BASE_URL ?>/consultation/my-consultations" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700">View All</a>
@@ -338,3 +580,18 @@ $username = $_SESSION['user']['username'] ?? 'User';
     </div>
     <?php endif; ?>
 </section>
+
+<script>
+(function() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('show');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+})();
+</script>

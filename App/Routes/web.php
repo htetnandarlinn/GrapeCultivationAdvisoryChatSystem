@@ -150,6 +150,7 @@ $router->get('/notifications',               [NotificationController::class, 'in
 $router->get('/notifications/unread-count',  [NotificationController::class, 'unreadCount'])->auth();
 $router->get('/notifications/list', [NotificationController::class, 'list'])->auth();
 $router->post('/notifications/mark-read', [NotificationController::class, 'markRead'])->auth();
+$router->post('/notifications/mark-consultation-read', [NotificationController::class, 'markConsultationRead'])->auth();
 $router->post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->auth();
 
 /* ================= ACCESS DENIED (public) ================= */

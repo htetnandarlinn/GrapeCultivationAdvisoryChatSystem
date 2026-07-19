@@ -348,6 +348,23 @@ WHERE user_id = :id
         return (int) $stmt->fetchColumn();
     }
 
+    public function getMonthlyUserRegistrations(int $months = 12): array
+    {
+        $sql = "SELECT DATE_FORMAT(created_at, '%b') AS month,
+                       DATE_FORMAT(created_at, '%Y-%m') AS sort_key,
+                       SUM(CASE WHEN user_type_id = 2 THEN 1 ELSE 0 END) AS farmers,
+                       SUM(CASE WHEN user_type_id = 3 THEN 1 ELSE 0 END) AS experts
+                FROM users
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL :months MONTH)
+                  AND user_type_id IN (2, 3)
+                  AND deleted_at IS NULL
+                GROUP BY YEAR(created_at), MONTH(created_at), month, sort_key
+                ORDER BY sort_key ASC";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':months' => $months]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function findByType(string $type): array
     {
         $typeId = $this->mapUserTypeToId($type);
