@@ -1,7 +1,7 @@
 <?php
 /** @var \App\Domain\NotificationManagement\Entities\Notification[] $notifications */
 ?>
-<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Notifications</h2>
         <p class="text-xs text-slate-500 mt-1">All your recent notifications in one place.</p>

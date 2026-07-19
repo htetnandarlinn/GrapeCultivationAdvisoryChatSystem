@@ -39,7 +39,7 @@ foreach ($consultations as $c) {
 .hide-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 </style>
-<div class="max-w-[1400px] mx-auto p-4">
+<div class="max-w-6xl mx-auto p-4">
     <?php if (!empty($_SESSION['success'])): ?>
         <div class="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 flex items-center justify-between">
             <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> <?= htmlspecialchars($_SESSION['success']) ?></span>

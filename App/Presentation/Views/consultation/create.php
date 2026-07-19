@@ -1,5 +1,9 @@
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
+        <a href="<?= BASE_URL ?>/consultation/history" class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            Back
+        </a>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight">New Consultation</h2>
         <p class="text-xs text-slate-500 mt-1">Describe your grape cultivation issue to get expert advice.</p>
     </div>

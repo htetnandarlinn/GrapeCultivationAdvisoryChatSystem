@@ -130,14 +130,19 @@ class ProfileController
 
         $userRole = $_SESSION['user_role'] ?? '';
         $username = $_SESSION['user']['username'] ?? 'A user';
+        $userId = (int) ($_SESSION['user_id'] ?? 0);
         if ($userRole === 'farmer') {
             $this->notificationService->notifyAllByRole('admin', "Farmer {$username} has updated their profile.", 'profile_update', '/notifications');
-            $this->notificationService->notifyAllByRole('farmer', "Farmer {$username} has updated their profile.", 'profile_update', '/notifications');
+            if ($userId) {
+                $this->notificationService->notify($userId, 'farmer', "You updated your profile.", 'profile_update', '/notifications');
+            }
         } elseif ($userRole === 'expert') {
             $this->notificationService->notifyAllByRole('admin', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
-            $this->notificationService->notifyAllByRole('expert', "Expert {$username} has updated their profile.", 'profile_update', '/notifications');
+            if ($userId) {
+                $this->notificationService->notify($userId, 'expert', "You updated your profile.", 'profile_update', '/notifications');
+            }
         } elseif ($userRole === 'admin') {
-            $this->notificationService->notify($_SESSION['user_id'] ?? 0, 'admin', "You updated your profile.", 'profile_update', '/notifications');
+            $this->notificationService->notify($userId, 'admin', "You updated your profile.", 'profile_update', '/notifications');
         }
 
         $updatedUser = $this->repository->findById($_SESSION['user_id']);
