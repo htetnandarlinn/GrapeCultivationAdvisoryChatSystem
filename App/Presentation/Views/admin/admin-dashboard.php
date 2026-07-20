@@ -65,6 +65,16 @@ $username = $_SESSION['user']['username'] ?? 'User';
 .reveal-delay-2 { transition-delay: 0.2s; }
 .reveal-delay-3 { transition-delay: 0.3s; }
 .reveal-delay-4 { transition-delay: 0.4s; }
+
+.chart-reveal { opacity: 0; transform: translateY(30px) scale(0.96); transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+.chart-reveal.show { opacity: 1; transform: translateY(0) scale(1); }
+.chart-reveal-delay-1 { transition-delay: 0.15s; }
+
+@keyframes borderGlow {
+    0%, 100% { border-color: rgba(21, 128, 61, 0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    50% { border-color: rgba(21, 128, 61, 0.25); box-shadow: 0 4px 20px rgba(21, 128, 61, 0.08); }
+}
+.chart-reveal.show .chart-card-inner { animation: borderGlow 2.5s ease-in-out 1; }
 </style>
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -270,124 +280,6 @@ $username = $_SESSION['user']['username'] ?? 'User';
     <script src="<?= BASE_URL ?>/assets/js/chart.umd.min.js"></script>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <?php if (!empty($monthlyTrend)): ?>
-    <div class="reveal">
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-sm font-black text-slate-900">Monthly Consultation Trend</h2>
-                <p class="text-[10px] text-slate-400 mt-0.5">Number of consultations created per month (last 12 months)</p>
-            </div>
-            <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
-                <span>Consultations</span>
-            </div>
-        </div>
-        <div class="relative" style="height:280px">
-            <canvas id="monthlyTrendChart"></canvas>
-        </div>
-    </div>
-    </div>
-    <?php endif; ?>
-    <?php if (!empty($monthlyUserRegistrations)): ?>
-    <div class="reveal reveal-delay-1">
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-sm font-black text-slate-900">Monthly User Registrations</h2>
-                <p class="text-[10px] text-slate-400 mt-0.5">New farmer and expert registrations per month</p>
-            </div>
-            <div class="flex items-center gap-3 text-[10px] text-slate-400">
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span> Farmers</span>
-                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-blue-500"></span> Experts</span>
-            </div>
-        </div>
-        <div class="relative" style="height:280px">
-            <canvas id="userRegChart"></canvas>
-        </div>
-    </div>
-    </div>
-    <?php endif; ?>
-    </div>
-    <?php if (!empty($monthlyTrend)): ?>
-    <script>
-    (function() {
-        const data = <?= json_encode($monthlyTrend) ?>;
-        if (!data || !data.length) return;
-        const labels = data.map(d => d.month);
-        const counts = data.map(d => d.total);
-        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Consultations',
-                    data: counts,
-                    borderColor: '#15803D',
-                    backgroundColor: 'rgba(21, 128, 61, 0.08)',
-                    borderWidth: 2.5,
-                    pointBackgroundColor: '#15803D',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.35,
-                    fill: true,
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: false }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
-                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
-                },
-                interaction: { intersect: false, mode: 'index' },
-            }
-        });
-    })();
-    </script>
-    <?php endif; ?>
-    <?php if (!empty($monthlyUserRegistrations)): ?>
-    <script>
-    (function() {
-        const data = <?= json_encode($monthlyUserRegistrations) ?>;
-        if (!data || !data.length) return;
-        const labels = data.map(d => d.month);
-        const farmers = data.map(d => parseInt(d.farmers));
-        const experts = data.map(d => parseInt(d.experts));
-        const ctx = document.getElementById('userRegChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Farmers', data: farmers, backgroundColor: 'rgba(21, 128, 61, 0.75)', borderRadius: 4, borderSkipped: false },
-                    { label: 'Experts', data: experts, backgroundColor: 'rgba(59, 130, 246, 0.75)', borderRadius: 4, borderSkipped: false },
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: true }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
-                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
-                },
-                interaction: { intersect: false, mode: 'index' },
-            }
-        });
-    })();
-    </script>
-    <?php endif; ?>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                 <h2 class="text-sm font-black text-slate-900">Recent Consultations</h2>
@@ -432,81 +324,6 @@ $username = $_SESSION['user']['username'] ?? 'User';
             </div>
         </div>
     </div>
-
-    <?php if (!empty($statusSummary)): ?>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 reveal">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h2 class="text-sm font-black text-slate-900">Consultation Status</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Distribution of consultations by status</p>
-                </div>
-            </div>
-            <div class="relative mx-auto" style="height:260px; max-width:320px">
-                <canvas id="statusDoughnutChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 reveal reveal-delay-1">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h2 class="text-sm font-black text-slate-900">Expert Performance</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Questions answered by top experts</p>
-                </div>
-            </div>
-            <div class="relative" style="height:260px">
-                <canvas id="expertPerfChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <script>
-    (function() {
-        // Doughnut
-        const ss = <?= json_encode($statusSummary) ?>;
-        if (ss && ss.length) {
-            const statusColors = { pending: '#F59E0B', assigned: '#3B82F6', expert_accepted: '#0EA5E9', awaiting_payment: '#8B5CF6', payment_submitted: '#F59E0B', accepted: '#15803D', chat_started: '#14B8A6', completed: '#22C55E', closed: '#64748B', rejected: '#EF4444', expired: '#EF4444' };
-            const labels = ss.map(d => d.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
-            const counts = ss.map(d => parseInt(d.count));
-            const colors = ss.map(d => statusColors[d.status] || '#94a3b8');
-            new Chart(document.getElementById('statusDoughnutChart').getContext('2d'), {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    cutout: '68%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 9, weight: 'bold' }, color: '#64748b', padding: 12, usePointStyle: true, pointStyle: 'circle' } },
-                        tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, callbacks: { label: function(c) { return ' ' + c.label + ': ' + c.parsed; } } }
-                    }
-                }
-            });
-        }
-        // Horizontal Bar
-        const ep = <?= json_encode($expertPerformance) ?>;
-        if (ep && ep.length) {
-            const names = ep.map(d => d.expert_name);
-            const answered = ep.map(d => parseInt(d.answered_questions));
-            new Chart(document.getElementById('expertPerfChart').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{ label: 'Answered', data: answered, backgroundColor: 'rgba(21, 128, 61, 0.7)', borderRadius: 4, borderSkipped: false }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: false }
-                    },
-                    scales: {
-                        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 9, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } },
-                        y: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' }, color: '#475569' }, border: { display: false } }
-                    }
-                }
-            });
-        }
-    })();
-    </script>
-    <?php endif; ?>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
@@ -555,6 +372,134 @@ $username = $_SESSION['user']['username'] ?? 'User';
         </div>
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <?php if (!empty($monthlyTrend)): ?>
+    <div class="chart-reveal">
+    <div class="chart-card-inner bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full transition-all duration-500">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-sm font-black text-slate-900">Monthly Consultation Trend</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">Number of consultations created per month (last 12 months)</p>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
+                <span>Consultations</span>
+            </div>
+        </div>
+        <div class="relative" style="height:280px">
+            <canvas id="monthlyTrendChart"></canvas>
+        </div>
+    </div>
+    </div>
+    <?php endif; ?>
+    <?php if (!empty($monthlyUserRegistrations)): ?>
+    <div class="chart-reveal chart-reveal-delay-1">
+    <div class="chart-card-inner bg-white rounded-2xl border border-slate-100 shadow-sm p-6 h-full transition-all duration-500">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-sm font-black text-slate-900">Monthly User Registrations</h2>
+                <p class="text-[10px] text-slate-400 mt-0.5">New farmer and expert registrations per month</p>
+            </div>
+            <div class="flex items-center gap-3 text-[10px] text-slate-400">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-emerald-500"></span> Farmers</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded-sm bg-blue-500"></span> Experts</span>
+            </div>
+        </div>
+        <div class="relative" style="height:280px">
+            <canvas id="userRegChart"></canvas>
+        </div>
+    </div>
+    </div>
+    <?php endif; ?>
+    </div>
+    <?php if (!empty($monthlyTrend)): ?>
+    <script>
+    (function() {
+        const data = <?= json_encode($monthlyTrend) ?>;
+        if (!data || !data.length) return;
+        const labels = data.map(d => d.month);
+        const counts = data.map(d => d.total);
+        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Consultations',
+                    data: counts,
+                    borderColor: '#15803D',
+                    backgroundColor: 'rgba(21, 128, 61, 0.08)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#15803D',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.35,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                animation: {
+                    duration: 1200,
+                    easing: 'easeInOutQuart'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: false }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
+                },
+                interaction: { intersect: false, mode: 'index' },
+            }
+        });
+    })();
+    </script>
+    <?php endif; ?>
+    <?php if (!empty($monthlyUserRegistrations)): ?>
+    <script>
+    (function() {
+        const data = <?= json_encode($monthlyUserRegistrations) ?>;
+        if (!data || !data.length) return;
+        const labels = data.map(d => d.month);
+        const farmers = data.map(d => parseInt(d.farmers));
+        const experts = data.map(d => parseInt(d.experts));
+        const ctx = document.getElementById('userRegChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Farmers', data: farmers, backgroundColor: 'rgba(21, 128, 61, 0.75)', borderRadius: 4, borderSkipped: false,
+                      animation: { delay: function(ctx) { return ctx.dataIndex * 40; } } },
+                    { label: 'Experts', data: experts, backgroundColor: 'rgba(59, 130, 246, 0.75)', borderRadius: 4, borderSkipped: false,
+                      animation: { delay: function(ctx) { return ctx.dataIndex * 40; } } },
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                animation: {
+                    duration: 800,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 11, weight: 'bold' }, bodyFont: { size: 12, weight: 'bold' }, padding: 10, cornerRadius: 8, displayColors: true }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', maxRotation: 0 }, border: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8', stepSize: 1, callback: function(v) { return Number.isInteger(v) ? v : null; } }, border: { display: false } }
+                },
+                interaction: { intersect: false, mode: 'index' },
+            }
+        });
+    })();
+    </script>
+    <?php endif; ?>
+
     <?php elseif ($userRole === 'farmer'): ?>
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden reveal">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
@@ -593,5 +538,6 @@ $username = $_SESSION['user']['username'] ?? 'User';
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    document.querySelectorAll('.chart-reveal').forEach(el => observer.observe(el));
 })();
 </script>
