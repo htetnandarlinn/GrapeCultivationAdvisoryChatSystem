@@ -115,6 +115,8 @@ $componentOld = $old;
                 <div class="pt-2 flex justify-center">
                     <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
                 </div>
+
+                
                 <?php endif; ?>
                 <?php if (!empty($componentErrors['recaptcha'])): ?>
                 <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
