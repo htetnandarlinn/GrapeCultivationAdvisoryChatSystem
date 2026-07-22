@@ -122,6 +122,109 @@ final class ConsultationRepository implements ConsultationRepositoryInterface
         return $row ? $this->mapToEntity($row) : null;
     }
 
+    public function findActiveByFarmerAndTitle(int $farmerId, string $title): array
+    {
+        $sql = "SELECT * FROM consultations
+                WHERE farmer_id = :farmer_id
+                AND title = :title
+                AND status IN ('accepted', 'chat_started', 'awaiting_payment')
+                ORDER BY created_at DESC";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':farmer_id' => $farmerId, ':title' => $title]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(fn(array $row) => $this->mapToEntity($row), $rows);
+    }
+
+    public function getMonthlyConsultationTrend(int $months = 12): array
+    {
+        $sql = "SELECT DATE_FORMAT(created_at, '%b') AS month,
+                       DATE_FORMAT(created_at, '%Y-%m') AS sort_key,
+                       COUNT(*) AS total
+                FROM consultations
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL :months MONTH)
+                GROUP BY YEAR(created_at), MONTH(created_at), month, sort_key
+                ORDER BY sort_key ASC";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([':months' => $months]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getConsultationStatusSummary(): array
+    {
+        $sql = "SELECT status, COUNT(*) AS count
+                FROM consultations
+                GROUP BY status
+                ORDER BY count DESC";
+        $stmt = $this->connection->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getExpertPerformance(int $limit = 10): array
+    {
+        $sql = "SELECT
+                  u.user_id AS expert_id,
+                  u.username AS expert_name,
+                  COUNT(DISTINCT m.message_id) AS answered_questions,
+                  COUNT(DISTINCT CASE WHEN c.status IN ('assigned', 'expert_accepted') THEN c.id END) AS pending_questions,
+                  COALESCE(ROUND(AVG(rt.response_hours), 1), 0) AS avg_response_time_hours
+                FROM users u
+                LEFT JOIN consultations c ON c.expert_id = u.user_id
+                LEFT JOIN messages m ON m.consultation_id = c.id AND m.sender_id = u.user_id
+                LEFT JOIN (
+                  SELECT
+                    c2.expert_id,
+                    TIMESTAMPDIFF(HOUR, c2.created_at, MIN(em.created_at)) AS response_hours
+                  FROM consultations c2
+                  JOIN messages em ON em.consultation_id = c2.id AND em.sender_id = c2.expert_id
+                  GROUP BY c2.expert_id, c2.id
+                ) rt ON rt.expert_id = u.user_id
+                WHERE u.user_type_id = 3
+                GROUP BY u.user_id, u.username
+                ORDER BY answered_questions DESC
+                LIMIT :limit";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getTopFarmers(int $limit = 10): array
+    {
+        $sql = "SELECT
+                  u.user_id AS farmer_id,
+                  u.username AS farmer_name,
+                  COUNT(c.id) AS questions_submitted
+                FROM users u
+                JOIN consultations c ON c.farmer_id = u.user_id
+                WHERE u.user_type_id = 2
+                GROUP BY u.user_id, u.username
+                ORDER BY questions_submitted DESC
+                LIMIT :limit";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getTopExperts(int $limit = 10): array
+    {
+        $sql = "SELECT
+                  u.user_id AS expert_id,
+                  u.username AS expert_name,
+                  COUNT(DISTINCT c.id) AS questions_answered
+                FROM users u
+                JOIN consultations c ON c.expert_id = u.user_id
+                JOIN messages m ON m.consultation_id = c.id AND m.sender_id = u.user_id
+                WHERE u.user_type_id = 3
+                GROUP BY u.user_id, u.username
+                ORDER BY questions_answered DESC
+                LIMIT :limit";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function findExpiredActiveConsultations(): array
     {
         $sql = "SELECT * FROM consultations WHERE status = 'accepted' AND expires_at IS NOT NULL AND expires_at <= NOW()";

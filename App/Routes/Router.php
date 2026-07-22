@@ -41,6 +41,7 @@ use App\Presentation\Controllers\Auth\ForgotPasswordController;
 use App\Presentation\Controllers\Auth\GoogleAuthController;
 use App\Presentation\Controllers\Auth\LoginRequestValidator;
 use App\Presentation\Controllers\Auth\RegisterRequestValidator;
+use App\Infrastructure\Security\ReCaptchaValidator;
 use App\Presentation\Controllers\Auth\VerifyEmailController;
 
 
@@ -52,6 +53,7 @@ use App\Presentation\Attributes\Permission as PermissionAttribute;
 
 use App\Presentation\Controllers\Expert\ArticleController;
 use App\Presentation\Controllers\Expert\ConsultationController as ExpertConsultationController;
+use App\Presentation\Controllers\Expert\ExpertPayoutController;
 use App\Presentation\Controllers\Farmer\ProfileController;
 use App\Presentation\Controllers\Public\ArticleController as PublicArticleController;
 use App\Shared\Infrastructure\Database\Database;
@@ -152,10 +154,16 @@ class Router
                     ),
                     new PaymentRepository($this->db()),
                     new PricingService(),
-                    new ConsultationImageRepository($this->db())
+                    new ConsultationImageRepository($this->db()),
+                    new \App\Infrastructure\Persistence\Repositories\ExpertPayoutRepository($this->db())
                 ),
 
             ExpertConsultationController::class => $this->createExpertConsultationController(),
+
+            ExpertPayoutController::class =>
+                new ExpertPayoutController(
+                    new \App\Infrastructure\Persistence\Repositories\ExpertPayoutRepository($this->db())
+                ),
 
             ChatController::class => $this->createChatController(),
             ConsultationPaymentController::class =>
@@ -207,13 +215,19 @@ class Router
                     new RoleRepository($this->db()),
                     new RoleService(
                         new RoleRepository($this->db())
+                    ),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
                     )
                 ),
 
             UserManagementController::class =>
                 new UserManagementController(
                     new UserRepository($this->db()),
-                    new RoleRepository($this->db())
+                    new RoleRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
+                    )
                 ),
 
             PermissionAssignmentController::class =>
@@ -225,7 +239,10 @@ class Router
                     new PermissionRegistrar(
                         new PermissionRepository($this->db())
                     ),
-                    new RoleRepository($this->db())
+                    new RoleRepository($this->db()),
+                    new NotificationService(
+                        new NotificationRepository($this->db()), new UserRepository($this->db())
+                    )
                 ),
 
             AuthController::class => $this->createAuthController(),
@@ -288,7 +305,12 @@ class Router
             $userRepo,
             new ActivityRepository($this->db()),
             new RoleRepository($this->db()),
-            new PermissionRepository($this->db())
+            new PermissionRepository($this->db()),
+            new NotificationService(
+                new NotificationRepository($this->db()),
+                new UserRepository($this->db())
+            ),
+            new ReCaptchaValidator()
         );
     }
 

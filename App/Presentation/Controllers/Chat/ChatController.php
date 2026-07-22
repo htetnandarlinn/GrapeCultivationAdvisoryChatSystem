@@ -135,6 +135,13 @@ class ChatController
                     '/consultations?id=' . $consultationId
                 );
             }
+
+            // Notify admins that a message was sent in a consultation
+            $this->notificationService->notifyAllAdmins(
+                "$senderName ($senderRole) sent a message in consultation #$consultationId",
+                'message_received',
+                '/notifications'
+            );
         }
 
         $savedMessage = $this->messageRepository->findById($messageId);

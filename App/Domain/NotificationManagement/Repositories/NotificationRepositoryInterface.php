@@ -17,4 +17,6 @@ interface NotificationRepositoryInterface
     public function markAsRead(int $notificationId, int $recipientId): void;
 
     public function markAllAsRead(int $recipientId): void;
+
+    public function markConsultationAsRead(int $recipientId, int $consultationId): void;
 }

@@ -62,6 +62,14 @@ class ConsultationController
 
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
 
+        // Block duplicate if an active consultation with the same title exists
+        $active = $this->consultationRepository->findActiveByFarmerAndTitle($farmerId, $title);
+        if (!empty($active)) {
+            $_SESSION['error'] = 'You already have an active consultation with the title "' . htmlspecialchars($title) . '". Please complete or close it first.';
+            redirect('/consultation/create');
+            return;
+        }
+
         $command = new CreateConsultationCommand(
             farmerId: $farmerId,
             title: $title,
@@ -76,7 +84,7 @@ class ConsultationController
         $this->notificationService->notifyAllAdmins(
             "$farmerName submitted a new consultation: " . $title,
             'consultation_created',
-            '/admin/consultations/view?id=' . $consultationId
+            '/notifications'
         );
         $this->notificationService->notifyAllByRole(
             'farmer',
@@ -124,6 +132,14 @@ class ConsultationController
         }
 
         $farmerId = (int) ($_SESSION['user']['id'] ?? 0);
+
+        // Block duplicate if an active consultation with the same title exists
+        $active = $this->consultationRepository->findActiveByFarmerAndTitle($farmerId, $title);
+        if (!empty($active)) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'You already have an active consultation with the title "' . htmlspecialchars($title) . '". Please complete or close it first.']);
+            return;
+        }
 
         $command = new CreateConsultationCommand(
             farmerId: $farmerId,
@@ -222,6 +238,44 @@ class ConsultationController
             'consultations' => $consultations,
             'paymentRecords' => $paymentRecords,
         ], 'app');
+    }
+
+    public function getStatusJson(): void
+    {
+        header('Content-Type: application/json');
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $idsParam = trim($_GET['ids'] ?? '');
+        if ($idsParam === '') {
+            echo json_encode([]);
+            return;
+        }
+
+        $ids = array_map('intval', array_filter(explode(',', $idsParam), fn($v) => is_numeric(trim($v))));
+
+        if (empty($ids)) {
+            echo json_encode([]);
+            return;
+        }
+
+        $result = [];
+        foreach ($ids as $id) {
+            $consultation = $this->consultationRepository->findById($id);
+            if ($consultation) {
+                $result[$id] = $consultation->getStatus()->getValue();
+            }
+        }
+
+        echo json_encode($result);
     }
 
     public function chat(): void

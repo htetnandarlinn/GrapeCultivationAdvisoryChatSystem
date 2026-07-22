@@ -84,8 +84,12 @@ $theme = $statusColors[$status] ?? $statusColors['pending'];
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Farmer Information</h3>
                 </div>
                 <div class="px-5 py-4 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0">
-                        <?= strtoupper(substr($farmerName, 0, 1)) ?>
+                    <div class="w-10 h-10 rounded-full bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0 overflow-hidden">
+                        <?php if ($farmer && $farmer->getProfileImage()): ?>
+                            <img src="<?= BASE_URL . htmlspecialchars($farmer->getProfileImage()) ?>" alt="" class="w-full h-full object-cover">
+                        <?php else: ?>
+                            <?= strtoupper(substr($farmerName, 0, 1)) ?>
+                        <?php endif; ?>
                     </div>
                     <div class="min-w-0">
                         <p class="text-sm font-bold text-slate-900 truncate"><?= htmlspecialchars($farmerName) ?></p>

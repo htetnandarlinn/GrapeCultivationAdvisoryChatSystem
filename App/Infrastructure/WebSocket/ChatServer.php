@@ -39,10 +39,22 @@ class ChatServer implements MessageComponentInterface
     public function onMessage(ConnectionInterface $from, $msg): void
     {
         $data = json_decode($msg, true);
-        if (!$data || empty($data['message'])) return;
+        if (!$data) return;
+
+        if (($data['type'] ?? '') === 'status_update') {
+            $this->broadcastToRoom($from->consultationId, [
+                'type' => 'status_update',
+                'consultation_id' => $from->consultationId,
+                'status' => $data['status'] ?? '',
+            ]);
+            return;
+        }
+
+        if (empty($data['message'])) return;
 
         $this->broadcastToRoom($from->consultationId, [
             'type' => 'message',
+            'message_id' => $data['message_id'] ?? null,
             'message' => $data['message'],
             'message_type' => $data['message_type'] ?? 'text',
             'image_path' => $data['image_path'] ?? null,

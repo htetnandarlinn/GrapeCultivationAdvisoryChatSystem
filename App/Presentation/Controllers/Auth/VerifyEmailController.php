@@ -35,9 +35,7 @@ final class VerifyEmailController
         }
 
         if ($verification->isVerified()) {
-            View::render('auth/verification_failed', [
-                'message' => 'Email already verified.'
-            ], '_standalone_');
+            View::render('auth/verification_success', [], '_standalone_');
             return;
         }
 

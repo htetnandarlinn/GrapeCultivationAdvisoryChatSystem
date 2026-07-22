@@ -1,5 +1,5 @@
 <?php
-$baseUrl = 'http://localhost/GrapeCultivationAdvisoryChatSystem/public';
+$baseUrl = defined('BASE_URL') && BASE_URL !== '' ? rtrim(BASE_URL, '/') : 'http://localhost/GrapeCultivationAdvisoryChatSystem/public';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +8,7 @@ $baseUrl = 'http://localhost/GrapeCultivationAdvisoryChatSystem/public';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verification Failed</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>

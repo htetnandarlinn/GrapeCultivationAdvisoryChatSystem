@@ -88,12 +88,17 @@ document.getElementById('currentYear').textContent = new Date().getFullYear();
 
 function togglePassword(id, button){
     const input = document.getElementById(id);
+    const icon = button.querySelector('i');
     if(input.type === "password"){
         input.type = "text";
-        button.innerHTML = "👁‍🗨";
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        button.classList.add('text-[#15803D]');
     } else {
         input.type = "password";
-        button.innerHTML = "👁";
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        button.classList.remove('text-[#15803D]');
     }
 }
 </script>

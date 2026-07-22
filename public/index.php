@@ -125,6 +125,15 @@ define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ?: APP_URL . '/auth/
 
 /*
 |--------------------------------------------------------------------------
+| RECAPTCHA CONFIG
+|--------------------------------------------------------------------------
+*/
+
+define('RECAPTCHA_SITE_KEY', getenv('RECAPTCHA_SITE_KEY') ?: '');
+define('RECAPTCHA_SECRET_KEY', getenv('RECAPTCHA_SECRET_KEY') ?: '');
+
+/*
+|--------------------------------------------------------------------------
 | CLEAN REQUEST URI (🔥 IMPORTANT FIX)
 |--------------------------------------------------------------------------
 */

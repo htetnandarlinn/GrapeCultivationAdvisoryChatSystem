@@ -38,7 +38,7 @@ foreach ($consultations as $c) {
 .hide-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 </style>
-<div class="max-w-[1400px] mx-auto p-4">
+<div class="max-w-6xl mx-auto p-4">
     <?php if (!empty($_SESSION['success'])): ?>
         <div class="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 flex items-center justify-between">
             <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> <?= htmlspecialchars($_SESSION['success']) ?></span>
@@ -110,7 +110,7 @@ foreach ($consultations as $c) {
                         }
                     ?>
                     <div class="sidebar-item group flex items-start p-3.5 rounded-2xl transition-all border border-transparent hover:bg-slate-50/50 cursor-pointer"
-                         data-id="<?= $c->getId() ?>" onclick="selectConsultation(<?= $c->getId() ?>)">
+                         data-id="<?= $c->getId() ?>" data-status="<?= $c->getStatus()->getValue() ?>" onclick="selectConsultation(<?= $c->getId() ?>)">
                         <div class="relative w-11 h-11 rounded-2xl <?= $theme['bg'] ?> flex items-center justify-center text-white font-bold text-[13px] tracking-wider shrink-0 overflow-hidden shadow-sm shadow-black/5 transition-transform group-hover:scale-[1.02]">
                             <?php
                             $expertAvatar = $c->getExpertId() ? ($expertAvatars[$c->getExpertId()] ?? null) : null;
@@ -126,14 +126,14 @@ foreach ($consultations as $c) {
                                 <h3 class="text-xs font-bold text-slate-800 truncate leading-tight"><?= htmlspecialchars($displayName) ?></h3>
                                 <?php if ($lastMsgTime): ?><span class="text-[9px] font-semibold text-slate-400 shrink-0 uppercase"><?= $lastMsgTime ?></span><?php endif; ?>
                             </div>
-                            <p class="text-[10px] text-slate-500 font-medium truncate mt-0.5"><?= htmlspecialchars($c->getTitle()) ?></p>
+                            <p class="text-[10px] text-slate-500 font-medium truncate mt-0.5"><?= htmlspecialchars($c->getTitle()) ?> <span class="text-[9px] text-slate-400 font-normal">&middot; <?= $c->getCreatedAt()->format('M d') ?></span></p>
                             <p class="text-[10px] text-slate-400 font-medium truncate mt-1 flex items-center gap-1">
                                 <?php if ($lastMsg && $lastMsg['sender_id'] == $userId): ?><span class="text-emerald-500 font-bold">You:</span><?php endif; ?>
                                 <?= htmlspecialchars(mb_strimwidth($lastMsgText, 0, 45, "...")) ?>
                             </p>
                         </div>
                         <div class="ml-2 flex flex-col items-end shrink-0">
-                            <span class="text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md <?= $theme['badge'] ?>"><?= $theme['label'] ?></span>
+                            <span class="status-badge text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md <?= $theme['badge'] ?>"><?= $theme['label'] ?></span>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -342,6 +342,8 @@ let ws = null;
 let wsConnected = false;
 let reconnectTimer = null;
 let replyToId = null;
+let lastMessageId = 0;
+let pollTimer = null;
 
 function getConsultation(id) {
     return consultationsData.find(c => c.id === id);
@@ -393,6 +395,13 @@ function cancelReply() {
 
 function selectConsultation(id) {
     selectedId = id;
+
+    // Mark unread notifications for this consultation as read, refresh badge
+    fetch(baseUrl + '/notifications/mark-consultation-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'consultation_id=' + id,
+    }).then(() => { if (typeof fetchNotifCount === 'function') fetchNotifCount(); });
 
     // Update sidebar active state
     document.querySelectorAll('.sidebar-item').forEach(el => {
@@ -478,8 +487,10 @@ function selectConsultation(id) {
         paymentOverlay.classList.remove('flex');
     }
 
-    // Disconnect old WS
+    // Disconnect old WS and stop polling
     if (ws) { ws.close(); ws = null; }
+    stopPolling();
+    lastMessageId = 0;
 
     // Connect WS if chat is open
     if (isChatOpen) connectWebSocket(id);
@@ -504,6 +515,7 @@ function loadMessages(id) {
                 const isMine = parseInt(m.sender_id) === userId;
                 const replyInfo = m.reply_to ? { message: m.reply_to_message, sender: m.reply_to_sender, isMineReply: isMine } : null;
                 const msgId = m.message_id;
+                if (m.message_id > lastMessageId) lastMessageId = m.message_id;
                 if (m.message_type === 'system') {
                     appendSystemMessage(m.message, container);
                 } else if (m.message_type === 'image') {
@@ -519,8 +531,44 @@ function loadMessages(id) {
         });
 }
 
+function startPolling(cid) {
+    if (pollTimer) return;
+    pollTimer = setInterval(() => {
+        if (wsConnected) return;
+        fetch(`${baseUrl}/chat/history?consultation_id=${cid}`)
+            .then(res => res.json())
+            .then(messages => {
+                const container = document.getElementById('right-messages');
+                let hasNew = false;
+                messages.forEach(m => {
+                    if (m.message_id && m.message_id > lastMessageId) {
+                        if (m.message_id > lastMessageId) lastMessageId = m.message_id;
+                        if (parseInt(m.sender_id) === userId) return;
+                        const replyInfo = m.reply_to ? { message: m.reply_to_message, sender: m.reply_to_sender } : null;
+                        if (m.message_type === 'system') {
+                            appendSystemMessage(m.message, container);
+                        } else if (m.message_type === 'image') {
+                            appendImage(m.image_path || m.message, m.sender_name, false, m.created_at, container, replyInfo, m.message_id, m.caption);
+                        } else {
+                            appendMessage(m.message, m.sender_name, false, m.created_at, container, replyInfo, m.message_id);
+                        }
+                        hasNew = true;
+                    }
+                });
+                if (hasNew && isNearBottom) scrollToBottom(container);
+            })
+            .catch(() => {});
+    }, 3000);
+}
+
+function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
 function connectWebSocket(cid) {
-    const wsUrl = `ws://localhost:8080?consultation_id=${cid}&user_id=${userId}&role=${role}`;
+    stopPolling();
+    const host = window.location.hostname || 'localhost';
+    const wsUrl = `ws://${host}:8080?consultation_id=${cid}&user_id=${userId}&role=${role}`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function() {
@@ -532,27 +580,34 @@ function connectWebSocket(cid) {
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
         const container = document.getElementById('right-messages');
+        if (data.type === 'status_update') {
+            handleStatusUpdate(data.consultation_id, data.status);
+            return;
+        }
+        if (data.message_id && data.message_id > lastMessageId) lastMessageId = data.message_id;
         if (data.type === 'system') {
             appendSystemMessage(data.message, container);
         } else if (parseInt(data.sender_id) !== userId) {
             const replyInfo = data.reply_to ? { message: data.reply_to_message, sender: data.reply_to_sender } : null;
             if (data.message_type === 'image') {
-                appendImage(data.message, data.sender_name, false, data.created_at, container, replyInfo, null, data.caption);
+                appendImage(data.message, data.sender_name, false, data.created_at, container, replyInfo, data.message_id, data.caption);
             } else {
-                appendMessage(data.message, data.sender_name, false, data.created_at, container, replyInfo);
+                appendMessage(data.message, data.sender_name, false, data.created_at, container, replyInfo, data.message_id);
             }
         }
     };
 
     ws.onclose = function() {
         wsConnected = false;
-        document.getElementById('right-conn-status').innerHTML = '<i class="fa-solid fa-circle text-amber-500 mr-1 text-[6px]"></i> Reconnecting...';
-        if (selectedId && !reconnectTimer) reconnectTimer = setTimeout(() => connectWebSocket(selectedId), 3000);
+        document.getElementById('right-conn-status').innerHTML = '<i class="fa-solid fa-circle text-amber-500 mr-1 text-[6px]"></i> Polling...';
+        if (selectedId && !reconnectTimer) reconnectTimer = setTimeout(() => connectWebSocket(selectedId), 5000);
+        if (selectedId) startPolling(selectedId);
     };
 
     ws.onerror = function() {
         wsConnected = false;
-        document.getElementById('right-conn-status').innerHTML = '<i class="fa-solid fa-circle text-slate-300 mr-1 text-[6px]"></i> Offline';
+        document.getElementById('right-conn-status').innerHTML = '<i class="fa-solid fa-circle text-slate-300 mr-1 text-[6px]"></i> Offline (polling)';
+        if (selectedId) startPolling(selectedId);
     };
 }
 
@@ -627,6 +682,22 @@ function checkScroll(container) {
 function escapeHtml(text) { if (text == null) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
 function getInitialsFn(str) { const m = str.match(/[A-Za-z0-9]/g); return m ? m.slice(0,2).join('').toUpperCase() : 'C'; }
 
+function addReplyBtnToMsg(container, msgId, senderName) {
+    if (!container || !msgId) return;
+    const outer = container.lastElementChild;
+    if (!outer) return;
+    const group = outer.querySelector('.group');
+    if (!group) return;
+    const timeRow = group.children[group.children.length - 1];
+    if (!timeRow || timeRow.querySelector('.reply-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'reply-btn text-[9px] text-slate-400 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100';
+    btn.dataset.msgId = msgId;
+    btn.dataset.sender = senderName;
+    btn.innerHTML = '<i class="fa-solid fa-reply"></i>';
+    timeRow.insertBefore(btn, timeRow.firstChild);
+}
+
 // Reply button event delegation
 document.getElementById('right-messages').addEventListener('click', function(e) {
     const btn = e.target.closest('.reply-btn');
@@ -667,8 +738,10 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
         fetch(`${baseUrl}/chat/send`, { method: 'POST', body: formData })
             .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
             .then(data => {
+                addReplyBtnToMsg(container, data.id, userName);
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
+                        message_id: data.id,
                         message: data.message,
                         message_type: 'image',
                         image_path: data.message,
@@ -694,8 +767,10 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
         fetch(`${baseUrl}/chat/send`, { method: 'POST', body: formData })
             .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
             .then(data => {
+                addReplyBtnToMsg(container, data.id, userName);
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
+                        message_id: data.id,
                         message: data.message,
                         message_type: 'image',
                         image_path: data.message,
@@ -720,8 +795,10 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
         fetch(`${baseUrl}/chat/send`, { method: 'POST', body: formData })
             .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
             .then(data => {
+                addReplyBtnToMsg(container, data.id, userName);
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
+                        message_id: data.id,
                         message: data.message,
                         message_type: 'text',
                         reply_to: savedReplyToId,
@@ -741,6 +818,49 @@ document.getElementById('right-chat-form').addEventListener('submit', function(e
 function triggerFileSelector() {
     document.getElementById('right-img-input').click();
 }
+
+// Status polling
+let statusPollTimer = null;
+
+function handleStatusUpdate(id, newStatus) {
+    const item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+    if (!item) return;
+    const currentStatus = item.dataset.status;
+    if (currentStatus === newStatus) return;
+
+    item.setAttribute('data-status', newStatus);
+    const badge = item.querySelector('.status-badge');
+    if (badge) {
+        const labels = { pending: 'Pending', assigned: 'Assigned', expert_accepted: 'Accepted', awaiting_payment: 'Awaiting Payment', payment_submitted: 'Pending Review', accepted: 'Active', chat_started: 'Active', completed: 'Completed', closed: 'Closed', rejected: 'Closed', expired: 'Expired' };
+        badge.textContent = labels[newStatus] || newStatus;
+        const t = themeMap[newStatus] || themeMap.pending;
+        badge.className = 'text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md ' + t.badge;
+    }
+    const cons = consultationsData.find(c => c.id === id);
+    if (cons) cons.status = newStatus;
+    if (selectedId === id) selectConsultation(id);
+}
+
+function startStatusPolling() {
+    if (statusPollTimer) return;
+    statusPollTimer = setInterval(() => {
+        const ids = Array.from(document.querySelectorAll('.sidebar-item')).map(el => el.dataset.id).filter(Boolean);
+        if (ids.length === 0) return;
+        fetch(baseUrl + '/consultation/status?ids=' + ids.join(','))
+            .then(res => res.json())
+            .then(statusMap => {
+                Object.entries(statusMap).forEach(([id, newStatus]) => {
+                    id = parseInt(id);
+                    const item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+                    if (!item || item.dataset.status === newStatus) return;
+                    handleStatusUpdate(id, newStatus);
+                });
+            })
+            .catch(function() {});
+    }, 5000);
+}
+
+startStatusPolling();
 
 // Create consultation form submission
 document.getElementById('create-form').addEventListener('submit', function(e) {

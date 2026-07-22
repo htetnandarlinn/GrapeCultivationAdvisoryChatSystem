@@ -1,4 +1,19 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    @keyframes payStatIn {
+        from { opacity: 0; transform: translateY(16px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .pay-stat {
+        animation: payStatIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        transition: transform .35s cubic-bezier(0.16,1,0.3,1), box-shadow .35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .pay-stat:hover { transform: translateY(-4px); box-shadow: 0 22px 50px -26px rgba(21,128,61,0.5); }
+    .pay-stat .bar { transform: scaleX(0); transform-origin: left; animation: barGrow 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s forwards; }
+    @keyframes barGrow { to { transform: scaleX(1); } }
+    .p1 { animation-delay: 0.06s; } .p2 { animation-delay: 0.14s; } .p3 { animation-delay: 0.22s; }
+    @media (prefers-reduced-motion: reduce) { .pay-stat, .pay-stat .bar { animation: none !important; transform: none !important; } }
+</style>
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
@@ -41,6 +56,25 @@
         <button class="filter-btn px-3.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" data-filter="payment_submitted">Pending Review</button>
         <button class="filter-btn px-3.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" data-filter="accepted">Paid</button>
         <button class="filter-btn px-3.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" data-filter="expired">Expired</button>
+    </div>
+
+    <!-- Payout summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="pay-stat p1 bg-white p-5 rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-amber-400 rounded-full mb-3"></div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending Payouts (to experts)</p>
+            <p class="text-2xl font-black text-amber-500 mt-1">$<?= number_format($totalPayoutPending ?? 0, 2) ?></p>
+        </div>
+        <div class="pay-stat p2 bg-white p-5 rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-[#15803D] rounded-full mb-3"></div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Released Payouts</p>
+            <p class="text-2xl font-black text-[#15803D] mt-1">$<?= number_format($totalPayoutReleased ?? 0, 2) ?></p>
+        </div>
+        <div class="pay-stat p3 bg-white p-5 rounded-2xl border border-slate-200/70 shadow-sm overflow-hidden">
+            <div class="bar h-1 w-full bg-slate-700 rounded-full mb-3"></div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Expert Payouts</p>
+            <p class="text-2xl font-black text-slate-800 mt-1">$<?= number_format(($totalPayoutPending ?? 0) + ($totalPayoutReleased ?? 0), 2) ?></p>
+        </div>
     </div>
 
     <!-- Payments Table -->
@@ -226,11 +260,21 @@
                                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700">
                                                 <i class="fa-solid fa-rotate-left"></i> Refunded $<?= number_format($p['refund_amount'] ?? 0, 2) ?>
                                             </span>
+                                            <?php elseif (!empty($p['payout']) && $p['payout']->getStatus()->getValue() === 'released'): ?>
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                                                <i class="fa-solid fa-circle-check"></i> Payout Released $<?= number_format($p['payout']->getNetAmount(), 2) ?>
+                                            </span>
                                             <?php else: ?>
                                             <form method="POST" action="<?= BASE_URL ?>/admin/payments/refund" class="inline" onsubmit="return confirm('Refund this payment?');">
                                                 <input type="hidden" name="consultation_id" value="<?= $p['id'] ?>">
                                                 <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-[10px] font-bold rounded-lg transition-colors">
                                                     <i class="fa-solid fa-rotate-left"></i> Refund Payment
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="<?= BASE_URL ?>/admin/payments/release-payout" class="inline" onsubmit="return confirm('Release the expert payout (80% of fee)?');">
+                                                <input type="hidden" name="consultation_id" value="<?= $p['id'] ?>">
+                                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#15803D] hover:bg-green-800 text-white text-[10px] font-bold rounded-lg transition-colors shadow-sm">
+                                                    <i class="fa-solid fa-money-bill-transfer"></i> Release Payout
                                                 </button>
                                             </form>
                                             <?php endif; ?>

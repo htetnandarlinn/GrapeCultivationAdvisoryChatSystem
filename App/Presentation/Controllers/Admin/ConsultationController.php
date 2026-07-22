@@ -6,6 +6,7 @@ use App\Application\ConsultationManagement\Payment\PricingService;
 use App\Application\NotificationManagement\NotificationService;
 use App\Domain\ConsultationManagement\Repositories\ConsultationImageRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\ConsultationRepositoryInterface;
+use App\Domain\ConsultationManagement\Repositories\ExpertPayoutRepositoryInterface;
 use App\Domain\ConsultationManagement\Repositories\PaymentRepositoryInterface;
 use App\Domain\ConsultationManagement\ValueObjects\ConsultationStatus;
 use App\Domain\UserManagement\Repositories\UserRepositoryInterface;
@@ -21,7 +22,16 @@ class ConsultationController
         private PaymentRepositoryInterface $paymentRepository,
         private PricingService $pricingService,
         private ConsultationImageRepositoryInterface $consultationImageRepository,
+        private ExpertPayoutRepositoryInterface $expertPayoutRepository,
     ) {}
+
+    private function notifySelf(string $message, string $type, ?string $link = null): void
+    {
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+        if ($adminId > 0) {
+            $this->notificationService->notify($adminId, 'admin', $message, $type, $link);
+        }
+    }
 
     #[Permission('consultations.view', 'View Payments')]
     public function payments(): void
@@ -31,6 +41,11 @@ class ConsultationController
         $paymentMap = $this->paymentRepository->findByConsultationIds(
             array_map(static fn($c) => $c->getId(), $allConsultations)
         );
+
+        $payoutMap = [];
+        foreach ($this->expertPayoutRepository->findAll() as $payout) {
+            $payoutMap[$payout->getConsultationId()] = $payout;
+        }
 
         $payments = [];
         foreach ($allConsultations as $c) {
@@ -66,6 +81,7 @@ class ConsultationController
                     'refund_date' => $c->getRefundDate(),
                     'refund_amount' => $c->getRefundAmount(),
                     'admin_notes' => $c->getAdminNotes(),
+                    'payout' => $payoutMap[$c->getId()] ?? null,
                 ];
             }
         }
@@ -97,6 +113,8 @@ class ConsultationController
             'pendingReviewCount' => $pendingReviewCount,
             'awaitingCount' => $awaitingCount,
             'expiredCount' => $expiredCount,
+            'totalPayoutPending' => $this->expertPayoutRepository->sumPendingNet(),
+            'totalPayoutReleased' => $this->expertPayoutRepository->sumReleasedNet(),
             'activePage' => 'admin-payments',
         ], 'dashboard');
     }
@@ -193,6 +211,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Expert assigned successfully. Waiting for expert to accept.';
+        $this->notifySelf('You assigned ' . ($expert ? $expert->getUsername() : 'an expert') . ' to consultation "' . $consultation->getTitle() . '".', 'admin_action', '/admin/consultations');
         redirect('/admin/consultations');
     }
 
@@ -222,6 +241,27 @@ class ConsultationController
         // Update the payments table
         $this->paymentRepository->markApproved($consultation->getId(), $adminName);
 
+        // Calculate expert earnings and create a pending expert payout record
+        $gross = $this->pricingService->getConsultationFee();
+        $platformFee = $this->pricingService->calculatePlatformFee($gross);
+        $net = $this->pricingService->calculateExpertPayout($gross);
+
+        $existingPayout = $this->expertPayoutRepository->findByConsultationId($consultation->getId());
+        if ($existingPayout === null) {
+            $payout = new \App\Domain\ConsultationManagement\Entities\ExpertPayout(
+                id: null,
+                consultationId: $consultation->getId(),
+                paymentId: null,
+                expertId: (int) $consultation->getExpertId(),
+                farmerId: $consultation->getFarmerId(),
+                grossAmount: $gross,
+                platformFee: $platformFee,
+                netAmount: $net,
+                status: \App\Domain\ConsultationManagement\ValueObjects\PayoutStatus::pending(),
+            );
+            $this->expertPayoutRepository->save($payout);
+        }
+
         // Notify farmer
         $farmer = $this->userRepository->findById($consultation->getFarmerId());
         if ($farmer) {
@@ -250,6 +290,93 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment approved successfully. Consultation is now active.';
+        $this->notifySelf('You approved the payment for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
+        redirect('/admin/payments');
+    }
+
+    #[Permission('consultations.view', 'Release Expert Payout')]
+    public function releasePayout(): void
+    {
+        $id = (int) ($_POST['consultation_id'] ?? 0);
+        $consultation = $this->consultationRepository->findById($id);
+
+        if (!$consultation) {
+            $_SESSION['error'] = 'Consultation not found.';
+            redirect('/admin/payments');
+            return;
+        }
+
+        $status = $consultation->getStatus()->getValue();
+        if (!in_array($status, ['accepted', 'chat_started', 'completed'], true)) {
+            $_SESSION['error'] = 'Payout can only be released for an active or completed consultation.';
+            redirect('/admin/payments');
+            return;
+        }
+
+        $adminName = $_SESSION['user']['username'] ?? 'Admin';
+
+        $consultation->markCompleted();
+        $this->consultationRepository->update($consultation);
+
+        // Release the expert payout record (pending -> released)
+        $payout = $this->expertPayoutRepository->findByConsultationId($id);
+        if ($payout === null) {
+            $gross = $this->pricingService->getConsultationFee();
+            $payout = new \App\Domain\ConsultationManagement\Entities\ExpertPayout(
+                id: null,
+                consultationId: $id,
+                paymentId: null,
+                expertId: (int) $consultation->getExpertId(),
+                farmerId: $consultation->getFarmerId(),
+                grossAmount: $gross,
+                platformFee: $this->pricingService->calculatePlatformFee($gross),
+                netAmount: $this->pricingService->calculateExpertPayout($gross),
+                status: \App\Domain\ConsultationManagement\ValueObjects\PayoutStatus::pending(),
+            );
+            $this->expertPayoutRepository->save($payout);
+        }
+
+        $payoutAmount = $payout->getNetAmount();
+
+        if ($payout->isReleased()) {
+            $_SESSION['success'] = 'Payout for consultation #' . $id . ' was already released ($' . number_format($payoutAmount, 2) . ').';
+            redirect('/admin/payments');
+            return;
+        }
+
+        $payout->markReleased($adminName);
+        $this->expertPayoutRepository->save($payout);
+
+        // Notify the expert that their payout has been released (farmer paid admin -> admin pays expert)
+        $expertId = $consultation->getExpertId();
+        if ($expertId) {
+            $expert = $this->userRepository->findById($expertId);
+            if ($expert) {
+                $this->notificationService->notify(
+                    $expertId,
+                    'expert',
+                    'Your payout of $' . number_format($payoutAmount, 2) . ' for consultation #' . $id . ' ("' . $consultation->getTitle() . '") has been released by admin.',
+                    'expert_payout_released',
+                    '/expert/payouts'
+                );
+            }
+        }
+
+        // Notify the farmer that the consultation is complete
+        $farmer = $this->userRepository->findById($consultation->getFarmerId());
+        if ($farmer) {
+            $expertName = $expert ? $expert->getUsername() : 'the expert';
+            $this->notificationService->notify(
+                $farmer->getId(),
+                'farmer',
+                'Your consultation #' . $id . ' with ' . $expertName . ' is complete. Thank you for using our advisory service.',
+                'consultation_completed',
+                '/consultations'
+            );
+        }
+
+        $_SESSION['success'] = 'Expert payout of $' . number_format($payoutAmount, 2) . ' released successfully.';
+        $this->notifySelf('You released an expert payout of $' . number_format($payoutAmount, 2) . ' for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 
@@ -302,6 +429,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment receipt rejected. Farmer has been notified to re-upload.';
+        $this->notifySelf('You rejected the payment receipt for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 
@@ -366,6 +494,7 @@ class ConsultationController
         }
 
         $_SESSION['success'] = 'Payment refunded successfully ($' . number_format($refundAmount, 2) . ').';
+        $this->notifySelf('You refunded $' . number_format($refundAmount, 2) . ' for consultation #' . $id . ' ("' . $consultation->getTitle() . '").', 'admin_action', '/admin/payments');
         redirect('/admin/payments');
     }
 }

@@ -17,14 +17,34 @@ $componentOld = $old;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Grape Cultivation Advisory Chat System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <?php if (defined('RECAPTCHA_SITE_KEY') && RECAPTCHA_SITE_KEY !== ''): ?>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <?php endif; ?>
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .field input::placeholder { font-size: 0.75rem; }
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .form-card { transition: box-shadow .35s cubic-bezier(0.16,1,0.3,1), transform .35s cubic-bezier(0.16,1,0.3,1); }
+        .form-card:hover { transform: translateY(-3px); box-shadow: 0 30px 80px -30px rgba(21,128,61,0.35); }
+
+        .login-btn {
+            background: linear-gradient(135deg, #15803D 0%, #166534 100%);
+            box-shadow: 0 10px 30px -10px rgba(21,128,61,0.6);
+            transition: transform .2s ease, box-shadow .25s ease, filter .2s ease;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -12px rgba(21,128,61,0.7); filter: brightness(1.05); }
+        .login-btn:active { transform: translateY(0) scale(0.985); }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
     </style>
 </head>
 
@@ -32,42 +52,30 @@ $componentOld = $old;
 
 <?php include __DIR__ . '/../layouts/navbar.php'; ?>
 
-<!-- MAIN LAYOUT CONTAINER: Alignment updated to items-start for seamless matching with login layout -->
-<main class="flex-grow w-fvar_dumpll max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 px-6 py-12 lg:py-16 items-start">
-    
-    <!-- LEFT SIDE: Text Column -->
-    <div class="lg:col-span-5 space-y-4 text-left lg:pr-4 pt-2 lg:pt-6 animate-fade-in-up">
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.15]">
-            Grape Cultivation Advisory <br> for Healthy <span class="text-green-700">Chat System</span>
-        </h1>
-        <p class="text-gray-600 text-sm sm:text-base max-w-xl leading-relaxed">
-            Get expert advice, disease solutions, and cultivation tips to grow better grapes and increase your yield.
-        </p>
-    </div>
+<main class="flex-grow w-full max-w-7xl mx-auto flex items-center justify-center px-6 py-10 lg:py-12">
 
-    <!-- RIGHT SIDE: Registration Form Module Column -->
-    <div class="lg:col-span-7 w-full flex justify-center lg:justify-end animate-fade-in-up" style="animation-delay: 0.1s;">
-        
-        <!-- Form Card Structure -->
-        <div class="bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-100 max-w-2xl w-full transition-all duration-300 hover:shadow-2xl">
+    <!-- REGISTRATION FORM -->
+    <div class="form-card bg-white p-6 sm:p-8 rounded-[1.75rem] shadow-xl border border-gray-100 max-w-xl w-full transition-all duration-300 hover:shadow-2xl animate-fade-in-up">
 
-            <!-- <?php include __DIR__ . '/../components/flash.php'; ?> -->
-
-            <form action="<?= BASE_URL ?>/register" method="POST" novalidate class="space-y-5">
+        <form action="<?= BASE_URL ?>/register" method="POST" novalidate class="space-y-3">
 
                 <div class="text-center pb-2">
-                    <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Create Your Account</h2>
-                   
+                    <div class="mx-auto mb-4 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#15803D] to-[#166534] flex items-center justify-center text-white text-xl shadow-lg shadow-emerald-600/30">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Create Your Account</h2>
+                    <p class="text-slate-400 text-sm mt-1">Join in a minute — it's free</p>
                 </div>
 
                 <!-- Two-column grid layout engine -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+
                     <!-- LEFT CONTAINER ROW FIELDS -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <?php
                         $label = 'Username';
                         $name = 'username';
+                        $icon = 'fa-solid fa-user';
                         $placeholder = 'Enter username';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/input.php';
@@ -76,6 +84,7 @@ $componentOld = $old;
                         <?php
                         $label = 'Address';
                         $name = 'address';
+                        $icon = 'fa-solid fa-location-dot';
                         $placeholder = 'Address';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/input.php';
@@ -84,6 +93,7 @@ $componentOld = $old;
                         <?php
                         $label = 'Password';
                         $name = 'password';
+                        $icon = 'fa-solid fa-lock';
                         $placeholder = 'Enter password';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/password-input.php';
@@ -92,12 +102,13 @@ $componentOld = $old;
                     </div>
 
                     <!-- RIGHT CONTAINER ROW FIELDS -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
 
                         <?php
                         $label = 'Email Address';
                         $name = 'email';
                         $type = 'email';
+                        $icon = 'fa-solid fa-envelope';
                         $placeholder = 'Enter email';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/input.php';
@@ -106,6 +117,7 @@ $componentOld = $old;
                         <?php
                         $label = 'Phone';
                         $name = 'phone';
+                        $icon = 'fa-solid fa-phone';
                         $placeholder = 'Phone number';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/input.php';
@@ -114,20 +126,32 @@ $componentOld = $old;
                         <?php
                         $label = 'Confirm Password';
                         $name = 'confirm_password';
+                        $icon = 'fa-solid fa-lock';
                         $placeholder = 'Confirm password';
                         $errors = $componentErrors; $old = $componentOld;
                         include __DIR__ . '/../components/password-input.php';
                         ?>
                     </div>
-                    
+
                 </div>
 
+                <?php if (defined('RECAPTCHA_SITE_KEY') && RECAPTCHA_SITE_KEY !== ''): ?>
+                <div class="pt-2 flex justify-center">
+                    <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($componentErrors['recaptcha'])): ?>
+                <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
+                    <?= htmlspecialchars($componentErrors['recaptcha'], ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <?php endif; ?>
+
                 <!-- Sign-up Button Container -->
-                <div class="pt-2 transition-transform duration-200 active:scale-[0.98]">
-                    <?php
-                    $text = 'Sign Up';
-                    include __DIR__ . '/../components/button.php';
-                    ?>
+                <div class="pt-2">
+                    <button type="submit" class="group w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 login-btn transition-transform duration-200 active:scale-[0.98]">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Create Account</span>
+                    </button>
                 </div>
 
             </form>
@@ -149,7 +173,6 @@ $componentOld = $old;
             </p>
 
         </div>
-    </div>
 </main>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

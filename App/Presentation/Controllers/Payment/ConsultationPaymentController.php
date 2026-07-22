@@ -129,7 +129,7 @@ class ConsultationPaymentController
             $this->notificationService->notifyAllAdmins(
                 "Payment submitted for consultation #{$id}. Please review the receipt.",
                 'payment_submitted_admin',
-                '/admin/payments'
+                '/notifications'
             );
 
             // Notify farmer that receipt is under review

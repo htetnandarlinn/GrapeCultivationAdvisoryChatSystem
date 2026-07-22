@@ -29,10 +29,17 @@ class NotificationController
 
         $notifications = $this->notificationRepo->findByRecipientId($userId, 100);
 
-        View::render('notification/index', [
-            'notifications' => $notifications,
-            'activePage' => 'notifications',
-        ], 'dashboard');
+        $role = $_SESSION['user_role'] ?? '';
+        if ($role === 'farmer') {
+            View::render('notification/farmer', [
+                'notifications' => $notifications,
+            ], 'app');
+        } else {
+            View::render('notification/index', [
+                'notifications' => $notifications,
+                'activePage' => 'notifications',
+            ], 'dashboard');
+        }
     }
 
     public function unreadCount(): void
@@ -97,6 +104,23 @@ class NotificationController
 
         if ($userId && $id) {
             $this->notificationRepo->markAsRead($id, $userId);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+    }
+
+    public function markConsultationRead(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $userId = (int) ($_SESSION['user']['id'] ?? 0);
+        $consultationId = (int) ($_POST['consultation_id'] ?? 0);
+
+        if ($userId && $consultationId) {
+            $this->notificationRepo->markConsultationAsRead($userId, $consultationId);
         }
 
         header('Content-Type: application/json');

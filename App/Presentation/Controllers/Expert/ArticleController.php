@@ -88,7 +88,7 @@ final class ArticleController
         $this->notificationService->notifyAllAdmins(
             "$authorName submitted a new article: " . $title,
             'article_created',
-            '/expert/articles/view?id=' . $articleId
+            '/notifications'
         );
         $this->notificationService->notifyAllByRole(
             'expert',
@@ -187,7 +187,7 @@ final class ArticleController
         $this->notificationService->notifyAllAdmins(
             "$authorName updated the article: " . $title,
             'article_updated',
-            '/expert/articles/view?id=' . $id
+            '/notifications'
         );
 
         $_SESSION['article_message'] = 'Article updated successfully.';
@@ -243,7 +243,7 @@ final class ArticleController
         $this->notificationService->notifyAllAdmins(
             'Article "' . $title . '" has been deleted.',
             'article_deleted',
-            '/expert/articles'
+            '/notifications'
         );
 
         $_SESSION['article_message'] = 'Article deleted successfully.';
