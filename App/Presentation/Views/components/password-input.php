@@ -11,7 +11,7 @@ $error = $componentErrors[$name] ?? '';
 $inputId = htmlspecialchars($name);
 ?>
 
-<div class="field mb-4">
+<div class="field">
     <label for="<?= $inputId ?>" class="block mb-2 text-sm font-semibold text-slate-700">
         <?= htmlspecialchars($label) ?>
     </label>
@@ -46,9 +46,11 @@ $inputId = htmlspecialchars($name);
         </button>
     </div>
 
+    <div class="field-error mt-1" style="min-height:20px;">
     <?php if ($error): ?>
-        <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-exclamation"></i><?= htmlspecialchars($error) ?>
+        <p class="text-xs text-red-600 flex items-center gap-1 leading-tight">
+            <i class="fa-solid fa-circle-exclamation text-[10px]"></i><?= htmlspecialchars($error) ?>
         </p>
     <?php endif; ?>
+    </div>
 </div>

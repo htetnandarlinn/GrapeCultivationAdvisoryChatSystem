@@ -14,9 +14,13 @@ $value = $componentOld[$name] ?? '';
 $error = $componentErrors[$name] ?? null;
 $inputId = htmlspecialchars($name);
 
+if (!isset($GLOBALS['__field_equalizer_emitted'])) {
+    $GLOBALS['__field_equalizer_emitted'] = false;
+}
+
 ?>
 
-<div class="field mb-4">
+<div class="field">
     <label for="<?= $inputId ?>" class="block mb-2 text-sm font-semibold text-slate-700">
         <?= htmlspecialchars($label) ?>
     </label>
@@ -56,9 +60,45 @@ $inputId = htmlspecialchars($name);
         >
     </div>
 
+    <div class="field-error mt-1" style="min-height:20px;">
     <?php if ($error): ?>
-        <p class="mt-1.5 text-sm text-red-600 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-exclamation"></i><?= htmlspecialchars($error) ?>
+        <p class="text-xs text-red-600 flex items-center gap-1 leading-tight">
+            <i class="fa-solid fa-circle-exclamation text-[10px]"></i><?= htmlspecialchars($error) ?>
         </p>
     <?php endif; ?>
+    </div>
 </div>
+
+<?php if (!$GLOBALS['__field_equalizer_emitted']): ?>
+<?php $GLOBALS['__field_equalizer_emitted'] = true; ?>
+<script>
+(function(){
+    function equalizeFields(){
+        document.querySelectorAll('.grid').forEach(function(grid){
+            var cols = Array.from(grid.children).filter(function(child){
+                return child.querySelectorAll('.field').length > 0;
+            });
+            if(cols.length < 2) return;
+            var colA = cols[0].querySelectorAll('.field');
+            var colB = cols[1].querySelectorAll('.field');
+            var count = Math.min(colA.length, colB.length);
+            for(var i = 0; i < count; i++){
+                colA[i].style.removeProperty('min-height');
+                colB[i].style.removeProperty('min-height');
+                var hA = colA[i].offsetHeight;
+                var hB = colB[i].offsetHeight;
+                var max = Math.max(hA, hB);
+                colA[i].style.minHeight = max + 'px';
+                colB[i].style.minHeight = max + 'px';
+            }
+        });
+    }
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', equalizeFields);
+    } else {
+        equalizeFields();
+    }
+    window.addEventListener('resize', equalizeFields);
+})();
+</script>
+<?php endif; ?>
